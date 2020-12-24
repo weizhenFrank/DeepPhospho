@@ -55,7 +55,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = cfg.TRAINING_HYPER_PARAM['GPU_INDEX']
 if args.GPU is not None:
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.GPU)
 
-dictionary = Dictionary(path="/p300/projects/IonAndRT/input/IonIntensity/acData/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
+dictionary = Dictionary(path="./data/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
 
 idx2aa = dictionary.idx2word
 
