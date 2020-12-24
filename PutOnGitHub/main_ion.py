@@ -60,7 +60,7 @@ def main():
 
     print("Preparing dataset")
 
-    dictionary = Dictionary(path="/p300/projects/IonAndRT/input/IonIntensity/acData/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
+    dictionary = Dictionary(path="./data/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
 
     Iontrain = IonData(cfg.TRAIN_DATA_CFG, dictionary=dictionary)
 

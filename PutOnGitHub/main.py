@@ -71,7 +71,7 @@ def main():
     tf_writer_train = TFBoardWriter(output_dir, type='train')
     tf_writer_test = TFBoardWriter(output_dir, type="val")
     logger = setup_logger("RT", output_dir)
-    dictionary = Dictionary(path="/p300/projects/IonAndRT/input/IonIntensity/acData/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
+    dictionary = Dictionary(path="./data/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
 
     print("Preparing dataset")
     RTtrain = RTdata(cfg.TRAIN_DATA_CFG,
