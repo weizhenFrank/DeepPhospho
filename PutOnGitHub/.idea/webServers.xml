@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="578a2971-656d-41c5-ba4d-a8acfc4547c4" name="AI (project level)" url="http://10.15.89.41">
+        <fileTransfer host="10.15.89.41" port="22603" rootFolder="/p300/projects/IonAndRT/" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22603" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

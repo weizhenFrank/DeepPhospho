@@ -1,0 +1,21 @@
+name: base
+channels:
+  - conda-forge
+  - pytorch
+  - soumith
+  - defaults
+dependencies:
+  - conda
+  - python=3.7
+  - conda-env
+  - conda-build
+  - conda-verify
+  - _ipyw_jlab_nb_ext_conf
+  - anaconda
+  - anaconda-navigator
+  - navigator-updater
+  - pytorch
+  - tensorboard
+  - torchvision
+  - cudatoolkit=10.1
+prefix: /root/anaconda3

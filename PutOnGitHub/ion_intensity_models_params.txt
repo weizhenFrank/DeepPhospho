@@ -1,0 +1,5 @@
+U2OS_DDA:/p300/projects/RT/code/result/IonInten/AcData/IonInten-U2OS_DDA-LSTMTransformer-JeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_15_20_55_45/ckpts/best_model.pth
+U2OS_DIA:/p300/projects/RT/code/result/IonInten/AcData/IonInten-U2OS_DIA-LSTMTransformer-JeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_15_20_56_47/ckpts/best_model.pth
+PhosDIA_DIA18:/p300/projects/RT/code/result/IonInten/AcData/IonInten-PhosDIA_DIA18-LSTMTransformer-JeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_15_20_57_14/ckpts/best_model.pth
+PhosDIA_DIA185:/p300/projects/RT/code/result/IonInten/AcData/IonInten-PhosDIA_DIA185-LSTMTransformer-JeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_15_23_24_21/ckpts/best_model.pth
+PhosDIA_DDA:/p300/projects/RT/code/result/IonInten/AcData/IonInten-PhosDIA_DDA-LSTMTransformer-JeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_15_23_38_21/ckpts/best_model.pth

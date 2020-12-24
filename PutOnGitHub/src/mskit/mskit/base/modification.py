@@ -1,0 +1,4 @@
+
+class Modifications(object):
+    pass
+
