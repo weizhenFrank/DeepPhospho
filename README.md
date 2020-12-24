@@ -14,5 +14,13 @@ the code of DeepPhospho
 * (optional) use the checkpoint in checkpoints folder, and change pretrain_param='<checkpoint path>' in RT_TRAINING_HYPER_PARAM
 * run the main.py
         python main.py
-    
+   
+## Train model on Ion intensity task
+* Go to the file PutOnGitHub/IonInten/configs/config_main.py 
+* change the mode = 'IonIntensity'
+* chaneg the GPU_INDEX according to your machine in TRAINING_HYPER_PARAM
+* change the data_name = "U2OS_DIA" (one of  "U2OS_DIA" "PhosDIA_DIA18"  "PhosDIA_DDA")
+* (optional) use the checkpoint in checkpoints folder, and change pretrain_param='<checkpoint path>' in Intensity_TRAINING_HYPER_PARAM
+* run the main_ion.py
+        python main_ion.py
 
