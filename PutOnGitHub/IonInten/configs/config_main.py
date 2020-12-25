@@ -5,7 +5,7 @@ from IonInten.configs.model_config import MODEL_CFG_CATALOG as _MODEL_CFG_CATALO
 Mode = "RT"  # IonIntensity RT
 
 
-data_name = "U2OS_DIA"
+data_name = "U2OS_DIA_RT"
 
 # U2OS_DIA PhosDIA_DIA18  PhosDIA_DDA
 # PredInput

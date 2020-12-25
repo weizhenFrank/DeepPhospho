@@ -68,6 +68,16 @@ DATA_PREPROCESS_CATALOG.update(RT_DATA_PREPROCESS_CATALOG)
 
 RT_DATA_CATALOG = {
 
+    "PredInput_RT_train": {
+        "data_path": "./data/to_pred/",
+        "data_fn": "20201219-RTInput-For_PhosDIA_DIA18.txt",
+        "RT_mode": True,
+        "To_Predict": True,
+        "SEQUENCE_FIELD_NAME": 'IntPep',
+        "RT_FIELD_NAME": "iRT",
+        "SCALE_BY_ZERO_ONE": True,
+        "DATA_PROCESS_CFG": DATA_PREPROCESS_CATALOG['PredInput_RT']
+    },
 
     "PhosDIA_DDA_RT_train": {
         "data_path": "./data/RT/",
@@ -156,7 +166,17 @@ RT_DATA_CATALOG = {
 }
 
 Intensity_DATA_CATALOG = {
-
+    "PredInput_train":
+        {
+            "data_path": "./data/to_pred/",
+            "data_fn": "20201219-IntenInput-For_PhosDIA_DIA18.txt",
+            "To_Predict": True,
+            "SEQUENCE_FIELD_NAME": 'IntPrec',
+            "Intensity_FIELD_NAME": "normalized_intensity",
+            "PRECURSOR_CHARGE": 'charge',
+            "REMOVE_OUT_RANGE": False,
+            "DATA_PROCESS_CFG": DATA_PREPROCESS_CATALOG['PredInput'],
+        },
     "U2OS_DIA_train": {
         "data_path": "./data/IonIntensity/",
         "data_fn": "20201010-Inten_Train-U2OS-DIA-seed0_811.json",
