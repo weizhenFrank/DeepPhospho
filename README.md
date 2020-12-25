@@ -2,6 +2,7 @@
 the code of DeepPhospho
 
 [1. installation](#1-installation)
+    [1.1 DeepPhospho installation](#1.1-DeepPhospho-installation)
 
 # 1. installation 
 ## 1.1 DeepPhospho installation
