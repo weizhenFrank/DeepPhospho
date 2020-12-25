@@ -6,6 +6,8 @@ the code of DeepPhospho
     * [1.1 DeepPhospho installation](#11-deepphospho-installation)
     * [1.2 conda environment installation](#12-conda-environment-installation)
  
+* [2. Train model](#2-Train model)
+   * [2.1 Train model on RT task](#21-train-model-on-rt-task)
 
 # 1. installation 
 ## 1.1 DeepPhospho installation
