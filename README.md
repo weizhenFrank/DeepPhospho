@@ -1,12 +1,13 @@
 # DeepPhospho
 the code of DeepPhospho
 
-## 1. installation 
-### 1.1 DeepPhospho installation
+# 1. installation 
+## 1.1 DeepPhospho installation
     git clone https://github.com/weizhenFrank/DeepPhospho.git
-### 1.2 conda environment installation
+## 1.2 conda environment installation
     conda env create -f RT_Ion.yml
-## Train model on RT task
+# 2. Train model
+## 2.1 Train model on RT task
 * Go to the file 
 > PutOnGitHub/IonInten/configs/config_main.py 
 * change the 
@@ -17,7 +18,7 @@ the code of DeepPhospho
 * run the main.py
 `python main.py`
    
-## Train model on Ion intensity task
+## 2.2 Train model on Ion intensity task
 * Go to the file 
 > PutOnGitHub/IonInten/configs/config_main.py 
 * change the 
