@@ -43,7 +43,7 @@ def main():
     now = datetime.datetime.now()
     time_str = now.strftime("%Y_%m_%d_%H_%M_%S")
     instance_name = f'{comment}-{time_str}'
-    output_dir = os.path.join('../result/IonInten/AcData', instance_name)
+    output_dir = os.path.join('../result/IonInten/', instance_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     if args.pretrain_param is not None:

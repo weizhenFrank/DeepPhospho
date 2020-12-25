@@ -54,7 +54,7 @@ def main():
     now = datetime.datetime.now()
     time_str = now.strftime("%Y-%m-%d_%H-%M-%S")
     instance_name = f'{time_str}_{comment}'
-    output_dir = os.path.join('../result/RT/AcData', instance_name)
+    output_dir = os.path.join('../result/RT', instance_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     if args.pretrain_param is not None:
