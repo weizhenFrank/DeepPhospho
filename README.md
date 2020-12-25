@@ -1,14 +1,19 @@
 # DeepPhospho
 the code of DeepPhospho
 
-* [1. installation](# 1-installation)
+* [1. installation](#1-installation)
 
     * [1.1 DeepPhospho installation](#11-deepphospho-installation)
     * [1.2 conda environment installation](#12-conda-environment-installation)
  
 * [2. Train model](#2-train-model)
    * [2.1 Train model on RT task](#21-train-model-on-rt-task)
+   * [2.2 Train model on Ion intensity task](#22-train-model-on-ion-intensity-task)
 
+* [3. Predict ](#3-predict)
+   * [3.1 predict the RT](#31-predict-the-rt)
+   * [3.2 predict the Ion intensity](#32-predict-the-ion-intensity)
+   
 # 1. installation 
 ## 1.1 DeepPhospho installation
     git clone https://github.com/weizhenFrank/DeepPhospho.git
@@ -53,7 +58,7 @@ the code of DeepPhospho
 `python visualization.py`
 * the prediction will be saved in the `result/RT/Analysis`
 
-## 3.1 predict the Ion intensity
+## 3.2 predict the Ion intensity
 * Go to the file
 > PutOnGitHub/IonInten/configs/config_main.py 
 * change the 
