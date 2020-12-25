@@ -7,7 +7,8 @@ the code of DeepPhospho
 ### 1.2 conda environment installation
     conda env create -f RT_Ion.yml
 ## Train model on RT task
-* Go to the file PutOnGitHub/IonInten/configs/config_main.py 
+* Go to the file 
+> PutOnGitHub/IonInten/configs/config_main.py 
 * change the 
 `mode = 'RT'`
 * chaneg the `GPU_INDEX` according to your machine in TRAINING_HYPER_PARAM
