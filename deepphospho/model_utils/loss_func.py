@@ -1,6 +1,5 @@
-import math
+import numpy as np
 import torch.nn as nn
-
 
 import torch
 import torch.nn.functional as F
@@ -44,7 +43,7 @@ class SALoss(nn.Module):
 
         y_l2normed = y / y_l2norm
 
-        loss = 2 * torch.acos(torch.sum(pred_y_l2normed * y_l2normed, 1)) / math.pi
+        loss = 2 * torch.acos(torch.sum(pred_y_l2normed * y_l2normed, 1)) / np.pi
         # ipdb.set_trace()
         return torch.mean(loss + self.eps)
 

@@ -1,11 +1,10 @@
-import json
-from collections import defaultdict, OrderedDict
-from collections import deque
-
-import torch
 import logging
 import os
 import sys
+import json
+from collections import defaultdict, OrderedDict, deque
+
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 

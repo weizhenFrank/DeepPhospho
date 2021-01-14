@@ -12,13 +12,13 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from deepphospho.configs import config_main as cfg
-from deepphospho.data_dataset.preprocess_input_data import RTdata, Dictionary
+from deepphospho.model_dataset.preprocess_input_data import RTdata, Dictionary
 
 from deepphospho.model_utils.model_param_load_original import load_param_from_file, load_average_model
 from deepphospho.model_utils.logger import setup_logger
 from deepphospho.model_utils.loss_func import RMSELoss
 
-from deepphospho.data_dataset.dataset import IonDataset, collate_fn
+from deepphospho.model_dataset.dataset import IonDataset, collate_fn
 from deepphospho.models.EnsembelModel import  LSTMTransformer, LSTMTransformerEnsembleModel
 
 

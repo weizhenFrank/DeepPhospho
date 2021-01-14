@@ -8,6 +8,7 @@ from torch.nn import ModuleList
 from torch.nn import MultiheadAttention
 from torch.nn.init import xavier_uniform_
 
+from deepphospho.model_utils.utils_functions import get_clones
 
 # 从pytorch 1.4里 copy出来的transformer的实现
 
@@ -157,7 +158,7 @@ class TransformerEncoder(Module):
 
     def __init__(self, encoder_layer, num_layers, norm=None):
         super(TransformerEncoder, self).__init__()
-        self.layers = _get_clones(encoder_layer, num_layers)
+        self.layers = get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
         self.norm = norm
 
@@ -202,7 +203,7 @@ class TransformerDecoder(Module):
 
     def __init__(self, decoder_layer, num_layers, norm=None):
         super(TransformerDecoder, self).__init__()
-        self.layers = _get_clones(decoder_layer, num_layers)
+        self.layers = get_clones(decoder_layer, num_layers)
         self.num_layers = num_layers
         self.norm = norm
 
@@ -367,10 +368,6 @@ class TransformerDecoderLayer(Module):
         tgt = tgt + self.dropout3(tgt2)
         tgt = self.norm3(tgt)
         return tgt
-
-
-def _get_clones(module, N):
-    return ModuleList([copy.deepcopy(module) for i in range(N)])
 
 
 def _get_activation_fn(activation):

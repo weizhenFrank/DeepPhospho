@@ -7,9 +7,9 @@ import numpy as np
 import torch
 # import ipdb
 import matplotlib.pyplot as plt
-from deepphospho.data_dataset import IonData, Dictionary
+from deepphospho.model_dataset import IonData, Dictionary
 from deepphospho.configs import config_main as cfg
-from deepphospho.data_dataset import IonDataset, collate_fn
+from deepphospho.model_dataset import IonDataset, collate_fn
 from torch.utils.data import DataLoader
 from deepphospho.model_utils.logger import setup_logger
 from deepphospho.models.ion_model import StackedLSTM  # Use the LSTMTransformer in EnsembleModel.py

@@ -7,7 +7,8 @@ from torch.nn import LayerNorm, Linear, Dropout
 from torch.nn import Module
 from torch.nn import MultiheadAttention
 
-from .transfromer_lib import _get_clones, _get_activation_fn
+from deepphospho.model_utils.utils_functions import get_clones
+from .transfromer_lib import _get_activation_fn
 from .ion_model import PositionalEncoding
 from deepphospho.model_utils.utils_functions import custom_sigmoid
 
@@ -29,7 +30,7 @@ class TransformerEncoder(nn.Module):
 
     def __init__(self, encoder_layer, num_layers, norm=None):
         super(TransformerEncoder, self).__init__()
-        self.layers = _get_clones(encoder_layer, num_layers)
+        self.layers = get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
         self.norm = norm
 

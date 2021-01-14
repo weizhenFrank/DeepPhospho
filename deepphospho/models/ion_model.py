@@ -11,7 +11,7 @@ from torch.nn import ModuleList
 from torch.nn import MultiheadAttention
 from torch.nn.init import xavier_uniform_
 
-from .transfromer_lib import _get_clones, TransformerEncoder
+from .transfromer_lib import TransformerEncoder
 
 
 class PositionalEncoding(nn.Module):
