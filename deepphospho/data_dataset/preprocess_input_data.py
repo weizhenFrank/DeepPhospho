@@ -1,16 +1,16 @@
-import operator
 import os
 import pickle
-import shutil
-import numpy as np
-import pandas as pd
+import operator
+import logging
+
 from tqdm import tqdm
 import ipdb
-from deepphospho.configs import config_main as cfg
 
-from deepphospho.utils.utils_functions import match_frag, ion_types, get_index, get_pkl_path, intensity_load_check
-import logging
-import math
+import numpy as np
+import pandas as pd
+
+from deepphospho.configs import config_main as cfg
+from deepphospho.model_utils.utils_functions import match_frag, ion_types, get_index, get_pkl_path, intensity_load_check
 
 PADDING_CHAR = '#'
 ENDING_CHAR = '$'
@@ -346,12 +346,12 @@ class RTdata(object):
             seq_data[RT_FIELD_NAME] = np.zeros(len(seq_data[SEQUENCE_FIELD_NAME]))
 
         if cfg.DATA_PROCESS_CFG['MIN_RT'] is None:
-            self.MIN_RT = math.floor(min(seq_data[RT_FIELD_NAME]))
+            self.MIN_RT = int(np.floor(min(seq_data[RT_FIELD_NAME])))
         else:
             self.MIN_RT = cfg.DATA_PROCESS_CFG['MIN_RT']
 
         if cfg.DATA_PROCESS_CFG['MAX_RT'] is None:
-            self.MAX_RT = math.ceil(max(seq_data[RT_FIELD_NAME]))
+            self.MAX_RT = int(np.ceil(max(seq_data[RT_FIELD_NAME])))
         else:
             self.MAX_RT = cfg.DATA_PROCESS_CFG['MAX_RT']
 

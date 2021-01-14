@@ -4,7 +4,6 @@ import logging
 import os
 import random
 import time
-import dill
 
 # import ipdb
 import ipdb
@@ -15,14 +14,14 @@ import torch
 from deepphospho.data_dataset.preprocess_input_data import IonData, Dictionary
 from deepphospho.configs import config_main as cfg
 from deepphospho.data_dataset.dataset import IonDataset, collate_fn, RandomMaskingDataset
-from deepphospho.utils.ion_eval import eval
+from deepphospho.model_utils.ion_eval import eval
 from torch.utils.data import DataLoader
-from deepphospho.utils.logger import MetricLogger, setup_logger, TFBoardWriter
+from deepphospho.model_utils.logger import MetricLogger, setup_logger, TFBoardWriter
 
-from deepphospho.utils.lr_scheduler import make_lr_scheduler
+from deepphospho.model_utils.lr_scheduler import make_lr_scheduler
 from deepphospho.models.EnsembelModel import LSTMTransformer
-from deepphospho.utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
-from deepphospho.utils.model_param_load_original import save_checkpoint, load_param_from_file
+from deepphospho.model_utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
+from deepphospho.model_utils.model_param_load_original import save_checkpoint, load_param_from_file
 
 logging.basicConfig(level=logging.INFO)
 SEED = 666

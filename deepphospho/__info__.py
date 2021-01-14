@@ -1,5 +1,5 @@
 
-_VERSION = (0, 0, 9)
+_VERSION = (0, 1, 0)
 __version__ = '.'.join(map(str, _VERSION))
 
 __package_name__ = ''

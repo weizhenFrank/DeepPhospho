@@ -1,9 +1,8 @@
+import re
+import os
+
 import numpy as np
 import pandas as pd
-import re
-# for new data format adaptation
-# import ipdb
-import os
 
 
 def old_operations():

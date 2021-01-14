@@ -9,7 +9,7 @@ from torch.nn import MultiheadAttention
 
 from .transfromer_lib import _get_clones, _get_activation_fn
 from .ion_model import PositionalEncoding
-from deepphospho.utils.utils_functions import custom_sigmoid
+from deepphospho.model_utils.utils_functions import custom_sigmoid
 
 
 class TransformerEncoder(nn.Module):

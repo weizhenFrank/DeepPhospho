@@ -1,3 +1,0 @@
-"""
-From tracefinder post analysis
-"""

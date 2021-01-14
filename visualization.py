@@ -14,15 +14,15 @@ from tqdm import tqdm
 from deepphospho.configs import config_main as cfg
 from deepphospho.data_dataset.preprocess_input_data import RTdata, Dictionary
 
-from deepphospho.utils.model_param_load_original import load_param_from_file, load_average_model
-from deepphospho.utils.logger import setup_logger
-from deepphospho.utils.loss_func import RMSELoss
+from deepphospho.model_utils.model_param_load_original import load_param_from_file, load_average_model
+from deepphospho.model_utils.logger import setup_logger
+from deepphospho.model_utils.loss_func import RMSELoss
 
 from deepphospho.data_dataset.dataset import IonDataset, collate_fn
 from deepphospho.models.EnsembelModel import  LSTMTransformer, LSTMTransformerEnsembleModel
 
 
-from deepphospho.utils.utils_functions import Delta_t95, Pearson, copy_files
+from deepphospho.model_utils.utils_functions import Delta_t95, Pearson, copy_files
 import random
 import sys
 

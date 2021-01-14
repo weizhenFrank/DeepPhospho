@@ -1,4 +1,0 @@
-
-IntMod2General = {
-
-}

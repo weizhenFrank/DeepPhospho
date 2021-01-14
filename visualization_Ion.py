@@ -11,16 +11,16 @@ from deepphospho.data_dataset import IonData, Dictionary
 from deepphospho.configs import config_main as cfg
 from deepphospho.data_dataset import IonDataset, collate_fn
 from torch.utils.data import DataLoader
-from deepphospho.utils.logger import setup_logger
+from deepphospho.model_utils.logger import setup_logger
 from deepphospho.models.ion_model import StackedLSTM  # Use the LSTMTransformer in EnsembleModel.py
 from deepphospho.models.EnsembelModel import LSTMTransformer
-from deepphospho.utils.model_param_load_original import load_param_from_file
-from deepphospho.utils.ion_eval import SA, Pearson
+from deepphospho.model_utils.model_param_load_original import load_param_from_file
+from deepphospho.model_utils.ion_eval import SA, Pearson
 from tqdm import tqdm
 import pandas as pd
 from main import show_params_status
 import json
-from deepphospho.utils.utils_functions import give_name_ion
+from deepphospho.model_utils.utils_functions import give_name_ion
 
 
 def get_parser():

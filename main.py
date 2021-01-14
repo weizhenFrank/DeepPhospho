@@ -20,11 +20,11 @@ from deepphospho.data_dataset.dataset import IonDataset, collate_fn
 
 from deepphospho.models.EnsembelModel import LSTMTransformer
 
-from deepphospho.utils.rt_eval import eval
-from deepphospho.utils.logger import MetricLogger, setup_logger, save_config, TFBoardWriter
-from deepphospho.utils.lr_scheduler import make_lr_scheduler
-from deepphospho.utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
-from deepphospho.utils.model_param_load_original import save_checkpoint, load_param_from_file
+from deepphospho.model_utils.rt_eval import eval
+from deepphospho.model_utils.logger import MetricLogger, setup_logger, save_config, TFBoardWriter
+from deepphospho.model_utils.lr_scheduler import make_lr_scheduler
+from deepphospho.model_utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
+from deepphospho.model_utils.model_param_load_original import save_checkpoint, load_param_from_file
 
 logging.basicConfig(level=logging.INFO)
 SEED = 666
