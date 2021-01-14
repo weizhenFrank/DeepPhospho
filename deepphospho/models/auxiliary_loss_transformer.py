@@ -1,15 +1,14 @@
-import math
-import torch.nn as nn
-
-from deepphospho.models.transfromer_lib import _get_clones, _get_activation_fn
-# import ipdb
+import numpy as np
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import LayerNorm, Linear, Dropout
 from torch.nn import Module
 from torch.nn import MultiheadAttention
-from deepphospho.models.ion_model import PositionalEncoding
+
+from .transfromer_lib import _get_clones, _get_activation_fn
+from .ion_model import PositionalEncoding
 from deepphospho.utils.utils_functions import custom_sigmoid
 
 
@@ -241,10 +240,10 @@ class TransformerModel(nn.Module):
         # x.transpose_(1, 2)
         # x = self.bn_all_input_feat(x)
         # x.transpose_(2, 1)
-        x = x * math.sqrt(self.embed_dim)
+        x = x * np.sqrt(self.embed_dim)
         src = x
 
-        src = src * math.sqrt(self.embed_dim)
+        src = src * np.sqrt(self.embed_dim)
         src = src.transpose(0, 1)  # (seq_length, bz, feat_dim)
         src = self.pos_encoder(src)
         src = self.layer_norm(src)
