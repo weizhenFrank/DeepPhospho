@@ -26,8 +26,8 @@ from deepphospho.utils.utils_functions import Delta_t95, Pearson, copy_files
 import random
 import sys
 
-sys.path.insert(0, "bioplotkit")
-sys.path.insert(0, "mskit")
+sys.path.insert(0, "deepphospho/bioplotkit")
+sys.path.insert(0, "deepphospho/mskit")
 
 import bioplotkit as bpk
 import ipdb
@@ -154,10 +154,10 @@ if not cfg.MODEL_CFG['model_name'] == "LSTMTransformerEnsemble":
                                      load_model_path,
                                      partially=False, logger_name='RT')
 
-copy_files("models/ion_model.py", output_dir)
-copy_files("models/EnsembelModel.py", output_dir)
+copy_files("deepphospho/models/ion_model.py", output_dir)
+copy_files("deepphospho/models/EnsembelModel.py", output_dir)
 copy_files("visualization.py", output_dir)
-copy_files("configs", output_dir)
+copy_files("deepphospho/configs", output_dir)
 
 if torch.cuda.device_count() > 1:
     print("Let's use", torch.cuda.device_count(), "GPUs!")

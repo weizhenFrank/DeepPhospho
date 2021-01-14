@@ -1,9 +1,8 @@
-from IonInten.configs.data_config import DATA_CATALOG as _DATA_CATALOG
-from IonInten.configs.model_config import MODEL_CFG_CATALOG as _MODEL_CFG_CATALOG
+from .data_config import DATA_CATALOG as _DATA_CATALOG
+from .model_config import MODEL_CFG_CATALOG as _MODEL_CFG_CATALOG
 
 
 Mode = "RT"  # IonIntensity RT
-
 
 data_name = "U2OS_DIA_RT"
 

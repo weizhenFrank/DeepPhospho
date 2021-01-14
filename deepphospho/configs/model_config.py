@@ -2,7 +2,6 @@
 
 MODEL_CFG_CATALOG = dict(
 
-
     LSTMTransformer=dict(
         embed_dim=256,
         lstm_hidden_dim=512,
@@ -33,6 +32,5 @@ MODEL_CFG_CATALOG = dict(
             transformer_hidden_dim=1024,
 
         )
-
 
     )

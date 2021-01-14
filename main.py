@@ -131,10 +131,10 @@ def main():
 
     logger.info(str(model))
     logger.info("model parameters statuts: \n%s" % show_params_status(model))
-    copy_files("models/ion_model.py", output_dir)
-    copy_files("models/EnsembelModel.py", output_dir)
+    copy_files("deepphospho/models/ion_model.py", output_dir)
+    copy_files("deepphospho/models/EnsembelModel.py", output_dir)
     copy_files("main.py", output_dir)
-    copy_files("configs", output_dir)
+    copy_files("deepphospho/configs", output_dir)
 
     if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") is not None:
         if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") != '':

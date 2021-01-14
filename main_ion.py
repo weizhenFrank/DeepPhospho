@@ -4,6 +4,9 @@ import logging
 import os
 import random
 import time
+import dill
+
+# import ipdb
 import ipdb
 import numpy as np
 import termcolor
@@ -168,10 +171,10 @@ def main():
 
     logger.info(str(model))
     logger.info("model parameters statuts: \n%s" % show_params_status(model))
-    copy_files("models/ion_model.py", output_dir)
-    copy_files("models/EnsembelModel.py", output_dir)
+    copy_files("deepphospho/models/ion_model.py", output_dir)
+    copy_files("deepphospho/models/EnsembelModel.py", output_dir)
     copy_files("main_ion.py", output_dir)
-    copy_files("configs", output_dir)
+    copy_files("deepphospho/configs", output_dir)
 
     if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") is not None:
         if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") != '':

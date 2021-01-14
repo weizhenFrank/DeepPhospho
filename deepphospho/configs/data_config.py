@@ -1,18 +1,13 @@
 import copy
 
 RT_DATA_PREPROCESS_CATALOG = dict(
-    U2OS_RT=dict(
-        MIN_RT=-100,
-        MAX_RT=200,
-
-        # MIN_RT=-60,
-        # MAX_RT=160,
-        # change MIN and MAX for testing influence of MIN and MAX
-        MAX_SEQ_LEN=52,
-    ),
+    U2OS_RT={
+        "MIN_RT": -100,
+        "MAX_RT": 200,
+        "MAX_SEQ_LEN": 52,
+    },
 
     DDA_RT={
-        # "MIN_RT": -60,
         "MIN_RT": -100,
         "MAX_RT": 200,
         "MAX_SEQ_LEN": 74,
