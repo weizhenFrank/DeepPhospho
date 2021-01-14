@@ -1,22 +1,17 @@
-import math
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-# from transformers import BertModel
-# from transformers.modeling_bert import BertLayerNorm
-from torch.nn import LayerNorm
-from .transfromer_lib import _get_clones
-from torch.nn import TransformerEncoderLayer
-# import ipdb
+import numpy as np
 import copy
 
 import torch
+from torch import nn
 import torch.nn.functional as F
+from torch.nn import TransformerEncoderLayer
 from torch.nn import LayerNorm, Linear, Dropout
 from torch.nn import Module
 from torch.nn import ModuleList
 from torch.nn import MultiheadAttention
 from torch.nn.init import xavier_uniform_
+
+from .transfromer_lib import _get_clones
 
 
 class PositionalEncoding(nn.Module):
@@ -27,7 +22,7 @@ class PositionalEncoding(nn.Module):
 
         pe = torch.zeros(max_len, d_model)
         position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-np.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0).transpose(0, 1)  # Seq_len x 1 x feat_dim
@@ -326,7 +321,7 @@ class LSTMTransformer(nn.Module):
             x1 = self.embedding(x1)  # (batch_sz, seq_len, feat_dim)
             x2 = self.feature_embedding(x2)  # (batch_sz, seq_len, feat_dim)
             x = torch.cat((x1, x2), dim=2)
-        x = x * math.sqrt(self.embd_dim)
+        x = x * np.sqrt(self.embd_dim)
         hidden = x
         # print(hidden.shape)
         hidden_store = []
@@ -509,10 +504,10 @@ class TransformerModel(nn.Module):
         # x.transpose_(1, 2)
         # x = self.bn_all_input_feat(x)
         # x.transpose_(2, 1)
-        x = x * math.sqrt(self.embed_dim)
+        x = x * np.sqrt(self.embed_dim)
         src = x
 
-        src = src * math.sqrt(self.embed_dim)
+        src = src * np.sqrt(self.embed_dim)
         src = src.transpose(0, 1)  # (seq_length, bz, feat_dim)
         src = self.pos_encoder(src)
         src = self.layer_norm(src)
