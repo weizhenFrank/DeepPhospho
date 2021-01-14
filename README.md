@@ -1,9 +1,4 @@
-# DeepPhospho
-
-## DeepPhospho improves spectra and RT prediction of phosphopeptides
-
-* 
-* 
+# DeepPhospho: impoves spectra and RT prediction for phosphopeptides
 
 ## Contents
 
