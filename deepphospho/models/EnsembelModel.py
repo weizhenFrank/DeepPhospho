@@ -1,14 +1,12 @@
-import math
-import copy
-import ipdb
+import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import LayerNorm
+
 from .ion_model import PositionalEncoding
 from .auxiliary_loss_transformer import TransformerEncoderLayer, TransformerEncoder
-# import ipdb
-from deepphospho.utils.utils_functions import get_clones
 
 
 class LSTMTransformer(nn.Module):
@@ -452,9 +450,9 @@ class CNN_LSTM_Transformer(nn.Module):
         # ipdb.set_trace()
 
         # Transformer
-        hidden = x * math.sqrt(self.embed_dim)
+        hidden = x * np.sqrt(self.embed_dim)
         src = hidden
-        src = src * math.sqrt(self.embed_dim)
+        src = src * np.sqrt(self.embed_dim)
         src = src.transpose(0, 1)  # (seq_length, bz, feat_dim)
         src = self.pos_encoder(src)
         src = self.layer_norm(src)
