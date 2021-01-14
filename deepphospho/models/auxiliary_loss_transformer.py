@@ -288,8 +288,3 @@ class TransformerModel(nn.Module):
         else:
             return custom_sigmoid(output)
 
-
-
-
-
-

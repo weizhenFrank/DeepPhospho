@@ -1,11 +1,11 @@
+import copy
 import ipdb
-from torch.utils.data import Dataset
+
 import numpy as np
 import torch
-# import ipdb
-import copy
-from .SeqEmb import MASK_CHAR, PADDING_CHAR, CLS_TOKEN, ENDING_CHAR
-from math import ceil
+from torch.utils.data import Dataset
+
+from .preprocess_input_data import MASK_CHAR, PADDING_CHAR, CLS_TOKEN, ENDING_CHAR
 from deepphospho.configs import config_main as cfg
 
 
@@ -52,7 +52,7 @@ class RandomMaskingDataset(Dataset):
                                                    x != self.ion_data.dictionary.word2idx[ENDING_CHAR]))[0]
 
         np.random.shuffle(select_idx)
-        mask_num = ceil(len(select_idx) * self.mask_ratio)
+        mask_num = int(np.ceil(len(select_idx) * self.mask_ratio))
         mask_idx = select_idx[:mask_num]
         # ipdb.set_trace()
         if mask_num != 0:

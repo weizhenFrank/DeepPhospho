@@ -11,7 +11,7 @@ from torch.nn import ModuleList
 from torch.nn import MultiheadAttention
 from torch.nn.init import xavier_uniform_
 
-from .transfromer_lib import _get_clones
+from .transfromer_lib import _get_clones, TransformerEncoder
 
 
 class PositionalEncoding(nn.Module):
@@ -32,50 +32,6 @@ class PositionalEncoding(nn.Module):
         x = x + self.pe[:x.size(0), :]
         # ipdb.set_trace()
         return self.dropout(x)
-
-
-class TransformerEncoder(nn.Module):
-    r"""TransformerEncoder is a stack of N encoder layers
-
-    Args:
-        encoder_layer: an instance of the TransformerEncoderLayer() class (required).
-        num_layers: the number of sub-encoder-layers in the encoder (required).
-        norm: the layer normalization component (optional).
-
-    Examples::
-        >>> encoder_layer = nn.TransformerEncoderLayer(d_model=512, nhead=8)
-        >>> transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
-        >>> src = torch.rand(10, 32, 512)
-        >>> out = transformer_encoder(src)
-    """
-
-    def __init__(self, encoder_layer, num_layers, norm=None):
-        super(TransformerEncoder, self).__init__()
-        self.layers = _get_clones(encoder_layer, num_layers)
-        self.num_layers = num_layers
-        self.norm = norm
-
-    def forward(self, src, mask=None, src_key_padding_mask=None):
-        r"""Pass the input through the encoder layers in turn.
-
-        Args:
-            src: the sequnce to the encoder (required).
-            mask: the mask for the src sequence (optional).
-            src_key_padding_mask: the mask for the src keys per batch (optional).
-
-        Shape:
-            see the docs in Transformer class.
-        """
-        output = src
-
-        for i in range(self.num_layers):
-            output = self.layers[i](output, src_mask=mask,
-                                    src_key_padding_mask=src_key_padding_mask)
-
-        if self.norm:
-            output = self.norm(output)
-
-        return output
 
 
 class StackedLSTM(nn.Module):
