@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import ipdb
-from IonInten.configs import config_main as cfg
+from deepphospho.configs import config_main as cfg
 
-from IonInten.utils.utils_functions import match_frag, ion_types, get_index, get_pkl_path, intensity_load_check
+from deepphospho.utils.utils_functions import match_frag, ion_types, get_index, get_pkl_path, intensity_load_check
 import logging
 import math
 

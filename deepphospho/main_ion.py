@@ -9,9 +9,9 @@ import numpy as np
 import termcolor
 import torch
 # import ipdb
-from deepphospho.data_dataset import IonData, Dictionary
+from deepphospho.data_dataset.SeqEmb import IonData, Dictionary
 from deepphospho.configs import config_main as cfg
-from deepphospho.data_dataset import IonDataset, collate_fn, RandomMaskingDataset
+from deepphospho.data_dataset.dataset import IonDataset, collate_fn, RandomMaskingDataset
 from deepphospho.utils.ion_eval import eval
 from torch.utils.data import DataLoader
 from deepphospho.utils.logger import MetricLogger, setup_logger, TFBoardWriter

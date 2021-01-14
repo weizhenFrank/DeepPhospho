@@ -4,9 +4,9 @@ import numpy as np
 import torch
 # import ipdb
 import copy
-from IonInten.data_dataset.SeqEmb import MASK_CHAR, PADDING_CHAR, CLS_TOKEN, ENDING_CHAR
+from .SeqEmb import MASK_CHAR, PADDING_CHAR, CLS_TOKEN, ENDING_CHAR
 from math import ceil
-from IonInten.configs import config_main as cfg
+from deepphospho.configs import config_main as cfg
 
 
 class RandomMaskingDataset(Dataset):
