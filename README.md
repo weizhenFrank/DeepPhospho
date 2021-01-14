@@ -1,11 +1,16 @@
 # DeepPhospho
-the code of DeepPhospho
 
-* [1. installation](#1-installation)
+## DeepPhospho improves spectra and RT prediction of phosphopeptides
 
-    * [1.1 DeepPhospho installation](#11-deepphospho-installation)
+* 
+* 
+
+## Contents
+
+* [installation](#Installation)
+* [1.1 DeepPhospho installation](#11-deepphospho-installation)
     * [1.2 conda environment installation](#12-conda-environment-installation)
- 
+    
 * [2. Train model](#2-train-model)
    * [2.1 Train model on RT task](#21-train-model-on-rt-task)
    * [2.2 Train model on Ion intensity task](#22-train-model-on-ion-intensity-task)
@@ -14,13 +19,30 @@ the code of DeepPhospho
    * [3.1 predict the RT](#31-predict-the-rt)
    * [3.2 predict the Ion intensity](#32-predict-the-ion-intensity)
    
-# 1. installation 
-## 1.1 DeepPhospho installation
-    git clone https://github.com/weizhenFrank/DeepPhospho.git
-## 1.2 conda environment installation
-    conda env create -f RT_Ion.yml
+# Setup DeepPhospho
+
+## Get DeepPhospho
+
+* Clone this repository
+
+  ```
+  git clone https://github.com/weizhenFrank/DeepPhospho.git
+  ```
+
+* Or install this package from PyPi
+
+  ```
+  pip install xxx
+  ```
+
+## Conda environment
+
+```
+conda env create -f DeepPhospho_ENV.yml
+```
 
 # 2. Train model
+
 ## 2.1 Train model on RT task
 * Go to the file 
 > PutOnGitHub/IonInten/configs/config_main.py 

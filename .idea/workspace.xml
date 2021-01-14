@@ -2,13 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="009feb99-550c-42b8-a114-7c9efb97ddbb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deepphospho/data_dataset/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/deepphospho/data_dataset/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deepphospho/models/auxiliary_loss_transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/deepphospho/models/auxiliary_loss_transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deepphospho/models/ion_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/deepphospho/models/ion_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deepphospho/models/rt_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/visualization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RT_Ion.yml" beforeDir="false" afterPath="$PROJECT_DIR$/DeepPhospho_ENV.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +91,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1610611992829</updated>
-      <workItem from="1610611994070" duration="9282000" />
+      <workItem from="1610611994070" duration="9896000" />
     </task>
     <servers />
   </component>
