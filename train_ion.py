@@ -184,7 +184,7 @@ def main():
 
     copy_files("deep_phospho/models/ion_model.py", output_dir)
     copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
-    copy_files("main_ion.py", output_dir)
+    copy_files("train_ion.py", output_dir)
     copy_files("deep_phospho/configs", output_dir)
 
     pretrain_param = cfg.TRAINING_HYPER_PARAM.get("pretrain_param")

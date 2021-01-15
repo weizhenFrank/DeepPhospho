@@ -156,7 +156,7 @@ if not cfg.MODEL_CFG['model_name'] == "LSTMTransformerEnsemble":
 
 copy_files("deep_phospho/models/ion_model.py", output_dir)
 copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
-copy_files("visualization.py", output_dir)
+copy_files("pred_rt.py", output_dir)
 copy_files("deep_phospho/configs", output_dir)
 
 if torch.cuda.device_count() > 1:
