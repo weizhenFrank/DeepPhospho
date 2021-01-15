@@ -1,56 +1,24 @@
 
-
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
     'repeat_factor': 4,
     'mask_ratio': 1,
 }
 
-refresh_cache = True
-
 Intensity_DATA_CFG = {
     'DataName': '',
 
-    "Train": {
-            "data_path": "./data/to_pred/",
-            "data_fn": "20201219-IntenInput-For_PhosDIA_DIA18.txt",
-            "To_Predict": True,
-            "SEQUENCE_FIELD_NAME": 'IntPrec',
-            "Intensity_FIELD_NAME": "normalized_intensity",
-            "PRECURSOR_CHARGE": 'charge',
-            "REMOVE_OUT_RANGE": False,
-            "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
-            'refresh_cache': refresh_cache,
-    },
+    "Intensity_FIELD_NAME": "normalized_intensity",
+    "SEQUENCE_FIELD_NAME": 'sequence',
+    "PRECURSOR_CHARGE": 'charge',
 
-    "Test": {
-        "data_path": "./data/IonIntensity/",
-        "data_fn": "20201010-Inten_Train-U2OS-DIA-seed0_811.json",
-        "To_Predict": False,
-        "Intensity_FIELD_NAME": "normalized_intensity",
-        "SEQUENCE_FIELD_NAME": 'sequence',
-        "PRECURSOR_CHARGE": 'charge',
-        "FOR_TRAINING": True,
-        "REMOVE_OUT_RANGE": False,
-        "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
-        'refresh_cache': refresh_cache,
-    },
+    "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
+    'refresh_cache': True,
 
-    "Holdout": {
-        "data_path": "./data/IonIntensity/",
-        "data_fn": "20201010-Inten_Test-U2OS-DIA-seed0_811.json",
-        "To_Predict": False,
-        "Intensity_FIELD_NAME": "normalized_intensity",
-        "SEQUENCE_FIELD_NAME": 'sequence',
-        "PRECURSOR_CHARGE": 'charge',
-        "FOR_TRAINING": False,
-        "REMOVE_OUT_RANGE": False,
-        "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
-        'refresh_cache': refresh_cache,
-    },
-
+    "TrainPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
+    "TestPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
+    "HoldoutPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
 }
-
 
 MODEL_CFG = dict(
     model_name='LSTMTransformer',

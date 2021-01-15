@@ -259,6 +259,8 @@ Output = pd.DataFrame({'sequence': peptides, 'pred': pred_ys, 'label': label_y})
 Output.to_csv(os.path.join(output_dir, 'Prediction.csv'), index_label=False, index=True)
 # Output.to_csv(os.path.join(output_dir,
 #                            f'Pred_{os.path.basename(load_model_path).split(".")[0]}.csv'), index=True, index_label=False)
+
+# TODO This var controls whether with label or not, be True or False in Config (has been deleted)
 No_RT_gt = cfg.HOLDOUT_DATA_CFG['To_Predict']
 if No_RT_gt:
     fig, ax = plt.subplots(1, 1, figsize=(7, 7), dpi=300)

@@ -238,6 +238,7 @@ all_charge = []
 
 below_cut_counts = 0
 
+# TODO This var controls whether with label or not, be True or False in Config (has been deleted)
 No_Intensity = cfg.HOLDOUT_DATA_CFG['To_Predict']
 
 for pred_inten_mat, pep_inten_mat, aas, length_aas, charge in zip(pred_matrix_all, y_matrix_all, pep, pep_len, charges):

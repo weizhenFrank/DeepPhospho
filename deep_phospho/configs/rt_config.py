@@ -6,44 +6,18 @@ RT_DATA_PREPROCESS_CATALOG = {
     "MAX_SEQ_LEN": 74,
 }
 
-refresh_cache = True
-
 RT_DATA_CFG = {
     'DataName': '',
+    "SEQUENCE_FIELD_NAME": 'IntPep',
+    "RT_FIELD_NAME": "iRT",
+    "SCALE_BY_ZERO_ONE": True,
 
-    'Train': {
-        "data_path": "./data/to_pred/",
-        "data_fn": "20201219-RTInput-For_PhosDIA_DIA18.txt",
-        "RT_mode": True,
-        "To_Predict": True,
-        "SEQUENCE_FIELD_NAME": 'IntPep',
-        "RT_FIELD_NAME": "iRT",
-        "SCALE_BY_ZERO_ONE": True,
-        "DATA_PROCESS_CFG": RT_DATA_PREPROCESS_CATALOG,
-        'refresh_cache': refresh_cache,
-    },
-    "Test": {
-        "data_path": "./data/RT/",
-        "data_fn": "20201010-RT_Val-PhosDIA-DDA-seed0_811.txt",
-        "RT_mode": True,
-        "SEQUENCE_FIELD_NAME": 'IntPep',
-        "RT_FIELD_NAME": "iRT",
-        "SCALE_BY_ZERO_ONE": True,
-        "DATA_PROCESS_CFG": RT_DATA_PREPROCESS_CATALOG,
-        'refresh_cache': refresh_cache,
+    "DATA_PROCESS_CFG": RT_DATA_PREPROCESS_CATALOG,
+    'refresh_cache': True,
 
-    },
-    "Holdout": {
-        "data_path": "./data/RT/",
-        "data_fn": "20201010-RT_Test-PhosDIA-DDA-seed0_811.txt",
-        "RT_mode": True,
-        "SEQUENCE_FIELD_NAME": 'IntPep',
-        "RT_FIELD_NAME": "iRT",
-        "SCALE_BY_ZERO_ONE": True,
-        "DATA_PROCESS_CFG": RT_DATA_PREPROCESS_CATALOG,
-        'refresh_cache': refresh_cache,
-
-    },
+    'TrainPATH': "./data/to_pred/20201219-RTInput-For_PhosDIA_DIA18.txt",
+    'TestPATH': "./data/to_pred/20201219-RTInput-For_PhosDIA_DIA18.txt",
+    'HoldoutPATH': "./data/to_pred/20201219-RTInput-For_PhosDIA_DIA18.txt",
 }
 
 MODEL_CFG = dict(
@@ -78,7 +52,7 @@ Ensemble_MODEL_CFG = dict(
     transformer_hidden_dim=1024,
 )
 
-UsedModelCFG = MODEL_CFG
+UsedModelCFG = Ensemble_MODEL_CFG
 
 TRAINING_HYPER_PARAM = dict(
     # MSE L1 PearsonLoss SALoss SA_Pearson_Loss L1_SA_Pearson_Loss SALoss_MSE
