@@ -8,7 +8,7 @@ from torch.nn import Module
 from torch.nn import MultiheadAttention
 
 from deep_phospho.model_utils.utils_functions import get_clones
-from .transfromer_lib import _get_activation_fn
+from .general_transformer import _get_activation_fn
 from .ion_model import PositionalEncoding
 from deep_phospho.model_utils.utils_functions import custom_sigmoid
 
@@ -124,10 +124,12 @@ class TransformerEncoderLayer(Module):
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, ntoken, use_prosit, pretrain_mode=False, aux_loss=True, max_len=100, model_name="Transformer",
-                 embed_dim=256, num_attention_head=1,
-                 hidden_dim=512, num_encd_layer=1,
-                 pos_encode_dropout=0.1, attention_dropout=0.1, hidden_dropout_prob=0.1):
+    def __init__(self, ntoken, use_prosit=False, pretrain_mode=False, aux_loss=True,
+                 max_len=100,
+                 embed_dim=256, hidden_dim=512,
+                 num_attention_head=1, num_encd_layer=1,
+                 pos_encode_dropout=0.1, attention_dropout=0.1, hidden_dropout_prob=0.1,
+                 model_name="Transformer",):
 
         """
         the transformer implementation using the pytorch lib
@@ -144,8 +146,8 @@ class TransformerModel(nn.Module):
         :param dropout:
         """
         super(TransformerModel, self).__init__()
-        self.model_type = 'TransformerModel'
-        assert model_name == self.model_type
+        self.this_model_name = 'TransformerModel'
+        assert model_name == self.this_model_name
 
         self.pretrain_mode = pretrain_mode
         self.aux_loss = aux_loss
@@ -154,6 +156,7 @@ class TransformerModel(nn.Module):
         self.embed_dim = embed_dim
         self.hidden_dim = hidden_dim
 
+        # self.embedding = PositionalEncodingEmbedding(ntoken, embd_dim)
         if pretrain_mode:
             self.embedding = nn.Embedding(ntoken, embed_dim, padding_idx=0)
         else:
@@ -164,19 +167,20 @@ class TransformerModel(nn.Module):
             else:
                 self.embedding = nn.Embedding(ntoken, embed_dim - 64, padding_idx=0)
                 self.feature_embedding = nn.Linear(1, 64)
+
         self.use_prosit = use_prosit
         self.layer_norm = LayerNorm(embed_dim)
         self.padding_idx = 0
 
-        self.transformer_encoder = None
-        self.pos_encoder = None
         self.num_encd_layer = num_encd_layer
         if num_encd_layer is not None:
             self.pos_encoder = PositionalEncoding(embed_dim, pos_encode_dropout, max_len=max_len)
             encoder_layers = TransformerEncoderLayer(embed_dim, num_attention_head, hidden_dim,
                                                      attention_dropout=attention_dropout, hidden_dropout_prob=hidden_dropout_prob)
-
             self.transformer_encoder = TransformerEncoder(encoder_layers, num_encd_layer)
+        else:
+            self.transformer_encoder = None
+            self.pos_encoder = None
 
         self.init_weights()
         # ipdb.set_trace()
@@ -202,7 +206,7 @@ class TransformerModel(nn.Module):
             )
         self.pretrain_decoder = nn.Sequential(
             nn.LeakyReLU(),
-            nn.Linear(self.outdim, 8),  # 8 is 1,2,3,4 with their modi
+            nn.Linear(self.outdim, 8),  # 8 is 1,2,3,4 with their mod
         )
 
     def init_weights(self):

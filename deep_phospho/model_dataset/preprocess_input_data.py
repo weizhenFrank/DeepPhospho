@@ -17,30 +17,43 @@ ENDING_CHAR = '$'
 MASK_CHAR = "-"
 CLS_TOKEN = "&"
 
-ALPHABET = {
-    PADDING_CHAR: 0,
-    "A": 1,
-    "C": 2,
-    "D": 3,
-    "E": 4,
-    "F": 5,
-    "G": 6,
-    "H": 7,
-    "I": 8,
-    "K": 9,
-    "L": 10,
-    "M": 11,
-    "N": 12,
-    "P": 13,
-    "Q": 14,
-    "R": 15,
-    "S": 16,
-    "T": 17,
-    "V": 18,
-    "W": 19,
-    "Y": 20,
-    "1": 21,
-}
+ALPHABET = [
+    PADDING_CHAR,
+    ENDING_CHAR,
+    MASK_CHAR,
+    CLS_TOKEN,
+    '*',
+    '1',
+    '2',
+    '3',
+    '4',
+    '@',
+    'A',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H',
+    'I',
+    'K',
+    'L',
+    'M',
+    'N',
+    'P',
+    'Q',
+    'R',
+    'S',
+    'T',
+    'V',
+    'W',
+    'Y',
+    'U',
+    'X',
+]
+
+CharToIdx = {char: idx for idx, char in enumerate(ALPHABET)}
+IdxToChar = {idx: char for idx, char in enumerate(ALPHABET)}
 
 GBSC = {
     PADDING_CHAR: 0,
@@ -79,43 +92,13 @@ class Dictionary(object):
     """
     from the characters to the integer idx
     """
-
-    def __init__(self, path):
+    def __init__(self):
         logger = logging.getLogger("IonIntensity")
 
-        self.word2idx = {}
-        self.idx2word = []
-        # for padding char:
-        self.add_word(PADDING_CHAR)
-        self.add_word(ENDING_CHAR)
-        self.add_word(MASK_CHAR)
-        self.add_word(CLS_TOKEN)
+        self.word2idx = CharToIdx
+        self.idx2word = IdxToChar
 
-        self.build(path)
-
-        # some unknown items..
-        self.add_word("U")
-        self.add_word("X")
-
-        # print out the dictionary to see:
-        # print(self.__str__())
         logger.info(self.__str__())
-
-    def add_word(self, word):
-        if word not in self.word2idx:
-            self.idx2word.append(word)
-            self.word2idx[word] = len(self.idx2word) - 1
-        return self.word2idx[word]
-
-    def build(self, path):
-        assert os.path.exists(path)
-        # construct the dictionary:
-        # load all data characters and unique them for index
-        print("building up Dictionary")
-        seq_data = pd.read_json(path)
-        pep = [i.split(".")[0] for i in seq_data.columns.values]
-        for aa in sorted(set(''.join(pep))):
-            self.add_word(aa)
 
     def __len__(self):
         return len(self.idx2word)
@@ -323,6 +306,7 @@ class RTdata(object):
         assert os.path.exists(path)
         if dictionary is None:
             dictionary = Dictionary(path)
+
         logger = logging.getLogger("RT")
         self.dictionary = dictionary
         _, file_extension = os.path.splitext(path)
@@ -413,74 +397,4 @@ class RTdata(object):
             with open(path + '.pkl', 'wb') as f:
                 pickle.dump({'X1': self.X1, 'y': self.y}, f)
         logger.info(f"Reading Files...Done! {path}")
-
-
-class Detectdata(object):
-
-    def __init__(self, data_cfg, path=None, dictionary=None, ):
-        if path is None:
-            path = os.path.join(data_cfg['data_path'], data_cfg['data_fn'])
-        assert os.path.exists(path)
-        if dictionary is None:
-            dictionary = Dictionary(path)
-        logger = logging.getLogger("Detect")
-        self.dictionary = dictionary
-        _, file_extension = os.path.splitext(path)
-        logger.info(f"Reading Files...{path}")
-        if file_extension == '.csv':
-            seq_data = pd.read_csv(path)
-        else:
-            seq_data = pd.read_csv(path, sep="\t")
-
-        SEQUENCE_FIELD_NAME = data_cfg['SEQUENCE_FIELD_NAME']
-        Detect = data_cfg['Detect']
-        self.MAX_SEQ_LEN = cfg.DATA_PROCESS_CFG['MAX_SEQ_LEN']
-        N_seq = len(seq_data[SEQUENCE_FIELD_NAME])
-        self.number_seq = N_seq
-        self.N_aa = len(dictionary)
-        data_size = N_seq
-        if cfg.TRAINING_HYPER_PARAM['DEBUG']:
-            data_size = 1000
-
-        # load from the cache
-        if os.path.exists(path + '.pkl'):
-            if data_cfg['refresh_cache']:
-                os.remove(path + '.pkl')
-            elif cfg.Use_cache:
-                with open(path + '.pkl', 'rb') as f:
-                    pre_load_data = pickle.load(f)
-
-                self.X1 = pre_load_data["X1"][:data_size]
-                self.y = pre_load_data['y'][:data_size]
-                # ipdb.set_trace()
-                # if cfg.TRAINING_HYPER_PARAM['add_hydro']:
-                #     self.X2 = pre_load_data["X2"][:data_size]
-                # if cfg.TRAINING_HYPER_PARAM['add_rc']:
-                #     self.X3 = pre_load_data["X3"][:data_size]
-                return
-        self.X1 = np.zeros((data_size, self.MAX_SEQ_LEN + 1))
-        self.y = np.zeros(data_size)
-
-        for seq_index, seq in tqdm(enumerate(seq_data[SEQUENCE_FIELD_NAME]), total=len(seq_data[SEQUENCE_FIELD_NAME])):
-            if cfg.TRAINING_HYPER_PARAM['DEBUG']:
-                if seq_index >= data_size:
-                    print("debug on, break")
-                    break
-
-            wrapped_seq = seq + ENDING_CHAR
-
-            try:
-                self.X1[seq_index, :len(wrapped_seq)] = [self.dictionary.word2idx[aa] for aa in wrapped_seq]
-            except KeyError:
-                ipdb.set_trace()
-            if 'To_Predict' in data_cfg and data_cfg['To_Predict']:
-                continue
-            else:
-                self.y[seq_index] = seq_data.iloc[seq_index][Detect]
-
-        if not cfg.TRAINING_HYPER_PARAM['DEBUG'] and cfg.Save_cache:
-            with open(path + '.pkl', 'wb') as f:
-                pickle.dump({'X1': self.X1, 'y': self.y}, f)
-        logger.info(f'>> Read Detect dataset done; source:{path}')
-
 

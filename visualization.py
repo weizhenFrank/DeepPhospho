@@ -14,12 +14,12 @@ from tqdm import tqdm
 from deep_phospho.configs import config_main as cfg
 from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
 
-from deep_phospho.model_utils.model_param_load_original import load_param_from_file, load_average_model
+from deep_phospho.model_utils.param_config_load import load_param_from_file, load_average_model
 from deep_phospho.model_utils.logger import setup_logger
 from deep_phospho.model_utils.loss_func import RMSELoss
 
 from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
-from deep_phospho.models.EnsembelModel import  LSTMTransformer, LSTMTransformerEnsembleModel
+from deep_phospho.models.EnsembelModel import  LSTMTransformer, LSTMTransformerEnsemble
 
 
 from deep_phospho.model_utils.utils_functions import Delta_t95, Pearson, copy_files
@@ -137,7 +137,7 @@ else:
             Model = load_param_from_file(Model, path, partially=True, logger_name='RT')
             models.append(Model)
 
-        model = LSTMTransformerEnsembleModel(models, RT_mode=cfg.Mode == "RT" or cfg.Mode == "Detect")
+        model = LSTMTransformerEnsemble(models, RT_mode=cfg.Mode == "RT" or cfg.Mode == "Detect")
 
     else:
         raise RuntimeError("No valid model name given.")

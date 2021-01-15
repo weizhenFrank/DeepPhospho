@@ -36,8 +36,15 @@ torch.backends.cudnn.deterministic = True  # To test dilated conv, the result sh
 torch.autograd.set_detect_anomaly(True)
 
 
+class RTModel(object):
+    def __init__(self, config):
+        self.args = self.get_args()
+
+    def get_args(self):
+        return get_parser('RT prediction')
+
+
 def main():
-    args = get_parser('RT prediction')
     if cfg.TRAINING_HYPER_PARAM['resume']:
         resume = 'RESUME'
     else:
@@ -67,7 +74,7 @@ def main():
     tf_writer_train = TFBoardWriter(output_dir, type='train')
     tf_writer_test = TFBoardWriter(output_dir, type="val")
     logger = setup_logger("RT", output_dir)
-    dictionary = Dictionary(path="../data/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
+    dictionary = Dictionary()
 
     print("Preparing dataset")
     RTtrain = RTdata(cfg.TRAIN_DATA_CFG,
@@ -77,6 +84,7 @@ def main():
     if args.use_holdout:
         RTholdout = RTdata(cfg.HOLDOUT_DATA_CFG,
                            dictionary=dictionary)
+
         holdout_dataset = IonDataset(RTholdout)
         holdout_dataloader = DataLoader(
             dataset=holdout_dataset,

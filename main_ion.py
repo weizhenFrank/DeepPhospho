@@ -21,7 +21,7 @@ from deep_phospho.model_utils.logger import MetricLogger, setup_logger, TFBoardW
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
 from deep_phospho.models.EnsembelModel import LSTMTransformer
 from deep_phospho.model_utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
-from deep_phospho.model_utils.model_param_load_original import save_checkpoint, load_param_from_file
+from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file
 
 logging.basicConfig(level=logging.INFO)
 SEED = 666

@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from deep_phospho.model_utils.logger import setup_logger
 from deep_phospho.models.ion_model import StackedLSTM  # Use the LSTMTransformer in EnsembleModel.py
 from deep_phospho.models.EnsembelModel import LSTMTransformer
-from deep_phospho.model_utils.model_param_load_original import load_param_from_file
+from deep_phospho.model_utils.param_config_load import load_param_from_file
 from deep_phospho.model_utils.ion_eval import SA, Pearson
 from tqdm import tqdm
 import pandas as pd

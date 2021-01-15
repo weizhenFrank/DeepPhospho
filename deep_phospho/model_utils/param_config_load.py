@@ -7,6 +7,15 @@ import torch
 from glob import glob
 import copy
 
+import sys
+
+
+def load_config(config_dir):
+    if os.path.isfile(config_dir):
+        config_dir = os.path.dirname(config_dir)
+    sys.path.insert(-1, config_dir)
+    
+
 
 def load_param_from_file(model, f: str, partially=False, module_namelist=None, logger_name='IonIntensity'):
     logger = logging.getLogger(logger_name)
@@ -230,14 +239,3 @@ def load_average_model(model, saved_models_path, iterations: int,):
 
     return model
 
-
-
-
-
-
-
-
-
-    # models[]
-    # for weight_path in to_load_models:
-    #     state_dict = torch.load(weight_path, map_location=torch.device("cpu"), pickle_module=dill)['model']
