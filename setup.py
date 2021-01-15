@@ -11,7 +11,7 @@ from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
 
-from deepphospho import __info__
+from deep_phospho import __info__
 
 # Package meta-data.
 NAME = __info__.__package_name__

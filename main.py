@@ -13,18 +13,18 @@ import termcolor
 import torch
 from torch.utils.data import DataLoader
 
-from deepphospho.configs import config_main as cfg
+from deep_phospho.configs import config_main as cfg
 
-from deepphospho.model_dataset.preprocess_input_data import RTdata, Dictionary
-from deepphospho.model_dataset.dataset import IonDataset, collate_fn
+from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
+from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
 
-from deepphospho.models.EnsembelModel import LSTMTransformer
+from deep_phospho.models.EnsembelModel import LSTMTransformer
 
-from deepphospho.model_utils.rt_eval import eval
-from deepphospho.model_utils.logger import MetricLogger, setup_logger, save_config, TFBoardWriter
-from deepphospho.model_utils.lr_scheduler import make_lr_scheduler
-from deepphospho.model_utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
-from deepphospho.model_utils.model_param_load_original import save_checkpoint, load_param_from_file
+from deep_phospho.model_utils.rt_eval import eval
+from deep_phospho.model_utils.logger import MetricLogger, setup_logger, save_config, TFBoardWriter
+from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
+from deep_phospho.model_utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
+from deep_phospho.model_utils.model_param_load_original import save_checkpoint, load_param_from_file
 
 logging.basicConfig(level=logging.INFO)
 SEED = 666
@@ -131,10 +131,10 @@ def main():
 
     logger.info(str(model))
     logger.info("model parameters statuts: \n%s" % show_params_status(model))
-    copy_files("deepphospho/models/ion_model.py", output_dir)
-    copy_files("deepphospho/models/EnsembelModel.py", output_dir)
+    copy_files("deep_phospho/models/ion_model.py", output_dir)
+    copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
     copy_files("main.py", output_dir)
-    copy_files("deepphospho/configs", output_dir)
+    copy_files("deep_phospho/configs", output_dir)
 
     if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") is not None:
         if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") != '':

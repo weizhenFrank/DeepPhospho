@@ -11,23 +11,23 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from deepphospho.configs import config_main as cfg
-from deepphospho.model_dataset.preprocess_input_data import RTdata, Dictionary
+from deep_phospho.configs import config_main as cfg
+from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
 
-from deepphospho.model_utils.model_param_load_original import load_param_from_file, load_average_model
-from deepphospho.model_utils.logger import setup_logger
-from deepphospho.model_utils.loss_func import RMSELoss
+from deep_phospho.model_utils.model_param_load_original import load_param_from_file, load_average_model
+from deep_phospho.model_utils.logger import setup_logger
+from deep_phospho.model_utils.loss_func import RMSELoss
 
-from deepphospho.model_dataset.dataset import IonDataset, collate_fn
-from deepphospho.models.EnsembelModel import  LSTMTransformer, LSTMTransformerEnsembleModel
+from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
+from deep_phospho.models.EnsembelModel import  LSTMTransformer, LSTMTransformerEnsembleModel
 
 
-from deepphospho.model_utils.utils_functions import Delta_t95, Pearson, copy_files
+from deep_phospho.model_utils.utils_functions import Delta_t95, Pearson, copy_files
 import random
 import sys
 
-sys.path.insert(0, "deepphospho/bioplotkit")
-sys.path.insert(0, "deepphospho/mskit")
+sys.path.insert(0, "deep_phospho/bioplotkit")
+sys.path.insert(0, "deep_phospho/mskit")
 
 import bioplotkit as bpk
 import ipdb
@@ -154,10 +154,10 @@ if not cfg.MODEL_CFG['model_name'] == "LSTMTransformerEnsemble":
                                      load_model_path,
                                      partially=False, logger_name='RT')
 
-copy_files("deepphospho/models/ion_model.py", output_dir)
-copy_files("deepphospho/models/EnsembelModel.py", output_dir)
+copy_files("deep_phospho/models/ion_model.py", output_dir)
+copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
 copy_files("visualization.py", output_dir)
-copy_files("deepphospho/configs", output_dir)
+copy_files("deep_phospho/configs", output_dir)
 
 if torch.cuda.device_count() > 1:
     print("Let's use", torch.cuda.device_count(), "GPUs!")
