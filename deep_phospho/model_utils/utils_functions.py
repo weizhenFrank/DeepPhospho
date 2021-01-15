@@ -129,7 +129,7 @@ def get_pkl_path(path):
     return pkl_path
 
 
-def get_loss():
+def get_loss_func():
     if cfg.TRAINING_HYPER_PARAM['Bert_pretrain']:
         loss_func = MaskedLanguageLoss(only_acc_masked_token=cfg.TRAINING_HYPER_PARAM['accumulate_mask_only'])
     elif 'two_stage' in cfg.TRAINING_HYPER_PARAM and cfg.TRAINING_HYPER_PARAM['two_stage']:
@@ -213,7 +213,6 @@ def show_params_status(model):
 def get_parser(description):
 
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--pretrain_param', type=str, default=None, help="the pretrained weights for current model")
     parser.add_argument('--use_holdout', type=bool, default=False, help="whether to use holdout dataset")
     parser.add_argument('--exp_name', type=str, default='', help="expriments name for output dir")
     parser.add_argument('--GPU', type=str, default=None, help="index of GPU")

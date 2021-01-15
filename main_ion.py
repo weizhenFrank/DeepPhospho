@@ -1,27 +1,40 @@
-import copy
-import datetime
-import logging
 import os
-import random
 import time
+import datetime
+import copy
+import logging
+import random
 
-# import ipdb
+import dill
 import ipdb
 import numpy as np
 import termcolor
-import torch
-# import ipdb
-from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
-from deep_phospho.configs import config_main as cfg
-from deep_phospho.model_dataset.dataset import IonDataset, collate_fn, RandomMaskingDataset
-from deep_phospho.model_utils.ion_eval import eval
-from torch.utils.data import DataLoader
-from deep_phospho.model_utils.logger import MetricLogger, setup_logger, TFBoardWriter
 
-from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
+import torch
+from torch.utils.data import DataLoader
+
 from deep_phospho.models.EnsembelModel import LSTMTransformer
-from deep_phospho.model_utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
-from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file
+
+from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
+from deep_phospho.model_dataset.dataset import IonDataset, collate_fn, RandomMaskingDataset
+
+from deep_phospho.model_utils.ion_eval import eval
+from deep_phospho.model_utils.logger import MetricLogger, setup_logger, TFBoardWriter
+from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
+from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status, get_parser
+from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config
+
+
+# ---------------- User defined space Start --------------------
+
+# Define config path as the model work dir
+ConfigPath = r''
+WorkFolder = os.path.dirname(ConfigPath)
+
+cfg = load_config(ConfigPath)
+
+# ---------------- User defined space End --------------------
+
 
 logging.basicConfig(level=logging.INFO)
 SEED = 666
@@ -30,66 +43,64 @@ random.seed(SEED)
 np.random.seed(SEED)
 torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
-os.environ['CUDA_VISIBLE_DEVICES'] = cfg.TRAINING_HYPER_PARAM['GPU_INDEX']
 
 
 def main():
-    args = get_parser('IonIntensity prediction')
-    comment = f'ion_inten-{cfg.data_name}-{cfg.MODEL_CFG["model_name"]}-{args.exp_name}' \
-              f'-remove_ac_pep{cfg.TRAINING_HYPER_PARAM["remove_ac_pep"]}' \
-              f'-add_phos_principle{cfg.TRAINING_HYPER_PARAM["add_phos_principle"]}' \
-              f'-LossType{cfg.TRAINING_HYPER_PARAM["loss_func"]}' \
-              f'-use_holdout{args.use_holdout}'
+    # from deep_phospho.configs import ion_inten_config as cfg
+    args = get_parser('Ion intne model')
 
-    now = datetime.datetime.now()
-    time_str = now.strftime("%Y_%m_%d_%H_%M_%S")
-    instance_name = f'{comment}-{time_str}'
-    output_dir = os.path.join('../result/ion_inten/', instance_name)
+    info = f'ion_inten-{cfg.Intensity_DATA_CFG["DataName"]}-{cfg.MODEL_CFG["model_name"]}-{args.exp_name}' \
+           f'-remove_ac_pep{cfg.TRAINING_HYPER_PARAM["remove_ac_pep"]}' \
+           f'-add_phos_principle{cfg.TRAINING_HYPER_PARAM["add_phos_principle"]}' \
+           f'-LossType{cfg.TRAINING_HYPER_PARAM["loss_func"]}' \
+           f'-use_holdout{args.use_holdout}'
+
+    init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
+    instance_name = f'{init_time}-{info}'
+
+    output_dir = os.path.join(WorkFolder, instance_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    if args.pretrain_param is not None:
-        cfg.TRAINING_HYPER_PARAM['pretrain_param'] = args.pretrain_param
 
-    if args.GPU is not None:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.GPU
+    logger = setup_logger("IonInten", output_dir)
+
+    if cfg.TRAINING_HYPER_PARAM['GPU_INDEX']:
+        device = torch.device(f'cuda:{cfg.TRAINING_HYPER_PARAM["GPU_INDEX"]}')
+    elif torch.cuda.is_available():
+        device = torch.device('cuda:0')
+    else:
+        device = torch.device('cpu')
 
     tf_writer_train = TFBoardWriter(output_dir, type='train')
     tf_writer_test = TFBoardWriter(output_dir, type="val")
     tf_writer_holdout = TFBoardWriter(output_dir, type='test')
 
-    logger = setup_logger("IonIntensity", output_dir)
-
     print("Preparing dataset")
+    dictionary = Dictionary()
 
-    dictionary = Dictionary(path="../data/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
+    ion_train_data = IonData(cfg.Intensity_DATA_CFG['Train'], dictionary=dictionary)
+    ion_test_data = IonData(cfg.Intensity_DATA_CFG['Test'], dictionary=dictionary)
+    ion_holdout_data = IonData(cfg.Intensity_DATA_CFG['Holdout'], dictionary=dictionary)
 
-    Iontrain = IonData(cfg.TRAIN_DATA_CFG, dictionary=dictionary)
-
-    Iontest = IonData(cfg.TEST_DATA_CFG, dictionary=dictionary)
-
-    Ionholdout = IonData(cfg.HOLDOUT_DATA_CFG, dictionary=dictionary)
-
-    if cfg.data_name != 'Prosit':
+    if cfg.Intensity_DATA_CFG['DataName'] != 'Prosit':
         if cfg.TRAINING_HYPER_PARAM['Bert_pretrain']:
-
-            train_dataset = RandomMaskingDataset(Iontrain,
+            train_dataset = RandomMaskingDataset(ion_train_data,
                                                  de_mod=True,
                                                  mask_modifier=True,
-                                                 mask_ratio=cfg.DATA_PROCESS_CFG['mask_ratio'])
-            test_dataset = RandomMaskingDataset(Iontest,
+                                                 mask_ratio=cfg.Intensity_DATA_PREPROCESS_CFG['mask_ratio'])
+            test_dataset = RandomMaskingDataset(ion_test_data,
                                                 de_mod=True,
                                                 mask_modifier=True,
-                                                mask_ratio=cfg.DATA_PROCESS_CFG['mask_ratio'])
-            holdout_dataset = RandomMaskingDataset(Ionholdout,
+                                                mask_ratio=cfg.Intensity_DATA_PREPROCESS_CFG['mask_ratio'])
+            holdout_dataset = RandomMaskingDataset(ion_holdout_data,
                                                    de_mod=True,
                                                    mask_modifier=True,
-                                                   mask_ratio=cfg.DATA_PROCESS_CFG['mask_ratio'])
+                                                   mask_ratio=cfg.Intensity_DATA_PREPROCESS_CFG['mask_ratio'])
 
         else:
-
-            train_dataset = IonDataset(Iontrain)
-            test_dataset = IonDataset(Iontest)
-            holdout_dataset = IonDataset(Ionholdout)
+            train_dataset = IonDataset(ion_train_data)
+            test_dataset = IonDataset(ion_test_data)
+            holdout_dataset = IonDataset(ion_holdout_data)
 
         train_dataloader = DataLoader(dataset=train_dataset,
                                       batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
@@ -118,13 +129,13 @@ def main():
 
     else:
 
-        train_dataset = IonDataset(Iontrain)
-        holdout_dataset = IonDataset(Ionholdout)
-        index_split = list(range(Iontrain.data_size))
+        train_dataset = IonDataset(ion_train_data)
+        holdout_dataset = IonDataset(ion_holdout_data)
+        index_split = list(range(ion_train_data.data_size))
         Train_ratio = 72
         Test_ratio = 18
-        train_index = index_split[:int((Train_ratio / (Train_ratio + Test_ratio)) * Iontrain.data_size)]
-        test_index = index_split[int((Train_ratio / (Train_ratio + Test_ratio)) * Iontrain.data_size):]
+        train_index = index_split[:int((Train_ratio / (Train_ratio + Test_ratio)) * ion_train_data.data_size)]
+        test_index = index_split[int((Train_ratio / (Train_ratio + Test_ratio)) * ion_train_data.data_size):]
         train_dataloader = DataLoader(dataset=train_dataset,
                                       batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                       sampler=torch.utils.data.SubsetRandomSampler(train_index),
@@ -144,9 +155,9 @@ def main():
             collate_fn=collate_fn
         )
     if cfg.TRAINING_HYPER_PARAM['two_stage']:
-        loss_func, loss_func_cls = get_loss()
+        loss_func, loss_func_cls = get_loss_func()
     else:
-        loss_func = get_loss()
+        loss_func = get_loss_func()
 
     # loss_func_eval = copy.deepcopy(loss_func)
 
@@ -156,11 +167,11 @@ def main():
     if cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
         cfg_to_load = copy.deepcopy(cfg.MODEL_CFG)
         model = LSTMTransformer(
-            # ntoken=Iontrain.N_aa,
-            RT_mode=cfg.Mode == "RT" or cfg.Mode == "Detect",
-            ntoken=31,
+            # ntoken=ion_train_data.N_aa,
+            RT_mode=False,
+            ntoken=ion_train_data.N_aa,
             # for prosit, it has 0-21
-            use_prosit=cfg.data_name == 'Prosit',
+            use_prosit=(cfg.Intensity_DATA_CFG['DataName'] == 'Prosit'),
             pdeep2mode=cfg.TRAINING_HYPER_PARAM['pdeep2mode'],
             two_stage=cfg.TRAINING_HYPER_PARAM['two_stage'],
             **cfg_to_load,
@@ -170,23 +181,21 @@ def main():
 
     logger.info(str(model))
     logger.info("model parameters statuts: \n%s" % show_params_status(model))
+
     copy_files("deep_phospho/models/ion_model.py", output_dir)
     copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
     copy_files("main_ion.py", output_dir)
     copy_files("deep_phospho/configs", output_dir)
 
-    if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") is not None:
-        if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") != '':
-            load_param_from_file(model,
-                                 cfg.TRAINING_HYPER_PARAM['pretrain_param'],
-                                 partially=True,
-                                 module_namelist=cfg.TRAINING_HYPER_PARAM['module_namelist'])
+    pretrain_param = cfg.TRAINING_HYPER_PARAM.get("pretrain_param")
+    if pretrain_param is not None and pretrain_param != '':
+        load_param_from_file(model,
+                             pretrain_param,
+                             partially=True,
+                             module_namelist=cfg.TRAINING_HYPER_PARAM['module_namelist'],
+                             logger_name='IonInten')
 
-    if torch.cuda.device_count() > 1:
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
-        model = torch.nn.DataParallel(model)
-
-    model = model.cuda()
+    model = model.to(device)
     model.train()
 
     optimizer = torch.optim.Adam((p for p in model.parameters() if p.requires_grad),
@@ -231,9 +240,9 @@ def main():
                 seq_x = inputs[0]
                 x_charge = inputs[1]
                 x_nce = inputs[2]
-                seq_x = seq_x.cuda()
-                x_charge = x_charge.cuda()
-                x_nce = x_nce.cuda()
+                seq_x = seq_x.to(device)
+                x_charge = x_charge.to(device)
+                x_nce = x_nce.to(device)
                 if cfg.TRAINING_HYPER_PARAM['inter_layer_prediction']:
                     pred_y, inter_out = model(x1=seq_x, x2=x_charge, x3=x_nce)
                 else:
@@ -244,9 +253,9 @@ def main():
             elif len(inputs) == 2:
                 seq_x = inputs[0]
                 x_charge = inputs[1]
-                seq_x = seq_x.cuda()
+                seq_x = seq_x.to(device)
                 # print('-' * 10, seq_x)
-                x_charge = x_charge.cuda()
+                x_charge = x_charge.to(device)
                 if cfg.TRAINING_HYPER_PARAM['inter_layer_prediction']:
                     pred_y, inter_out = model(x1=seq_x, x2=x_charge)
                 else:
@@ -256,11 +265,11 @@ def main():
                         pred_y = model(x1=seq_x, x2=x_charge)
             else:
                 seq_x = inputs
-                seq_x = seq_x.cuda()
+                seq_x = seq_x.to(device)
                 # print('-' * 10, seq_x)
                 pred_y = model(x1=seq_x)
             # print('-'*10, x_hydro)
-            y = y.cuda()
+            y = y.to(device)
             # pred_y[torch.where(y == -1)] = -1
             if cfg.TRAINING_HYPER_PARAM['inter_layer_prediction']:
                 aux_loss = 0
@@ -281,8 +290,8 @@ def main():
                     y_no_priori = copy.deepcopy(y)
                     y_no_priori[y == -1] = 0  # padding
                     y_no_priori[y == -2] = 0  # phos
-                    y_cls = y_cls.cuda()
-                    y_no_priori = y_no_priori.cuda()
+                    y_cls = y_cls.to(device)
+                    y_no_priori = y_no_priori.to(device)
                     # ipdb.set_trace()
                     loss_cls = loss_func_cls(pred_y_cls[torch.where(y_cls != -1)], y_cls[torch.where(y_cls != -1)])
                     gate_y = torch.ones_like(y)
@@ -324,7 +333,7 @@ def main():
             elapsed_time = str(datetime.timedelta(seconds=int(end - start_training_time)))
 
             if iteration % 300 == 0:
-                model = model.cuda()
+                model = model.to(device)
                 logger.info(termcolor.colored(meters.delimiter.join(
                     [
                         "\ninstance id: {instance_name}\n",
@@ -368,7 +377,7 @@ def main():
                         best_test_res, iteration_best, best_model = evaluation(model, logger,
                                                                                tf_writer_train,
                                                                                tf_writer_test,
-                                                                               get_loss(),
+                                                                               get_loss_func(),
                                                                                test_dataloader,
                                                                                train_val_dataloader,
                                                                                iteration,
@@ -382,7 +391,7 @@ def main():
                         best_test_res, iteration_best, best_model = evaluation(model, logger,
                                                                                tf_writer_train,
                                                                                tf_writer_test,
-                                                                               get_loss(),
+                                                                               get_loss_func(),
                                                                                test_dataloader,
                                                                                train_val_dataloader,
                                                                                iteration,
@@ -395,7 +404,7 @@ def main():
 
                 save_checkpoint(model, optimizer, scheduler, output_dir, iteration)
                 model.train()
-                model = model.cuda()
+                model = model.to(device)
                 torch.cuda.empty_cache()
 
     save_checkpoint(model, optimizer, scheduler, output_dir, "last_epoch")
@@ -405,9 +414,9 @@ def main():
 
     if args.use_holdout:
         model = best_model
-        model.cuda()
+        model.to(device)
         evaluation(model, logger, tf_writer_train, tf_writer_test,
-                   get_loss(), test_dataloader, train_val_dataloader,
+                   get_loss_func(), test_dataloader, train_val_dataloader,
                    iteration=0, best_test_res=None, iteration_best=None,
                    best_model=None, holdout_dataloader=holdout_dataloader,
                    tf_writer_holdout=tf_writer_holdout,

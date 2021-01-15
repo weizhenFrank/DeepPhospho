@@ -18,7 +18,7 @@ from deep_phospho.model_utils.param_config_load import load_param_from_file
 from deep_phospho.model_utils.ion_eval import SA, Pearson
 from tqdm import tqdm
 import pandas as pd
-from main import show_params_status
+from deep_phospho.model_utils.utils_functions import show_params_status
 import json
 from deep_phospho.model_utils.utils_functions import give_name_ion
 

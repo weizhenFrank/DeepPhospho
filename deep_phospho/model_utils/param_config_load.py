@@ -10,11 +10,17 @@ import copy
 import sys
 
 
-def load_config(config_dir):
-    if os.path.isfile(config_dir):
-        config_dir = os.path.dirname(config_dir)
+def load_config(config_path):
+    config_dir = os.path.dirname(config_path)
+    config_file = os.path.basename(config_path)
+    config_file_name = os.path.splitext(os.path.basename(config_path))[0]
     sys.path.insert(-1, config_dir)
-    
+    cfg = {}
+    try:
+        exec(f'import {config_file_name} as cfg', {}, cfg)
+    except ModuleNotFoundError:
+        raise FileNotFoundError(f'Not find the input config file {config_file} with basename {config_file_name} in {config_dir}')
+    return cfg['cfg']
 
 
 def load_param_from_file(model, f: str, partially=False, module_namelist=None, logger_name='IonIntensity'):

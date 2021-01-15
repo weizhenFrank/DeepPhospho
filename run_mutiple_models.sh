@@ -13,12 +13,12 @@ then
 
 if [ $gpu_idx -eq $1 ]
 then
-  python main.py --pretrain_param $j --GPU $run_gpu_idx --ad_hoc $i --exp_name $i"_"$3  &
+  python main_rt.py --pretrain_param $j --GPU $run_gpu_idx --ad_hoc $i --exp_name $i"_"$3  &
 else
   tmux split-window -h "python main.py --pretrain_param $j --GPU $run_gpu_idx --ad_hoc $i --exp_name $i"_"$3  & ; read"
 fi
 
-#  echo "python main.py --pretrain_param $j --GPU $run_gpu_idx --ad_hoc $i --exp_name $i"_"$3 "
+#  echo "python main_rt.py --pretrain_param $j --GPU $run_gpu_idx --ad_hoc $i --exp_name $i"_"$3 "
 
   gpu_idx=$(expr $gpu_idx + 1)
 else

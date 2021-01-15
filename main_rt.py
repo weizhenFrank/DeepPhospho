@@ -13,8 +13,6 @@ import termcolor
 import torch
 from torch.utils.data import DataLoader
 
-from deep_phospho.configs import config_main as cfg
-
 from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
 from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
 
@@ -23,8 +21,20 @@ from deep_phospho.models.EnsembelModel import LSTMTransformer
 from deep_phospho.model_utils.rt_eval import eval
 from deep_phospho.model_utils.logger import MetricLogger, setup_logger, save_config, TFBoardWriter
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
-from deep_phospho.model_utils.utils_functions import copy_files, get_loss, show_params_status, get_parser
-from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file
+from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status, get_parser
+from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config
+
+
+# ---------------- User defined space Start --------------------
+
+# Define config path as the model work dir
+ConfigPath = r''
+WorkFolder = os.path.dirname(ConfigPath)
+
+cfg = load_config(ConfigPath)
+
+# ---------------- User defined space End --------------------
+
 
 logging.basicConfig(level=logging.INFO)
 SEED = 666
@@ -37,47 +47,47 @@ torch.autograd.set_detect_anomaly(True)
 
 
 def main():
-    args = get_parser('RT prediction')
-    if cfg.TRAINING_HYPER_PARAM['resume']:
-        resume = 'RESUME'
-    else:
-        resume = ''
-    comment = "%s-%s-%s%s" % (
-        cfg.data_name,
-        cfg.MODEL_CFG['model_name'],
-        args.exp_name, resume)
+    # from deep_phospho.configs import rt_config as cfg
+    args = get_parser('RT model')
 
-    now = datetime.datetime.now()
-    time_str = now.strftime("%Y-%m-%d_%H-%M-%S")
-    instance_name = f'{time_str}_{comment}'
-    output_dir = os.path.join('../result/RT', instance_name)
+    resume = 'RESUME' if cfg.TRAINING_HYPER_PARAM['resume'] else ''
+    info = "{}-{}-{}{}".format(
+        cfg.RT_DATA_CFG['DataName'],
+        cfg.UsedModelCFG['model_name'],
+        args.exp_name,
+        resume)
+
+    init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
+    instance_name = f'{init_time}-{info}'
+
+    # output_dir = os.path.join('../result/RT', instance_name)
+    output_dir = os.path.join(WorkFolder, instance_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    if args.pretrain_param is not None:
-        cfg.TRAINING_HYPER_PARAM['pretrain_param'] = args.pretrain_param
+
+    logger = setup_logger("RT", output_dir)
+
     if args.ad_hoc is not None:
-        """
-        Here is ad_hoc
-        """
         cfg.MODEL_CFG['num_encd_layer'] = int(args.ad_hoc)
-    if args.GPU is not None:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.GPU
+
+    if cfg.TRAINING_HYPER_PARAM['GPU_INDEX']:
+        device = torch.device(f'cuda:{cfg.TRAINING_HYPER_PARAM["GPU_INDEX"]}')
+    elif torch.cuda.is_available():
+        device = torch.device('cuda:0')
     else:
-        os.environ['CUDA_VISIBLE_DEVICES'] = cfg.TRAINING_HYPER_PARAM['GPU_INDEX']
+        device = torch.device('cpu')
+
     tf_writer_train = TFBoardWriter(output_dir, type='train')
     tf_writer_test = TFBoardWriter(output_dir, type="val")
-    logger = setup_logger("RT", output_dir)
-    dictionary = Dictionary(path="../data/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
 
     print("Preparing dataset")
-    RTtrain = RTdata(cfg.TRAIN_DATA_CFG,
-                     dictionary=dictionary)
-    RTtest = RTdata(cfg.TEST_DATA_CFG,
-                    dictionary=dictionary)
+    dictionary = Dictionary()
+    rt_train_data = RTdata(cfg.RT_DATA_CFG['Train'], dictionary=dictionary)
+    rt_test_data = RTdata(cfg.RT_DATA_CFG['Test'], dictionary=dictionary)
+
     if args.use_holdout:
-        RTholdout = RTdata(cfg.HOLDOUT_DATA_CFG,
-                           dictionary=dictionary)
-        holdout_dataset = IonDataset(RTholdout)
+        rt_holdout_data = RTdata(cfg.RT_DATA_CFG['Holdout'], dictionary=dictionary)
+        holdout_dataset = IonDataset(rt_holdout_data)
         holdout_dataloader = DataLoader(
             dataset=holdout_dataset,
             batch_size=256,
@@ -87,8 +97,8 @@ def main():
         )
         tf_writer_holdout = TFBoardWriter(output_dir, type='test')
 
-    train_dataset = IonDataset(RTtrain)
-    test_dataset = IonDataset(RTtest)
+    train_dataset = IonDataset(rt_train_data)
+    test_dataset = IonDataset(rt_test_data)
 
     train_dataloader = DataLoader(dataset=train_dataset,
                                   batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
@@ -108,10 +118,11 @@ def main():
                                  num_workers=2,
                                  collate_fn=collate_fn)
 
-    loss_func = get_loss()
-
+    loss_func = get_loss_func()
     loss_func_eval = copy.deepcopy(loss_func)
+
     logger.info(save_config(cfg, save_dir=output_dir))
+
     EPOCH = cfg.TRAINING_HYPER_PARAM['EPOCH']
     LR = cfg.TRAINING_HYPER_PARAM['LR']
 
@@ -120,8 +131,8 @@ def main():
 
         model = LSTMTransformer(
             # ntoken=Iontrain.N_aa,
-            RT_mode=cfg.Mode == "RT" or cfg.Mode == "Detect",
-            ntoken=RTtrain.N_aa,
+            RT_mode=True,
+            ntoken=rt_train_data.N_aa,
             # for prosit, it has 0-21
             **cfg_to_load,
         )
@@ -131,22 +142,20 @@ def main():
 
     logger.info(str(model))
     logger.info("model parameters statuts: \n%s" % show_params_status(model))
+
     copy_files("deep_phospho/models/ion_model.py", output_dir)
     copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
-    copy_files("main.py", output_dir)
+    copy_files("main_rt.py", output_dir)
     copy_files("deep_phospho/configs", output_dir)
 
-    if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") is not None:
-        if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") != '':
-            load_param_from_file(model,
-                                 cfg.TRAINING_HYPER_PARAM['pretrain_param'],
-                                 partially=True,
-                                 module_namelist=None, logger_name='RT')
+    pretrain_param = cfg.TRAINING_HYPER_PARAM.get("pretrain_param")
+    if pretrain_param is not None and pretrain_param != '':
+        load_param_from_file(model,
+                             pretrain_param,
+                             partially=True,
+                             module_namelist=None, logger_name='RT')
 
-    if torch.cuda.device_count() > 1:
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
-        model = torch.nn.DataParallel(model)
-    model = model.cuda()
+    model = model.to(device)
     model.train()
 
     optimizer = torch.optim.Adam((p for p in model.parameters() if p.requires_grad),
@@ -156,7 +165,7 @@ def main():
     scheduler = make_lr_scheduler(optimizer=optimizer, steps=cfg.TRAINING_HYPER_PARAM['LR_STEPS'],
                                   warmup_iters=cfg.TRAINING_HYPER_PARAM['warmup_iters'])
 
-    if cfg.TRAINING_HYPER_PARAM.get("pretrain_param") is not None and cfg.TRAINING_HYPER_PARAM['resume']:
+    if pretrain_param is not None and cfg.TRAINING_HYPER_PARAM['resume']:
         checkpoint = torch.load(cfg.TRAINING_HYPER_PARAM['pretrain_param'], map_location=torch.device("cpu"),
                                 pickle_module=dill)
         ipdb.set_trace()
@@ -165,6 +174,7 @@ def main():
 
     meters = MetricLogger(delimiter="  ", )
     max_iter = EPOCH * len(train_dataloader)
+
     start_iter = 0
     start_training_time = time.time()
     end = time.time()
@@ -193,15 +203,15 @@ def main():
             if isinstance(inputs, tuple):
                 seq_x, x_hydro, x_rc = inputs
 
-                seq_x = seq_x.cuda()
-                x_hydro = x_hydro.cuda()
-                x_rc = x_rc.cuda()
+                seq_x = seq_x.to(device)
+                x_hydro = x_hydro.to(device)
+                x_rc = x_rc.to(device)
                 pred_y = model(x1=seq_x, x2=x_hydro, x3=x_rc).squeeze()
             else:
                 # ipdb.set_trace()
-                inputs = inputs.cuda()
+                inputs = inputs.to(device)
                 pred_y = model(x1=inputs).squeeze()
-            y = y.cuda()
+            y = y.to(device)
             # ipdb.set_trace()
             loss = loss_func(pred_y, y)
 
@@ -221,7 +231,7 @@ def main():
             elapsed_time = str(datetime.timedelta(seconds=int(end - start_training_time)))
 
             if iteration % 300 == 0:
-                model = model.cuda()
+                model = model.to(device)
                 logger.info(termcolor.colored(meters.delimiter.join(
                     [
                         "\ninstance id: {instance_name}\n",
@@ -277,7 +287,7 @@ def main():
 
                 save_checkpoint(model, optimizer, scheduler, output_dir, iteration)
                 model.train()
-                model = model.cuda()
+                model = model.to(device)
                 torch.cuda.empty_cache()
 
     tf_writer_test.write_data(iteration_best, best_test_res, 'eval_metric/Best_delta_t95')
@@ -287,7 +297,7 @@ def main():
 
     if args.use_holdout:
         model = best_model
-        model.cuda()
+        model.to(device)
         evaluation(model, logger, tf_writer_train, tf_writer_test,
                    loss_func_eval, test_dataloader, train_val_dataloader,
                    iteration=0, best_test_res=None, holdout_dataloader=holdout_dataloader,
