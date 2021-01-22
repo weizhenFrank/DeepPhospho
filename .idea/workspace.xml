@@ -14,7 +14,9 @@
   </component>
   <component name="JupyterTrust" id="cec4945d-4719-4b01-9d7a-4aa54b5b20d4" />
   <component name="ProjectId" id="1m5wP0KLrxa2xduOHzPYkdEhjju" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -59,6 +61,9 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
   <component name="WindowStateProjectService">
     <state x="886" y="485" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1611326978049">

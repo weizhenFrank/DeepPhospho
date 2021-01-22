@@ -1,0 +1,41 @@
+\documentclass[final]{cvpr}
+
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\graphicspath{{images/}}
+
+\usepackage[pagebackref=true,breaklinks=true,colorlinks,bookmarks=false]{hyperref}
+
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{Build Virtual Protein Library for Protein Identification by Neural Network}
+
+\author{Weizhen Liu\\
+School of Information Science and Technology\\
+ShanghaiTech University\\
+{\tt\small liuwzh@shanghaitech.edu.cn}}
+
+\maketitle
+
+%%%%%%%%% BODY TEXT
+
+\section{Introduction}
+\input{Intro.tex}
+
+\section{Data}
+\input{Data.tex}
+
+\section{Models}
+\input{model}
+
+%%%%%%%%% BODY TEXT
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
+
+\end{document}
