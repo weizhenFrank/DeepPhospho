@@ -3,24 +3,43 @@ import copy
 import datetime
 import os
 import random
+import json
+from tqdm import tqdm
+
 import numpy as np
-import torch
-# import ipdb
+import pandas as pd
 import matplotlib.pyplot as plt
-from deep_phospho.model_dataset import IonData, Dictionary
-from deep_phospho.configs import config_main as cfg
-from deep_phospho.model_dataset import IonDataset, collate_fn
+
+import ipdb
+
+import torch
 from torch.utils.data import DataLoader
-from deep_phospho.model_utils.logger import setup_logger
+
 from deep_phospho.models.ion_model import StackedLSTM  # Use the LSTMTransformer in EnsembleModel.py
 from deep_phospho.models.EnsembelModel import LSTMTransformer
+
+from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
+from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
+
+from deep_phospho.model_utils.logger import setup_logger
 from deep_phospho.model_utils.param_config_load import load_param_from_file
 from deep_phospho.model_utils.ion_eval import SA, Pearson
-from tqdm import tqdm
-import pandas as pd
 from deep_phospho.model_utils.utils_functions import show_params_status
-import json
 from deep_phospho.model_utils.utils_functions import give_name_ion
+
+
+# ---------------- User defined space Start --------------------
+
+# Define config path as the model work dir
+ConfigPath = r''
+WorkFolder = os.path.dirname(ConfigPath)
+
+cfg = load_config(ConfigPath)
+
+load_model_path = "/p300/projects/IonAndRT/result/ion_inten/AcData/ion_inten-PhosDIA_DIA18-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_29_09_37_41/ckpts/best_model.pth"
+
+# ---------------- User defined space End --------------------
+from deep_phospho.configs import ion_inten_config as cfg
 
 
 def get_parser():
@@ -32,11 +51,12 @@ def get_parser():
 
 
 args = get_parser()
-comment = f'ion_inten-{cfg.data_name}-{cfg.MODEL_CFG["model_name"]}-{args.exp_name}'
-now = datetime.datetime.now()
-time_str = now.strftime("%Y_%m_%d_%H_%M_%S")
-instance_name = f'{comment}-{time_str}'
-output_dir = os.path.join('../result/ion_inten/Analysis', instance_name)
+
+info = f'ion_inten-{cfg.Intensity_DATA_CFG["DataName"]}-{cfg.MODEL_CFG["model_name"]}-{args.exp_name}'
+init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
+instance_name = f'{info}-{init_time}'
+
+output_dir = os.path.join(WorkFolder, instance_name)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -49,18 +69,18 @@ np.random.seed(SEED)
 torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
 
-os.environ['CUDA_VISIBLE_DEVICES'] = cfg.TRAINING_HYPER_PARAM['GPU_INDEX']
-if args.GPU is not None:
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.GPU)
+if cfg.TRAINING_HYPER_PARAM['GPU_INDEX']:
+    device = torch.device(f'cuda:{cfg.TRAINING_HYPER_PARAM["GPU_INDEX"]}')
+elif torch.cuda.is_available():
+    device = torch.device('cuda:0')
+else:
+    device = torch.device('cpu')
 
-dictionary = Dictionary(path="../data/20200724-Jeff-MQ_Author-MaxScore_Spec.json")
-
+dictionary = Dictionary()
 idx2aa = dictionary.idx2word
 
-Iontest = IonData(cfg.HOLDOUT_DATA_CFG, dictionary=dictionary)
-
+Iontest = IonData(cfg.Intensity_DATA_CFG['HoldoutPATH'], dictionary=dictionary)
 test_dataset = IonDataset(Iontest)
-
 test_dataloader = DataLoader(dataset=test_dataset,
                              shuffle=False,
                              batch_size=64 * 8 * 3,
@@ -69,7 +89,6 @@ test_dataloader = DataLoader(dataset=test_dataset,
 
 
 def idxtoaa(arr):
-
     peptide = [idx2aa[int(aa_idx)] for aa_idx in arr]
     return ''.join(peptide).replace('#', '').replace('$', '')
 
@@ -91,10 +110,10 @@ elif cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
     cfg_to_load = copy.deepcopy(cfg.MODEL_CFG)
     model = LSTMTransformer(
         # ntoken=Iontrain.N_aa,
-        RT_mode=cfg.Mode == "RT" or cfg.Mode == "Detect",
+        RT_mode=False,
         ntoken=len(dictionary) - 1,  # before is 31
         # for prosit, it has 0-21
-        use_prosit=cfg.data_name == 'Prosit',
+        use_prosit=cfg.Intensity_DATA_CFG["DataName"] == 'Prosit',
         pdeep2mode=cfg.TRAINING_HYPER_PARAM['pdeep2mode'],
         two_stage=cfg.TRAINING_HYPER_PARAM['two_stage'],
         **cfg_to_load,
@@ -102,39 +121,6 @@ elif cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
 else:
     raise Exception("No model given!")
 
-# ipdb.set_trace()
-# model = load_average_model("/p300/projects/RT/code/result/ion_inten/AcData/ion_inten-All_DDA-LSTMTransformer-DDATrainValAll-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_09_06_12_49_56/ckpts/", 3)
-
-# load_model_path = "/p300/projects/RT/code/result/ion_inten/AcData/" \
-#            "ion_inten-DIA18-LSTMTransformer--not_add_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_08_24_23_47_03/ckpts/1740.pth"
-# load_model_path = '/p300/projects/RT/code/result/ion_inten/AcData/ion_inten-All_DDA-LSTMTransformer--remove_ac_pepTrue-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_08_31_21_51_35/ckpts/last_epoch.pth'
-# load_model_path = '/p300/projects/RT/code/result/ion_inten/AcData/ion_inten-All_DDA-LSTMTransformer-DDATrainValAll-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_09_06_12_49_56/ckpts/52000.pth'
-
-# load_model_path = '/p300/projects/RT/code/result/ion_inten/AcData/' \
-#                   'ion_inten-U2OS_DDA-LSTMTransformer-JeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_15_20_55_45/ckpts/best_model.pth'
-# load_model_path = '/p300/projects/RT/code/result/ion_inten/AcData/' \
-#                   'ion_inten-PhosDIA_DDA-LSTMTransformer-JeffVeroE6R2P2ModelTest-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_17_18_51_06/ckpts/best_model.pth'
-# load_model_path = "/p300/projects/RT/code/result/ion_inten/AcData/" \
-#     "ion_inten-U2OS_DIA-LSTMTransformer-RemoveSigmoid-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_22_22_12_34/ckpts/best_model.pth"
-
-# load_model_path = "/p300/projects/RT/code/result/ion_inten/AcData/" \
-#     "ion_inten-U2OS_DIA-LSTMTransformer-RemoveSigmoidRemove0AssignJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_27_22_56_58/ckpts/best_model.pth"
-# load_model_path = "/p300/projects/RT/code/result/ion_inten/AcData/" \
-#     "ion_inten-U2OS_DDA-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_29_10_27_27/ckpts/best_model.pth"
-# load_model_path = "/p300/projects/RT/code/result/ion_inten/AcData/" \
-#     "ion_inten-U2OS_DDA-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_29_10_27_27/ckpts/best_model.pth"
-# load_model_path = "/p300/projects/RT/code/result/ion_inten/AcData/" \
-#     "ion_inten-PhosDIA_DDA-LSTMTransformer-Correct_valPhosDIA_DDA_RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_30_10_18_48/ckpts/best_model.pth"
-# load_model_path = "/p300/projects/RT/code/result/ion_inten/AcData/" \
-#     "ion_inten-PhosDIA_DDA-LSTMTransformer-ModelTest_RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_31_18_41_12/ckpts/best_model.pth"
-
-#load_model_path = "/p300/projects/IonAndRT/result/ion_inten/AcData/" \
-#                  "ion_inten-U2OS_DIA-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_29_14_34_44/ckpts/best_model.pth"
-#load_model_path="/p300/projects/result/ion_inten/AcData/ion_inten-PhosDIA_DDA-LSTMTransformer-R2P2Pretrain-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_11_19_22_53_02/ckpts/best_model.pth"
-# load_model_path = "/p300/projects/IonAndRT/result/ion_inten/AcData/ion_inten-PhosDIA_DIA18-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_29_09_37_41/ckpts/best_model.pth"
-
-# load_model_path = "/p300/projects/IonAndRT/result/ion_inten/AcData/ion_inten-PhosDIA-Dilution_DIA-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_12_02_19_44_37/ckpts/best_model.pth"
-load_model_path = "/p300/projects/IonAndRT/result/ion_inten/AcData/ion_inten-PhosDIA_DIA18-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_29_09_37_41/ckpts/best_model.pth"
 if args.pretrain_param is not None:
     load_model_path = args.pretrain_param
 

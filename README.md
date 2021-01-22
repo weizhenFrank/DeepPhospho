@@ -2,11 +2,11 @@
 
 ## Contents
 
-* [Setup DeepPhospho
-   * [Get DeepPhospho](##Get DeepPhospho)
-   * [Conda environment](##Conda environment)
-* [Predict spec and RT with DeepPhospho](#11-deepphospho-installation)
-    * [1.2 conda environment installation](#12-conda-environment-installation)
+* [Setup DeepPhospho](#setup)
+   * [Get DeepPhospho](#get)
+   * [Conda environment](#conda_env)
+* [Predict spec and RT with DeepPhospho](#predict)
+    * 
 * [2. Train model](#2-train-model)
    * [2.1 Train model on RT task](#21-train-model-on-rt-task)
    * [2.2 Train model on Ion intensity task](#22-train-model-on-ion-intensity-task)
@@ -14,9 +14,10 @@
    * [3.1 predict the RT](#31-predict-the-rt)
    * [3.2 predict the Ion intensity](#32-predict-the-ion-intensity)
    
-# Setup DeepPhospho
 
-## Get DeepPhospho
+# <span id="setup">Setup DeepPhospho</span>
+
+## <span id="get">Get DeepPhospho</span>
 
 * Clone this repository
 
@@ -30,13 +31,13 @@
   pip install xxx
   ```
 
-## Conda environment
+## <span id="conda_env">Conda environment</span>
 
 ```
 conda env create -f DeepPhospho_ENV.yml
 ```
 
-# Predict spec and RT with DeepPhospho
+# <span id="predict">Predict spec and RT with DeepPhospho</span>
 
 ## 
 

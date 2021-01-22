@@ -61,7 +61,7 @@ else:
 
 comment = f'RT-{cfg.data_name}-{cfg.MODEL_CFG["model_name"]}-{args.exp_name}'
 now = datetime.datetime.now()
-time_str = now.strftime("%Y_%m_%d_%H_%M_%S")
+time_str = now.strftime("%Y%m%d_%H_%M_%S")
 instance_name = f'{comment}-{time_str}'
 output_dir = os.path.join('../result/RT/Analysis', instance_name)
 if not os.path.exists(output_dir):

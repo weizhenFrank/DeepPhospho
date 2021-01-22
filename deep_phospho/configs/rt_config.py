@@ -1,4 +1,5 @@
 
+# TODO Package all config dict to class
 
 RT_DATA_PREPROCESS_CATALOG = {
     "MIN_RT": -100,

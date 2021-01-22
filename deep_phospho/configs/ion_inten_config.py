@@ -1,4 +1,6 @@
 
+# TODO Package all config dict to class
+
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
     'repeat_factor': 4,
