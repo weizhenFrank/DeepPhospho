@@ -1,0 +1,16 @@
+Taking advantage of the vast number of peptides retention time and tandem mass spectra data,
+we report a new deep learning tool termed DeepPhospho. DeepPhospho could learn and predict the chromatographic retention time and the fragment ion intensity of any peptide with extremely high quality. 
+We use the LSTM + Transformer as its architecture; the LSTM could learn a good amino acid representation for the downstream Transformer module. By exploiting self-attention, the Transformer module could capture the difference of amino acids much more precisely. More importantly, the self-attention mechanism could potentially force model to attend the pair of b ion and y ion as these two ions are broke down at the same time in mass spectrometer.
+
+In the supplementary, we show the superiority of LSTM + 
+Transformer compared to solely Transformer or LSTM. Based on the observation that the Transformer module needs 
+the good initial embedding of amino acid, we wonder that if whether or not a convolutional neural network (CNN) 
+could replace the LSTM module to learn a good representation of amino acid, and the results show that the LSTM module is better than the CNN module configured before the Transformer. In further, we want to know a purely deep CNN whether if better than the LSTM + Transformer; however, results show a deep CNN could not generalize well compared with LSTM + Transformer architecture. 
+To the best of our knowledge, DeepPhospho is the first work to utilize the Transformer on the peptide spectrum prediction
+though it has been prevalently used in the natural language processing domain.
+There have been several tools that successfully utilized deep learning in RT and Ion intensity prediction, such as DeepRT\cite{ma2018improved} and pDeep2\cite{zeng2019ms}.
+DeepRT use the capsule network (CapsNet) \cite{sabour2017dynamic} 
+model to predict RT. However, the DeepRT did not explain very well for the choice of CapsNet, and CapsNet's structure cannot fully utilize the sequence's characteristics. 
+pDeep2 just use the bi-directional LSTM model to predict the ion intensity, and it does not explicitly take the relations of amino acids into the consideration of model design.
+We demonstrate the merits of DeepPhospho on a number of challenging examples and provide the scientific community 
+with ready-to-use tools.

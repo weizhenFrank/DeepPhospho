@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8a90557c-16b6-48c1-8a75-d80549a0a190" name="Default Changelist" comment="" />
+    <list default="true" id="8a90557c-16b6-48c1-8a75-d80549a0a190" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PutOnGitHub/checkpoints/url" beforeDir="false" afterPath="$PROJECT_DIR$/PutOnGitHub/checkpoints/url" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PutOnGitHub/data/url" beforeDir="false" afterPath="$PROJECT_DIR$/PutOnGitHub/data/url" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -12,7 +16,9 @@
   </component>
   <component name="JupyterTrust" id="cec4945d-4719-4b01-9d7a-4aa54b5b20d4" />
   <component name="ProjectId" id="1m5wP0KLrxa2xduOHzPYkdEhjju" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -58,7 +64,14 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
   <component name="WindowStateProjectService">
+    <state x="886" y="485" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1611326978049">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="886" y="485" key="#com.intellij.fileTypes.FileTypeChooser/-2560.0.2560.1440/0.0.2560.1440@0.0.2560.1440" timestamp="1611326978049" />
     <state x="721" y="305" width="1118" height="830" key="find.popup" timestamp="1608800230282">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
