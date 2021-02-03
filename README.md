@@ -4,7 +4,8 @@
 
 * [Setup DeepPhospho](#setup)
    * [Get DeepPhospho](#get)
-   * [Conda environment](#conda_env)
+   * [Setup conda environment](#conda_env)
+   * [Use GPU (optional)](#use_gpu)
 * [Predict spec and RT with DeepPhospho](#predict)
     * 
 * [2. Train model](#2-train-model)
@@ -19,23 +20,34 @@
 
 ## <span id="get">Get DeepPhospho</span>
 
-* Clone this repository
+* Clone this repository with git
 
   ```
   git clone https://github.com/weizhenFrank/DeepPhospho.git
   ```
 
-* Or install this package from PyPi
+* Or download the repository directly on github by opening
 
   ```
-  pip install xxx
+  https://github.com/weizhenFrank/DeepPhospho
   ```
 
-## <span id="conda_env">Conda environment</span>
+## <span id="conda_env">Setup conda environment</span>
 
-```
-conda env create -f DeepPhospho_ENV.yml
-```
+* DeepPhospho relies on PyTorch and some common packages like numpy
+
+* We recommend conda to manage the enviroment, and the lastest version of Anaconda can be downloaded here: [https://www.anaconda.com/products/individual](https://www.anaconda.com/products/individual)
+
+* In this repository, we supported a conda enviroment config file for quick setup
+
+  ```
+  conda env create -f DeepPhospho_ENV.yml -n deep_phospho
+  ```
+
+## <span id="use_gpu">Use GPU (optional)</span>
+
+* DeepPhospho can be runned with GPU or with only CPU
+* To use GPU, please confirm the information of your device and install suitable drive (CUDA and cuDNN)
 
 # <span id="predict">Predict spec and RT with DeepPhospho</span>
 
