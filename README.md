@@ -24,6 +24,8 @@
    * [Check the library and convert it to DeepPhospho specific input formats](#convert_lib_format)
    * [Fine-tuning the models with the customized library](#finetune_with_cust_lib)
    * [Generate a DeepPhospho improved library](#gen_lib)
+* [License](#license)
+* [Publication](#pub)
 
 # <span id="setup">Setup DeepPhospho</span>
 
@@ -90,13 +92,13 @@
 
 # <span id="train">Training and fine-tuning model params</span>
 
-<span id="deepphospho_data">Use the data used in DeepPhospho</span>
+## <span id="deepphospho_data">Use the data used in DeepPhospho</span>
 
-<span id="prepare_cust_data">Prepare your customized training data</span>
+## <span id="prepare_cust_data">Prepare your customized training data</span>
 
-<span id="train_ion">Train ion intensity model with or without our pre-trained params</span>
+## <span id="train_ion">Train ion intensity model with or without our pre-trained params</span>
 
-<span id="train_rt">Train RT model with or without our pre-trained params</span>
+## <span id="train_rt">Train RT model with or without our pre-trained params</span>
 
 # <span id="lib">From initial DIA library to DeepPhospho improved library</span>
 
@@ -107,6 +109,14 @@
 ## <span id="finetune_with_cust_lib">Fine-tuning the models with the customized library</span>
 
 ## <span id="gen_lib">Generate a DeepPhospho improved library</span>
+
+
+
+
+
+# <span id="license">License</span>
+
+# <span id="pub">Publication</span>
 
 
 
