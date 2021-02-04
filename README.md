@@ -6,15 +6,24 @@
    * [Get DeepPhospho](#get)
    * [Setup conda environment](#conda_env)
    * [Use GPU (optional)](#use_gpu)
-* [Predict spec and RT with DeepPhospho](#predict)
-    * 
-* [2. Train model](#2-train-model)
-   * [2.1 Train model on RT task](#21-train-model-on-rt-task)
-   * [2.2 Train model on Ion intensity task](#22-train-model-on-ion-intensity-task)
-* [3. Predict ](#3-predict)
-   * [3.1 predict the RT](#31-predict-the-rt)
-   * [3.2 predict the Ion intensity](#32-predict-the-ion-intensity)
-   
+* [Quick start](#start)
+    * [Predict your data with default params](#start_pred)
+* [DeepPhospho configs](#configs)
+    * [Configs for ion intensity model](#ion_config)
+    * [Configs for RT model](#rt_config)
+* [Predict spec and iRT with DeepPhospho](#predict)
+    * [Predict spec ion intensity](#pred_spec)
+    * [Predict peptide iRT](#pred_rt)
+* [Training and fine-tuning model params](#train)
+   * [Use the data used in DeepPhospho](#deepphospho_data)
+   * [Prepare your customized training data](#prepare_cust_data)
+   * [Train ion intensity model with or without our pre-trained params](#train_ion)
+   * [Train RT model with or without our pre-trained params](#train_rt)
+* [From initial DIA library to DeepPhospho improved library](#lib)
+   * [Recommendations for initial library preparation](#lib_recommend)
+   * [Check the library and convert it to DeepPhospho specific input formats](#convert_lib_format)
+   * [Fine-tuning the models with the customized library](#finetune_with_cust_lib)
+   * [Generate a DeepPhospho improved library](#gen_lib)
 
 # <span id="setup">Setup DeepPhospho</span>
 
@@ -49,9 +58,72 @@
 * DeepPhospho can be runned with GPU or with only CPU
 * To use GPU, please confirm the information of your device and install suitable drive (CUDA and cuDNN)
 
+
+
+# <span id="start">Quick start</span>
+
+## <span id="start_pred">Predict your data with default params</span>
+
+
+
+# <span id="configs">DeepPhospho configs</span>
+
+
+
+## <span id="ion_config">Configs for ion intensity model</span>
+
+
+
+## <span id="rt_config">Configs for RT mode</span>
+
+
+
+
+
+
+
 # <span id="predict">Predict spec and RT with DeepPhospho</span>
 
-## 
+## <span id="pred_spec">Predict spec ion intensity</span>
+
+## <span id="pred_rt">Predict peptide iRT</span>
+
+# <span id="train">Training and fine-tuning model params</span>
+
+<span id="deepphospho_data">Use the data used in DeepPhospho</span>
+
+<span id="prepare_cust_data">Prepare your customized training data</span>
+
+<span id="train_ion">Train ion intensity model with or without our pre-trained params</span>
+
+<span id="train_rt">Train RT model with or without our pre-trained params</span>
+
+# <span id="lib">From initial DIA library to DeepPhospho improved library</span>
+
+## <span id="lib_recommend">Recommendations for initial library preparation</span>
+
+## <span id="convert_lib_format">Check the library and convert it to DeepPhospho specific input formats</span>
+
+## <span id="finetune_with_cust_lib">Fine-tuning the models with the customized library</span>
+
+## <span id="gen_lib">Generate a DeepPhospho improved library</span>
+
+
+
+
+
+
+
+
+
+
+
+* [2. Train model](#2-train-model)
+  * [2.1 Train model on RT task](#21-train-model-on-rt-task)
+  * [2.2 Train model on Ion intensity task](#22-train-model-on-ion-intensity-task)
+* [3. Predict ](#3-predict)
+  * [3.1 predict the RT](#31-predict-the-rt)
+  * [3.2 predict the Ion intensity](#32-predict-the-ion-intensity)
 
 
 
@@ -88,18 +160,6 @@
 * run visualization_Ion.py
   `python visualization_Ion.py`
 * the prediction will be saved in the `result/IonInten/Analysis`
-
-
-
-
-
-
-
-# Train DeepPhospho with customized data
-
-
-
-
 
 
 
