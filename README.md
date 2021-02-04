@@ -1,4 +1,4 @@
-# DeepPhospho: impoves spectra and RT prediction for phosphopeptides
+# DeepPhospho: impoves spectral library generation for DIA phosphoproteomics
 
 ## Contents
 
@@ -121,7 +121,7 @@
 ## <span id="other_details">Other details</span>
 
 * In this document, we described the DeepPhospho usages as detailed as possible, and this document only contains model and library generation information as a supplement for our paper.
-* We also discussed many details in the method part in our paper, please have a look [here](). The methods in paper involves:
+* We also discussed many details in the method part in our paper, please have a look at [here](). The methods in paper involves:
   * 
 
 
