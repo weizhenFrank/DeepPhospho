@@ -22,7 +22,7 @@
 * [From initial DIA library to DeepPhospho improved library](#lib)
    * [Recommendations for initial library preparation](#lib_recommend)
    * [Check the library and convert it to DeepPhospho specific input formats](#convert_lib_format)
-   * [Fine-tuning the models with the customized library](#finetune_with_cust_lib)
+   * [Fine-tuning the models with the customized data](#finetune_with_cust_data)
    * [Generate a DeepPhospho improved library](#gen_lib)
    * [Other details](#other_details)
 * [License](#license)
@@ -106,13 +106,20 @@
 ## <span id="lib_recommend">Recommendations for initial library preparation</span>
 
 * Though the initial data is called library here, it doesn't indicates the spectral library only. Instead, DeepPhospho workflow makes the spectral library generation much freer.
+
 * All data source that includes the fragment intensity and peptide RT/iRT is satisfied, including but not limited to the spectral library from Spectranaut, OpenSwath and others, and raw data search results from MaxQuant, Comet and others.
-* Here we provided the scripts to convert Spectranaut library (exported as .xls) and MaxQuant search result (msms.txt in result folder) to DeepPhospho input formats.
+
+* Here we provided [the scripts]() to convert Spectranaut library (exported as .xls) and MaxQuant search result (msms.txt in result folder) to DeepPhospho input formats.
+
+  ```python
+  
+  ```
+
 * In previous study, the input data is always under some filtration to get much higher quality, but in this work, we didn't see obvious increase on evaluation metrics with different filtration conditions. So we didn't provide the data filtration in scripts for format converting.
 
 ## <span id="convert_lib_format">Check the library and convert it to DeepPhospho specific input formats</span>
 
-## <span id="finetune_with_cust_lib">Fine-tuning the models with the customized library</span>
+## <span id="finetune_with_cust_data">Fine-tuning the models with the customized data</span>
 
 ## <span id="gen_lib">Generate a DeepPhospho improved library</span>
 
