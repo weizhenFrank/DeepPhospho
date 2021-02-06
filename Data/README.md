@@ -1,4 +1,5 @@
 * This folder contains the files used for DeepPhospho model performance test
+* For pre-training and fine-tuning data, please [download here]().
 * In the paper, we used three dataset to test the DeepPhospho
   * RPE1 DDA
   * RPE1 DIA
