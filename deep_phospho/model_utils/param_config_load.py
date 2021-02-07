@@ -1,13 +1,15 @@
-import logging
 import os
-from collections import OrderedDict
-import ipdb
-import dill
-import torch
-from glob import glob
-import copy
-
 import sys
+import copy
+from glob import glob
+from collections import OrderedDict
+
+import json
+import dill
+import ipdb
+import logging
+
+import torch
 
 
 def load_config(config_path):
@@ -21,6 +23,16 @@ def load_config(config_path):
     except ModuleNotFoundError:
         raise FileNotFoundError(f'Not find the input config file {config_file} with basename {config_file_name} in {config_dir}')
     return cfg['cfg']
+
+
+def load_config_as_module(config):
+    return {k: v for k, v in config.__dict__.items() if not k.startswith('__')}
+
+
+def load_config_from_json(config):
+    with open(config, 'r') as f:
+        cfg = json.load(f)
+    return cfg
 
 
 def load_param_from_file(model, f: str, partially=False, module_namelist=None, logger_name='IonIntensity'):
