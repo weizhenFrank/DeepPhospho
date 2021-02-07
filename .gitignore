@@ -1,4 +1,5 @@
 result/
+Data/**/*.pkl
 PretrainParams
 
 # PyCharm
