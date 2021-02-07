@@ -1,4 +1,13 @@
 
+# If the work folder defined as Here, the folder will be where the config file in
+# Else define a specific folder
+WorkFolder = 'Here'
+
+ExpName = ''
+
+TaskPurpose = 'Train'
+# TaskPurpose = 'Predict'
+
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
     'repeat_factor': 4,
@@ -13,11 +22,11 @@ Intensity_DATA_CFG = {
     "PRECURSOR_CHARGE": 'charge',
 
     "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
-    'refresh_cache': True,
+    'refresh_cache': False,
 
-    "TrainPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
-    "TestPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
-    "HoldoutPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
+    "TrainPATH": "./Data/IonModel_TestData/20201010-Inten_Train-RPE1_DIA-seed0_811.json",
+    "TestPATH": "./Data/IonModel_TestData/20201010-Inten_Test-RPE1_DIA-seed0_811.json",
+    "HoldoutPATH": "./Data/IonModel_TestData/20201010-Inten_Holdout-RPE1_DIA-seed0_811.json",
 }
 
 MODEL_CFG = dict(
