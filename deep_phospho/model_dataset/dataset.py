@@ -5,7 +5,6 @@ import torch
 from torch.utils.data import Dataset
 
 from .preprocess_input_data import MASK_CHAR, PADDING_CHAR, CLS_TOKEN, ENDING_CHAR
-from deep_phospho.configs import config_main as cfg
 
 
 class RandomMaskingDataset(Dataset):
@@ -126,8 +125,8 @@ class IonDataset(Dataset):
         return len(self.ion_data.X1)
 
 
-def collate_fn(batch):
-    if cfg.TRAINING_HYPER_PARAM["Bert_pretrain"]:
+def collate_fn(batch, configs):
+    if configs['TRAINING_HYPER_PARAM']["Bert_pretrain"]:
         transposed_batch = list(zip(*batch))
         X = np.stack(transposed_batch[0])
         # contains intial tokens and masked tokens flags
@@ -164,5 +163,4 @@ def collate_fn(batch):
             X1 = np.stack(batch[0])
             Y = np.stack(batch[1])
             return torch.from_numpy(X1).long(), torch.from_numpy(Y).float()
-
 

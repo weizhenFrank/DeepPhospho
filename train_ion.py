@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import datetime
 import copy
@@ -22,22 +23,49 @@ from deep_phospho.model_utils.ion_eval import eval
 from deep_phospho.model_utils.logger import MetricLogger, setup_logger, TFBoardWriter
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
 from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status, get_parser
-from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config
+from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config_as_module, load_config_from_json
 
 
 # ---------------- User defined space Start --------------------
 
-# Define config path as the model work dir
-ConfigPath = r''
-WorkFolder = os.path.dirname(ConfigPath)
+"""
+Config file can be defined as
+    a json file here
+    or fill in the config_ion_model.py in DeepPhospho main folder
+    or the default config will be used
+"""
+config_path = r''
+SEED = 666
 
-cfg = load_config(ConfigPath)
 
 # ---------------- User defined space End --------------------
 
 
+this_script_dir = os.path.dirname(os.path.abspath(__file__))
+
+if config_path != '':
+    config_msg = f'Use config file path defined in train script: {config_path}'
+elif len(sys.argv) == 2:
+    config_path = sys.argv[1]
+    config_msg = f'Use config file path defined in command line: {config_path}'
+if config_path:
+    configs = load_config_from_json(config_path)
+    config_dir = os.path.dirname(config_path)
+else:
+    try:
+        import config_ion_model as config_module
+        config_path = os.path.join(this_script_dir, 'config_ion_model.py')
+        config_msg = f'Use config_ion_model.py in DeepPhospho main folder as config file: {config_path}'
+    except ModuleNotFoundError:
+        from deep_phospho.configs import ion_inten_config as config_module
+        config_path = os.path.join(this_script_dir, 'deep_phospho', 'configs', 'ion_inten_config.py')
+        config_msg = f'Use default config file ion_inten_config.py in DeepPhospho config module as config file'
+    finally:
+        configs = load_config_as_module(config_module)
+        config_dir = this_script_dir
+
+
 logging.basicConfig(level=logging.INFO)
-SEED = 666
 torch.manual_seed(SEED)
 random.seed(SEED)
 np.random.seed(SEED)
@@ -46,31 +74,55 @@ torch.autograd.set_detect_anomaly(True)
 
 
 def main():
-    # from deep_phospho.configs import ion_inten_config as cfg
     args = get_parser('Ion intne model')
 
-    info = f'ion_inten-{cfg.Intensity_DATA_CFG["DataName"]}-{cfg.MODEL_CFG["model_name"]}-{args.exp_name}' \
-           f'-remove_ac_pep{cfg.TRAINING_HYPER_PARAM["remove_ac_pep"]}' \
-           f'-add_phos_principle{cfg.TRAINING_HYPER_PARAM["add_phos_principle"]}' \
-           f'-LossType{cfg.TRAINING_HYPER_PARAM["loss_func"]}' \
-           f'-use_holdout{args.use_holdout}'
+    # Get data path here for ease of use
+    train_file = configs['Intensity_DATA_CFG']['TrainPATH']
+    test_file = configs['Intensity_DATA_CFG']['TestPATH']
+    holdout_file = configs['Intensity_DATA_CFG']['HoldoutPATH']
+    if holdout_file:
+        use_holdout = True
+    else:
+        use_holdout = False
+
+    # Define task name as the specific identifier
+    task_info = (
+        f'ion_inten-{configs["Intensity_DATA_CFG"]["DataName"]}'
+        f'-{configs["UsedModelCFG"]["model_name"]}'
+        f'-{configs["ExpName"]}'
+        f'-remove_ac_pep{configs["TRAINING_HYPER_PARAM"]["remove_ac_pep"]}'
+        f'-add_phos_principle{configs["TRAINING_HYPER_PARAM"]["add_phos_principle"]}'
+        f'-LossType{configs["TRAINING_HYPER_PARAM"]["loss_func"]}'
+        f'-use_holdout{use_holdout}'
+    )
 
     init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
-    instance_name = f'{init_time}-{info}'
+    instance_name = f'{init_time}-{task_info}'
 
-    output_dir = os.path.join(WorkFolder, instance_name)
+    # Get work folder and define output dir
+    work_folder = configs['WorkFolder']
+    if work_folder.lower() == 'here' or work_folder == '':
+        work_folder = config_dir
+    output_dir = os.path.join(work_folder, instance_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    # Setup logger and add task info and the config msg
     logger = setup_logger("IonInten", output_dir)
+    logger.info(f'Work folder is set to {work_folder}')
+    logger.info(f'Task start time: {init_time}')
+    logger.info(f'Task information: {task_info}')
+    logger.info(config_msg)
 
-    if cfg.TRAINING_HYPER_PARAM['GPU_INDEX']:
-        device = torch.device(f'cuda:{cfg.TRAINING_HYPER_PARAM["GPU_INDEX"]}')
+    # Choose device (Set GPU index or default one, or use CPU)
+    if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX']:
+        device = torch.device(f'cuda:{configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
     elif torch.cuda.is_available():
         device = torch.device('cuda:0')
     else:
         device = torch.device('cpu')
 
+    # Init tfs
     tf_writer_train = TFBoardWriter(output_dir, type='train')
     tf_writer_test = TFBoardWriter(output_dir, type="val")
     tf_writer_holdout = TFBoardWriter(output_dir, type='test')
@@ -78,35 +130,39 @@ def main():
     print("Preparing dataset")
     dictionary = Dictionary()
 
-    ion_train_data = IonData(cfg.Intensity_DATA_CFG['Train'], dictionary=dictionary)
-    ion_test_data = IonData(cfg.Intensity_DATA_CFG['Test'], dictionary=dictionary)
-    ion_holdout_data = IonData(cfg.Intensity_DATA_CFG['Holdout'], dictionary=dictionary)
+    ion_train_data = IonData(configs, path=train_file, dictionary=dictionary)
+    ion_test_data = IonData(configs, path=test_file, dictionary=dictionary)
+    if use_holdout:
+        ion_holdout_data = IonData(configs, path=holdout_file, dictionary=dictionary)
 
-    if cfg.Intensity_DATA_CFG['DataName'] != 'Prosit':
-        if cfg.TRAINING_HYPER_PARAM['Bert_pretrain']:
+    if configs['Intensity_DATA_CFG']['DataName'] != 'Prosit':
+        if configs['TRAINING_HYPER_PARAM']['Bert_pretrain']:
             train_dataset = RandomMaskingDataset(ion_train_data,
                                                  de_mod=True,
                                                  mask_modifier=True,
-                                                 mask_ratio=cfg.Intensity_DATA_PREPROCESS_CFG['mask_ratio'])
+                                                 mask_ratio=configs['Intensity_DATA_PREPROCESS_CFG']['mask_ratio'])
             test_dataset = RandomMaskingDataset(ion_test_data,
                                                 de_mod=True,
                                                 mask_modifier=True,
-                                                mask_ratio=cfg.Intensity_DATA_PREPROCESS_CFG['mask_ratio'])
-            holdout_dataset = RandomMaskingDataset(ion_holdout_data,
-                                                   de_mod=True,
-                                                   mask_modifier=True,
-                                                   mask_ratio=cfg.Intensity_DATA_PREPROCESS_CFG['mask_ratio'])
+                                                mask_ratio=configs['Intensity_DATA_PREPROCESS_CFG']['mask_ratio'])
+            if use_holdout:
+                holdout_dataset = RandomMaskingDataset(ion_holdout_data,
+                                                       de_mod=True,
+                                                       mask_modifier=True,
+                                                       mask_ratio=configs['Intensity_DATA_PREPROCESS_CFG']['mask_ratio'])
 
         else:
             train_dataset = IonDataset(ion_train_data)
             test_dataset = IonDataset(ion_test_data)
-            holdout_dataset = IonDataset(ion_holdout_data)
+            if use_holdout:
+                holdout_dataset = IonDataset(ion_holdout_data)
+        from functools import partial
 
         train_dataloader = DataLoader(dataset=train_dataset,
-                                      batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
+                                      batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
                                       shuffle=False,  # to debug, changed to false
                                       num_workers=0,
-                                      collate_fn=collate_fn, drop_last=True)
+                                      collate_fn=partial(collate_fn, configs=configs), drop_last=True)
 
         train_val_dataloader = DataLoader(dataset=train_dataset,
                                           batch_size=256,
@@ -128,7 +184,6 @@ def main():
         )
 
     else:
-
         train_dataset = IonDataset(ion_train_data)
         holdout_dataset = IonDataset(ion_holdout_data)
         index_split = list(range(ion_train_data.data_size))
@@ -137,15 +192,15 @@ def main():
         train_index = index_split[:int((Train_ratio / (Train_ratio + Test_ratio)) * ion_train_data.data_size)]
         test_index = index_split[int((Train_ratio / (Train_ratio + Test_ratio)) * ion_train_data.data_size):]
         train_dataloader = DataLoader(dataset=train_dataset,
-                                      batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
+                                      batch_size=configs.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                       sampler=torch.utils.data.SubsetRandomSampler(train_index),
                                       collate_fn=collate_fn)
         train_val_dataloader = DataLoader(dataset=train_dataset,
-                                          batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
+                                          batch_size=configs.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                           sampler=torch.utils.data.SubsetRandomSampler(train_index),
                                           collate_fn=collate_fn)
         test_dataloader = DataLoader(dataset=train_dataset,
-                                     batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
+                                     batch_size=configs.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                      sampler=torch.utils.data.SubsetRandomSampler(test_index),
                                      collate_fn=collate_fn)
         holdout_dataloader = DataLoader(
@@ -154,26 +209,26 @@ def main():
             shuffle=False,
             collate_fn=collate_fn
         )
-    if cfg.TRAINING_HYPER_PARAM['two_stage']:
-        loss_func, loss_func_cls = get_loss_func()
+    if configs['TRAINING_HYPER_PARAM']['two_stage']:
+        loss_func, loss_func_cls = get_loss_func(configs)
     else:
-        loss_func = get_loss_func()
+        loss_func = get_loss_func(configs)
 
     # loss_func_eval = copy.deepcopy(loss_func)
 
-    EPOCH = cfg.TRAINING_HYPER_PARAM['EPOCH']
-    LR = cfg.TRAINING_HYPER_PARAM['LR']
+    EPOCH = configs['TRAINING_HYPER_PARAM']['EPOCH']
+    LR = configs['TRAINING_HYPER_PARAM']['LR']
 
-    if cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
-        cfg_to_load = copy.deepcopy(cfg.MODEL_CFG)
+    if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
+        cfg_to_load = copy.deepcopy(configs['UsedModelCFG'])
         model = LSTMTransformer(
             # ntoken=ion_train_data.N_aa,
             RT_mode=False,
-            ntoken=ion_train_data.N_aa,
+            ntoken=len(dictionary),
             # for prosit, it has 0-21
-            use_prosit=(cfg.Intensity_DATA_CFG['DataName'] == 'Prosit'),
-            pdeep2mode=cfg.TRAINING_HYPER_PARAM['pdeep2mode'],
-            two_stage=cfg.TRAINING_HYPER_PARAM['two_stage'],
+            use_prosit=(configs['Intensity_DATA_CFG']['DataName'] == 'Prosit'),
+            pdeep2mode=configs['TRAINING_HYPER_PARAM']['pdeep2mode'],
+            two_stage=configs['TRAINING_HYPER_PARAM']['two_stage'],
             **cfg_to_load,
         )
     else:
@@ -182,17 +237,18 @@ def main():
     logger.info(str(model))
     logger.info("model parameters statuts: \n%s" % show_params_status(model))
 
-    copy_files("deep_phospho/models/ion_model.py", output_dir)
-    copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
-    copy_files("train_ion.py", output_dir)
-    copy_files("deep_phospho/configs", output_dir)
+    copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'ion_model.py'), output_dir)
+    copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'EnsembelModel.py'), output_dir)
+    copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'auxiliary_loss_transformer.py'), output_dir)
+    copy_files(os.path.join(this_script_dir, 'train_ion.py'), output_dir)
+    copy_files(config_path, output_dir)
 
-    pretrain_param = cfg.TRAINING_HYPER_PARAM.get("pretrain_param")
+    pretrain_param = configs.TRAINING_HYPER_PARAM.get("pretrain_param")
     if pretrain_param is not None and pretrain_param != '':
         load_param_from_file(model,
                              pretrain_param,
                              partially=True,
-                             module_namelist=cfg.TRAINING_HYPER_PARAM['module_namelist'],
+                             module_namelist=configs.TRAINING_HYPER_PARAM['module_namelist'],
                              logger_name='IonInten')
 
     model = model.to(device)
@@ -200,37 +256,37 @@ def main():
 
     optimizer = torch.optim.Adam((p for p in model.parameters() if p.requires_grad),
                                  LR,
-                                 weight_decay=cfg.TRAINING_HYPER_PARAM['weight_decay'])
-    scheduler = make_lr_scheduler(optimizer=optimizer, steps=cfg.TRAINING_HYPER_PARAM['LR_STEPS'],
-                                  warmup_iters=cfg.TRAINING_HYPER_PARAM['warmup_iters'])
+                                 weight_decay=configs.TRAINING_HYPER_PARAM['weight_decay'])
+    scheduler = make_lr_scheduler(optimizer=optimizer, steps=configs.TRAINING_HYPER_PARAM['LR_STEPS'],
+                                  warmup_iters=configs.TRAINING_HYPER_PARAM['warmup_iters'])
 
     meters = MetricLogger(delimiter="  ", )
     max_iter = EPOCH * len(train_dataloader)
     start_iter = 0
     start_training_time = time.time()
     end = time.time()
-    lambda_cls = cfg.TRAINING_HYPER_PARAM['lambda_cls']
+    lambda_cls = configs.TRAINING_HYPER_PARAM['lambda_cls']
     iteration_best = -1
     best_test_res = -99999999
     best_model = None
     # ipdb.set_trace()
 
     for epoch in range(EPOCH):
-        if cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
+        if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
             # transform to LSTM + transform end to end finetune mode.
-            if epoch >= cfg.TRAINING_HYPER_PARAM['transformer_on_epoch']:
+            if epoch >= configs.TRAINING_HYPER_PARAM['transformer_on_epoch']:
                 if not model.transformer_flag:
                     model.set_transformer()
                     logger.info("set transformer on")
-                    if cfg.MODEL_CFG['fix_lstm']:
+                    if configs['UsedModelCFG']['fix_lstm']:
                         fix_eval_modules((model.lstm_list,))
 
                     # optimizer = torch.optim.Adam((p for p in model.parameters() if p.requires_grad), LR*0.5,
-                    #                              weight_decay=cfg.TRAINING_HYPER_PARAM['weight_decay'])
+                    #                              weight_decay=configs.TRAINING_HYPER_PARAM['weight_decay'])
                     # scheduler = NoamLR(optimizer,
-                    #                    model_size=cfg.MODEL_CFG['lstm_hidden_dim'],
-                    #                    warmup_steps=cfg.TRAINING_HYPER_PARAM['warmup_steps'],
-                    #                    factor=cfg.TRAINING_HYPER_PARAM['factor'])
+                    #                    model_size=configs['UsedModelCFG']['lstm_hidden_dim'],
+                    #                    warmup_steps=configs.TRAINING_HYPER_PARAM['warmup_steps'],
+                    #                    factor=configs.TRAINING_HYPER_PARAM['factor'])
 
         for idx, (inputs, y) in enumerate(train_dataloader):
             # ipdb.set_trace()
@@ -243,10 +299,10 @@ def main():
                 seq_x = seq_x.to(device)
                 x_charge = x_charge.to(device)
                 x_nce = x_nce.to(device)
-                if cfg.TRAINING_HYPER_PARAM['inter_layer_prediction']:
+                if configs.TRAINING_HYPER_PARAM['inter_layer_prediction']:
                     pred_y, inter_out = model(x1=seq_x, x2=x_charge, x3=x_nce)
                 else:
-                    if cfg.TRAINING_HYPER_PARAM['two_stage']:
+                    if configs.TRAINING_HYPER_PARAM['two_stage']:
                         pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge, x3=x_nce)
                     else:
                         pred_y = model(x1=seq_x, x2=x_charge, x3=x_nce)
@@ -256,10 +312,10 @@ def main():
                 seq_x = seq_x.to(device)
                 # print('-' * 10, seq_x)
                 x_charge = x_charge.to(device)
-                if cfg.TRAINING_HYPER_PARAM['inter_layer_prediction']:
+                if configs.TRAINING_HYPER_PARAM['inter_layer_prediction']:
                     pred_y, inter_out = model(x1=seq_x, x2=x_charge)
                 else:
-                    if cfg.TRAINING_HYPER_PARAM['two_stage']:
+                    if configs.TRAINING_HYPER_PARAM['two_stage']:
                         pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge)
                     else:
                         pred_y = model(x1=seq_x, x2=x_charge)
@@ -271,7 +327,7 @@ def main():
             # print('-'*10, x_hydro)
             y = y.to(device)
             # pred_y[torch.where(y == -1)] = -1
-            if cfg.TRAINING_HYPER_PARAM['inter_layer_prediction']:
+            if configs.TRAINING_HYPER_PARAM['inter_layer_prediction']:
                 aux_loss = 0
                 for i in range(len(inter_out)):
                     if i < epoch / EPOCH:
@@ -282,7 +338,7 @@ def main():
                 loss = loss_func(pred_y[torch.where(y != -1)], y[torch.where(y != -1)]) + aux_loss
 
             else:
-                if cfg.TRAINING_HYPER_PARAM['two_stage']:
+                if configs.TRAINING_HYPER_PARAM['two_stage']:
                     # ipdb.set_trace()
                     y_cls = torch.ones_like(y)
                     y_cls[y == -2] = 0
@@ -366,14 +422,14 @@ def main():
                 tf_writer_train.write_data(iteration, lr_rate, "lr/lr_iter")
                 # tf_writer_train.write_data(iter='model', meter=[model, *inputs])
 
-            if iteration % cfg.TRAINING_HYPER_PARAM['save_param_interval'] == 0 and iteration != 0 \
+            if iteration % configs.TRAINING_HYPER_PARAM['save_param_interval'] == 0 and iteration != 0 \
                     or idx == len(train_dataloader) - 1:
 
                 # evaluation in training
-                if cfg.TRAINING_HYPER_PARAM['Bert_pretrain']:
+                if configs.TRAINING_HYPER_PARAM['Bert_pretrain']:
                     pass
                 else:
-                    if args.use_holdout:
+                    if use_holdout:
                         best_test_res, iteration_best, best_model = evaluation(model, logger,
                                                                                tf_writer_train,
                                                                                tf_writer_test,
@@ -412,7 +468,7 @@ def main():
     tf_writer_test.write_data(iteration_best, best_test_res, 'eval_metric/Best_PCC_median')
     logger.info("best_test_res(PCC): %s in iteration %s" % (best_test_res, iteration_best))
 
-    if args.use_holdout:
+    if use_holdout:
         model = best_model
         model.to(device)
         evaluation(model, logger, tf_writer_train, tf_writer_test,
@@ -431,14 +487,14 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
     model.eval()
 
     with torch.no_grad():
-        if cfg.TRAINING_HYPER_PARAM['Bert_pretrain']:
+        if configs.TRAINING_HYPER_PARAM['Bert_pretrain']:
             pass
         else:
             if not use_holdout:
                 logger.info("start evaluation on iteration: %d" % iteration)
 
                 logger.info(termcolor.colored("performance on training set:", "yellow"))
-                if cfg.TRAINING_HYPER_PARAM['two_stage']:
+                if configs.TRAINING_HYPER_PARAM['two_stage']:
                     train_loss, train_reg_loss, train_cls_loss, train_acc, pearson_median, sa_median = eval(model,
                                                                                                             loss_func_eval,
                                                                                                             train_val_dataloader,
@@ -458,7 +514,7 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
 
                 logger.info(termcolor.colored("performance on validation set:", "yellow"))
 
-                if cfg.TRAINING_HYPER_PARAM['two_stage']:
+                if configs.TRAINING_HYPER_PARAM['two_stage']:
                     test_loss, test_reg_loss, test_cls_loss, test_acc, pearson_median, sa_median = eval(model,
                                                                                                         loss_func_eval,
                                                                                                         test_dataloader,

@@ -9,7 +9,6 @@ import ipdb
 import numpy as np
 import pandas as pd
 
-from deep_phospho.configs import config_main as cfg
 from deep_phospho.model_utils.utils_functions import match_frag, ion_types, get_index, get_pkl_path, intensity_load_check
 
 PADDING_CHAR = '#'
@@ -115,30 +114,30 @@ class IonData(object):
     Tokenize the sequences
     """
 
-    def __init__(self, data_cfg, path=None, dictionary=None, ):
+    def __init__(self, configs, path, dictionary=None, ):
         """
 
-        :param data_cfg:
+        :param configs:
         :param path: data path
         :param dictionary: use exists dictionary to tokenize
         """
-        logger = logging.getLogger("IonIntensity")
-        if path is None:
-            path = os.path.join(data_cfg['data_path'], data_cfg['data_fn'])
+        logger = logging.getLogger('IonInten')
         assert os.path.exists(path)
+
         if dictionary is None:
-            dictionary = Dictionary(path)
+            dictionary = Dictionary()
 
         self.dictionary = dictionary
 
+        data_cfg = configs['Intensity_DATA_CFG']
         # load from the cache
         if data_cfg['refresh_cache']:
-            to_delete_path = get_pkl_path(path)
+            to_delete_path = get_pkl_path(path, configs)
             if os.path.exists(to_delete_path):
                 os.remove(to_delete_path)
 
         else:
-            pre_load_data_path = get_pkl_path(path)
+            pre_load_data_path = get_pkl_path(path, configs)
 
             if os.path.exists(pre_load_data_path):
                 logger.info(f"Use use {pre_load_data_path}!")
@@ -148,7 +147,7 @@ class IonData(object):
                 self.X1 = pre_load_data["X1"]
                 self.X2 = pre_load_data["X2"]
                 self.y = pre_load_data['y']
-                if cfg.TRAINING_HYPER_PARAM['remove_ac_pep']:  # here to remove peptide of ac in N terminal after save cache
+                if configs['TRAINING_HYPER_PARAM']['remove_ac_pep']:  # here to remove peptide of ac in N terminal after save cache
                     ac_token = self.dictionary.word2idx["*"]
                     pep_index_without_ac = self.X1[:, 0] != ac_token
                     total_sample = self.X1.shape[0]
@@ -167,30 +166,30 @@ class IonData(object):
             # the expected data format: rows and columns are ion types and precursors, correspondingly
         else:
             seq_data = pd.read_csv(path)
-        if 'To_Predict' in data_cfg and data_cfg['To_Predict']:
+        if configs['TaskPurpose'].lower() == 'predict':
             pep_info = seq_data[data_cfg['SEQUENCE_FIELD_NAME']]
         else:
             pep_info = seq_data.columns.values
-        if cfg.DATA_PROCESS_CFG['MAX_SEQ_LEN'] is None:
+        if data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] is None:
             count_max = lambda pep_list: max([len(aas.split(".")[0])-1 for aas in pep_list])
             # here get the len of each peptide in input and minus one is as a result of ac modification
             self.MAX_SEQ_LEN = count_max(pep_info)
         else:
-            self.MAX_SEQ_LEN = cfg.DATA_PROCESS_CFG['MAX_SEQ_LEN']
+            self.MAX_SEQ_LEN = data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN']
         N_seq = len(pep_info)
         self.number_seq = N_seq
         self.N_aa = len(dictionary)
         data_size = N_seq
         self.data_size = data_size
 
-        if cfg.TRAINING_HYPER_PARAM['DEBUG']:
+        if configs['TRAINING_HYPER_PARAM']['DEBUG']:
             data_size = 2000
         self.X1 = np.zeros((data_size, self.MAX_SEQ_LEN + 2))
         self.X2 = np.zeros((data_size, self.MAX_SEQ_LEN + 2))
 
-        if cfg.TRAINING_HYPER_PARAM['pdeep2mode']:
+        if configs['TRAINING_HYPER_PARAM']['pdeep2mode']:
             ion_type_len = 8
-        elif cfg.TRAINING_HYPER_PARAM['only_two_ions']:
+        elif configs['TRAINING_HYPER_PARAM']['only_two_ions']:
             ion_type_len = 2
         else:
             ion_type_len = 12
@@ -198,84 +197,85 @@ class IonData(object):
         self.y = np.zeros((data_size, self.MAX_SEQ_LEN + 2, ion_type_len))
 
         # todo add multiprocessing here?
-        for seq_index, seq in tqdm(enumerate(pep_info), total=len(pep_info)):
-            # fill in X:
-            if cfg.TRAINING_HYPER_PARAM['DEBUG']:
-                if seq_index >= data_size:
-                    print("debug on, break")
-                    break
+        with tqdm(pep_info, total=len(pep_info)) as t:
+            t.set_description('Tokenizing data')
+            for seq_index, seq in enumerate(t):
+                # fill in X:
+                if configs['TRAINING_HYPER_PARAM']['DEBUG']:
+                    if seq_index >= data_size:
+                        print("debug on, break")
+                        break
 
-            pep = seq.split(".")[0]
-            aa_length = len(pep) - 1  # because we add "*" to represent the Acetyl modification and "@" to represent no
-            wrapped_seq = pep + ENDING_CHAR
-            charge = int(seq.split(".")[1])
+                pep, charge = seq.split('.')
+                charge = int(charge)
+                aa_length = len(pep) - 1  # because we add "*" to represent the Acetyl modification and "@" to represent no
+                wrapped_seq = pep + ENDING_CHAR
 
-            self.X1[seq_index, :len(wrapped_seq)] = [self.dictionary.word2idx[aa] for aa in wrapped_seq]
-            self.X2[seq_index, :len(wrapped_seq)] = [charge for aa in wrapped_seq]
+                self.X1[seq_index, :len(wrapped_seq)] = [self.dictionary.word2idx[aa] for aa in wrapped_seq]
+                self.X2[seq_index, :len(wrapped_seq)] = [charge for aa in wrapped_seq]
 
-            if not data_cfg['To_Predict']:
+                if configs['TaskPurpose'].lower() == 'train':
 
-                raw_intensity = seq_data.iloc[:, seq_index][seq_data.iloc[:, seq_index] > 0]
-                to_load_intensity = dict(raw_intensity / np.max(raw_intensity))
+                    raw_intensity = seq_data.iloc[:, seq_index][seq_data.iloc[:, seq_index] > 0]
+                    to_load_intensity = dict(raw_intensity / np.max(raw_intensity))
 
-                # if seq_index == 16706:
-                #     ipdb.set_trace()
-                for i in range(aa_length):
-                    i += 1
-                    for j in range(ion_type_len):
-                        matches = False
-                        matches = match_frag(ion_types(aa_length, i)[j],
-                                             to_load_intensity)
-                        if matches != False:
-                            match_key = matches[1]
-                            # import ipdb
-                            # ipdb.set_trace()
-                            self.y[seq_index][i][j] = to_load_intensity[match_key]
+                    for i in range(aa_length):
+                        i += 1
+                        for j in range(ion_type_len):
+                            matches = False
+                            matches = match_frag(
+                                ion_types(aa_length, i, configs)[j],
+                                to_load_intensity
+                            )
+                            if matches != False:
+                                match_key = matches[1]
+                                self.y[seq_index][i][j] = to_load_intensity[match_key]
 
-                intensity_load_check(cfg, to_load_intensity, self.y[seq_index])
-            if cfg.TRAINING_HYPER_PARAM['add_phos_principle']:
-                if len(get_index(pep, '2', '3')) != 0:  # for loss one phos
-                    min_phos_index = min(get_index(pep, '2', '3'))
-                    max_phos_index = max(get_index(pep, '2', '3'))
-                    if cfg.TRAINING_HYPER_PARAM['pdeep2mode']:
-                        self.y[seq_index][:min_phos_index, 2:4] = -2
-                        self.y[seq_index][max_phos_index:, 6:] = -2
-                        # here we remove +1 as same row represents bn, yn-1, n is the length of amino acids
+                    intensity_load_check(configs, to_load_intensity, self.y[seq_index])
+                if configs['TRAINING_HYPER_PARAM']['add_phos_principle']:
+                    mod_23_idx = get_index(pep, '2', '3')
+                    if len(mod_23_idx) != 0:  # for loss one phos
+                        min_phos_index = min(mod_23_idx)
+                        max_phos_index = max(mod_23_idx)
+
+                        if configs['TRAINING_HYPER_PARAM']['pdeep2mode']:
+                            self.y[seq_index][:min_phos_index, 2:4] = -2
+                            self.y[seq_index][max_phos_index:, 6:] = -2
+                            # here we remove +1 as same row represents bn, yn-1, n is the length of amino acids
+                        else:
+                            self.y[seq_index][:min_phos_index, 2] = -2
+                            self.y[seq_index][max_phos_index:, 8] = -2
+                            # here we remove +1 as same row represents bn, yn-1, n is the length of amino acids
 
                     else:
+                        if configs['TRAINING_HYPER_PARAM']['pdeep2mode']:
+                            self.y[seq_index][:, 2:4] = -2
+                            self.y[seq_index][:, 6:] = -2
+                        else:
+                            self.y[seq_index][:, 2] = -2
+                            self.y[seq_index][:, 8] = -2
 
-                        self.y[seq_index][:min_phos_index, 2] = -2
-                        self.y[seq_index][max_phos_index:, 8] = -2
-                        # here we remove +1 as same row represents bn, yn-1, n is the length of amino acids
+                    if not configs['TRAINING_HYPER_PARAM']['pdeep2mode']:  # for loss two phos
 
-                else:
-                    if cfg.TRAINING_HYPER_PARAM['pdeep2mode']:
-                        self.y[seq_index][:, 2:4] = -2
-                        self.y[seq_index][:, 6:] = -2
-                    else:
-                        self.y[seq_index][:, 2] = -2
-                        self.y[seq_index][:, 8] = -2
-                if not cfg.TRAINING_HYPER_PARAM['pdeep2mode']:  # for loss two phos
+                        if len(mod_23_idx) < 2:
 
-                    if len(get_index(pep, '2', '3')) < 2:
+                            self.y[seq_index][:, 3] = -2
+                            self.y[seq_index][:, 9] = -2
+                        else:
+                            phos_index = sorted(mod_23_idx)
+                            self.y[seq_index][:phos_index[1], 3] = -2
+                            self.y[seq_index][phos_index[-2]:, 9] = -2
+                            # here we remove +1 as same row represents bn, yn-1, n is the length of amino acids
 
-                        self.y[seq_index][:, 3] = -2
-                        self.y[seq_index][:, 9] = -2
-                    else:
-                        phos_index = sorted(get_index(pep, '2', '3'))
-                        self.y[seq_index][:phos_index[1], 3] = -2
-                        self.y[seq_index][phos_index[-2]:, 9] = -2
-                        # here we remove +1 as same row represents bn, yn-1, n is the length of amino acids
+                self.y[seq_index][0][:] = -1  # No fragment of complete length (b0,y_aa_len), we set -1
+                self.y[seq_index][aa_length:][:] = -1  # No fragment of y0, b_aa_len and longer than precursor, set -1
 
-            self.y[seq_index][0][:] = -1  # No fragment of complete length (b0,y_aa_len), we set -1
-            self.y[seq_index][aa_length:][:] = -1  # No fragment of y0, b_aa_len and longer than precursor, set -1
-
-        if not cfg.TRAINING_HYPER_PARAM['DEBUG'] and not data_cfg['To_Predict']:
-            pkl_path = get_pkl_path(path)
+        if not configs['TRAINING_HYPER_PARAM']['DEBUG'] and configs['TaskPurpose'].lower() != 'predict':
+            pkl_path = get_pkl_path(path, configs)
             with open(pkl_path, 'wb') as f:
                 pickle.dump({'X1': self.X1, 'X2': self.X2, 'y': self.y}, f)
 
-        if cfg.TRAINING_HYPER_PARAM['remove_ac_pep']:  # here to remove peptide of ac in N terminal after saving cache
+        if configs['TRAINING_HYPER_PARAM']['remove_ac_pep']:  # here to remove peptide of ac in N terminal after saving cache
 
             ac_token = self.dictionary.word2idx["*"]
             pep_index_without_ac = self.X1[:, 0] != ac_token

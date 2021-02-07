@@ -3,7 +3,6 @@ import os
 import numpy as np
 import re
 import argparse
-from deep_phospho.configs import config_main as cfg
 from deep_phospho.model_utils.loss_func import PearsonLoss, SALoss, SA_Pearson_Loss, RMSELoss, \
     L1_SA_Pearson_Loss, MaskedLanguageLoss, SALoss_MSE, FocalLoss
 from math import sqrt
@@ -46,18 +45,18 @@ def match_frag(s: str, d: dict):
         return match
 
 
-def ion_types(aa_len, aa_index):
+def ion_types(aa_len, aa_index, configs):
     """
     the order of elements in ions matters
     """
 
-    if cfg.TRAINING_HYPER_PARAM['pdeep2mode']:
+    if configs['TRAINING_HYPER_PARAM']['pdeep2mode']:
         ions = [f'b{aa_index}\+1-noloss$', f'b{aa_index}\+2-noloss$',  # $ matters!
                 f'b{aa_index}\+1-1,H3PO4$', f'b{aa_index}\+2-1,H3PO4$',
                 f'y{aa_len - aa_index}\+1-noloss$', f'y{aa_len - aa_index}\+2-noloss$',
                 f'y{aa_len - aa_index}\+1-1,H3PO4$', f'y{aa_len - aa_index}\+2-1,H3PO4$',
                 ]
-    elif cfg.TRAINING_HYPER_PARAM['only_two_ions']:
+    elif configs['TRAINING_HYPER_PARAM']['only_two_ions']:
         ions = [f'b{aa_index}\+1-noloss$',
                 f'y{aa_len - aa_index}\+1-noloss$'
                 ]
@@ -72,27 +71,24 @@ def ion_types(aa_len, aa_index):
     return ions
 
 
-def intensity_load_check(config, intensity: dict, loaded_data):
+def intensity_load_check(configs, intensity: dict, loaded_data):
     """ To check whether the ion intensities loaded correctly
 
     :param intensity: Ion intensities (key is ion type, value is normalized intensity (0-1)
     :return:
     """
-    if config.TRAINING_HYPER_PARAM['pdeep2mode']:
-        ion_reg_types = ['[by][0-9]+\+[12]-noloss$', '[by][0-9]+\+[12]-1,H3PO4$', ]
-
+    if configs['TRAINING_HYPER_PARAM']['pdeep2mode']:
+        ion_reg_types = [r'[by][0-9]+\+[12]-noloss$', r'[by][0-9]+\+[12]-1,H3PO4$', ]
     else:
-        ion_reg_types = ['[by][0-9]+\+[12]-noloss$', '[by][0-9]+\+1-1,H2O$',
-                     '[by][0-9]+\+1-1,NH3$', '[by][0-9]+\+1-[12],H3PO4$']
+        ion_reg_types = [r'[by][0-9]+\+[12]-noloss$', r'[by][0-9]+\+1-1,H2O$',
+                         r'[by][0-9]+\+1-1,NH3$', r'[by][0-9]+\+1-[12],H3PO4$', ]
     matched = []
     for k, v in intensity.items():
         for ion_type in ion_reg_types:
             prog = re.compile(ion_type, flags=re.IGNORECASE)
             if prog.match(k) is not None:
                 matched.append(k)
-    # ipdb.set_trace()
     assert len(matched) == len(loaded_data[loaded_data > 0]), 'Not loading completely!'
-    # assert False
 
 
 def get_index(string, *chars):
@@ -109,52 +105,51 @@ def get_index(string, *chars):
     return loc
 
 
-def get_pkl_path(path):
-    if cfg.TRAINING_HYPER_PARAM['only_two_ions']:
+def get_pkl_path(path, configs):
+    if configs['TRAINING_HYPER_PARAM']['only_two_ions']:
         pkl_path = path + 'only_two_ions' + '.pkl'
     else:
-        if cfg.TRAINING_HYPER_PARAM['use_prosit_pretrain']:
+        if configs['TRAINING_HYPER_PARAM']['use_prosit_pretrain']:
             pkl_path = path + 'use_prosit_pretrain' + '.pkl'
-        elif cfg.TRAINING_HYPER_PARAM['pdeep2mode']:
-            if cfg.TRAINING_HYPER_PARAM['add_phos_principle']:
+        elif configs['TRAINING_HYPER_PARAM']['pdeep2mode']:
+            if configs['TRAINING_HYPER_PARAM']['add_phos_principle']:
                 pkl_path = path + 'use_pdeep2mode' + '-add_phos_principle' + '.pkl'
             else:
                 pkl_path = path + 'use_pdeep2mode' + '-not_add_phos_principle' + '.pkl'
         else:
-            if cfg.TRAINING_HYPER_PARAM['add_phos_principle']:
+            if configs['TRAINING_HYPER_PARAM']['add_phos_principle']:
                 pkl_path = path + 'not_use_pdeep2mode' + '-add_phos_principle' + '.pkl'
             else:
                 pkl_path = path + 'not_use_pdeep2mode' + '-not_add_phos_principle' + '.pkl'
-
     return pkl_path
 
 
-def get_loss_func():
-    if cfg.TRAINING_HYPER_PARAM['Bert_pretrain']:
-        loss_func = MaskedLanguageLoss(only_acc_masked_token=cfg.TRAINING_HYPER_PARAM['accumulate_mask_only'])
-    elif 'two_stage' in cfg.TRAINING_HYPER_PARAM and cfg.TRAINING_HYPER_PARAM['two_stage']:
+def get_loss_func(configs):
+    if configs['TRAINING_HYPER_PARAM']['Bert_pretrain']:
+        loss_func = MaskedLanguageLoss(only_acc_masked_token=configs['TRAINING_HYPER_PARAM']['accumulate_mask_only'])
+    elif 'two_stage' in configs['TRAINING_HYPER_PARAM'] and configs['TRAINING_HYPER_PARAM']['two_stage']:
         loss_func = torch.nn.MSELoss()
         loss_func_cls = torch.nn.BCEWithLogitsLoss()
         return loss_func, loss_func_cls
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "L1":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "L1":
         loss_func = torch.nn.L1Loss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "PearsonLoss":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "PearsonLoss":
         loss_func = PearsonLoss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "SALoss":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "SALoss":
         loss_func = SALoss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "SA_Pearson_Loss":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "SA_Pearson_Loss":
         loss_func = SA_Pearson_Loss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "L1_SA_Pearson_Loss":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "L1_SA_Pearson_Loss":
         loss_func = L1_SA_Pearson_Loss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "SALoss_MSE":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "SALoss_MSE":
         loss_func = SALoss_MSE()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "MSE":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "MSE":
         loss_func = torch.nn.MSELoss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "RMSE":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "RMSE":
         loss_func = RMSELoss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "FocalLoss":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "FocalLoss":
         loss_func = FocalLoss()
-    elif cfg.TRAINING_HYPER_PARAM['loss_func'] == "BCE":
+    elif configs['TRAINING_HYPER_PARAM']['loss_func'] == "BCE":
         loss_func = torch.nn.BCEWithLogitsLoss()
     else:
         loss_func = None
