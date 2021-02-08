@@ -243,12 +243,12 @@ def main():
     copy_files(os.path.join(this_script_dir, 'train_ion.py'), output_dir)
     copy_files(config_path, output_dir)
 
-    pretrain_param = configs.TRAINING_HYPER_PARAM.get("pretrain_param")
+    pretrain_param = configs.get('PretrainParam')
     if pretrain_param is not None and pretrain_param != '':
         load_param_from_file(model,
                              pretrain_param,
                              partially=True,
-                             module_namelist=configs.TRAINING_HYPER_PARAM['module_namelist'],
+                             module_namelist=configs['TRAINING_HYPER_PARAM']['module_namelist'],
                              logger_name='IonInten')
 
     model = model.to(device)
@@ -256,16 +256,16 @@ def main():
 
     optimizer = torch.optim.Adam((p for p in model.parameters() if p.requires_grad),
                                  LR,
-                                 weight_decay=configs.TRAINING_HYPER_PARAM['weight_decay'])
-    scheduler = make_lr_scheduler(optimizer=optimizer, steps=configs.TRAINING_HYPER_PARAM['LR_STEPS'],
-                                  warmup_iters=configs.TRAINING_HYPER_PARAM['warmup_iters'])
+                                 weight_decay=configs['TRAINING_HYPER_PARAM']['weight_decay'])
+    scheduler = make_lr_scheduler(optimizer=optimizer, steps=configs['TRAINING_HYPER_PARAM']['LR_STEPS'],
+                                  warmup_iters=configs['TRAINING_HYPER_PARAM']['warmup_iters'])
 
     meters = MetricLogger(delimiter="  ", )
     max_iter = EPOCH * len(train_dataloader)
     start_iter = 0
     start_training_time = time.time()
     end = time.time()
-    lambda_cls = configs.TRAINING_HYPER_PARAM['lambda_cls']
+    lambda_cls = configs['TRAINING_HYPER_PARAM']['lambda_cls']
     iteration_best = -1
     best_test_res = -99999999
     best_model = None
@@ -274,7 +274,7 @@ def main():
     for epoch in range(EPOCH):
         if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
             # transform to LSTM + transform end to end finetune mode.
-            if epoch >= configs.TRAINING_HYPER_PARAM['transformer_on_epoch']:
+            if epoch >= configs['TRAINING_HYPER_PARAM']['transformer_on_epoch']:
                 if not model.transformer_flag:
                     model.set_transformer()
                     logger.info("set transformer on")
@@ -299,10 +299,10 @@ def main():
                 seq_x = seq_x.to(device)
                 x_charge = x_charge.to(device)
                 x_nce = x_nce.to(device)
-                if configs.TRAINING_HYPER_PARAM['inter_layer_prediction']:
+                if configs['TRAINING_HYPER_PARAM']['inter_layer_prediction']:
                     pred_y, inter_out = model(x1=seq_x, x2=x_charge, x3=x_nce)
                 else:
-                    if configs.TRAINING_HYPER_PARAM['two_stage']:
+                    if configs['TRAINING_HYPER_PARAM']['two_stage']:
                         pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge, x3=x_nce)
                     else:
                         pred_y = model(x1=seq_x, x2=x_charge, x3=x_nce)
@@ -312,10 +312,10 @@ def main():
                 seq_x = seq_x.to(device)
                 # print('-' * 10, seq_x)
                 x_charge = x_charge.to(device)
-                if configs.TRAINING_HYPER_PARAM['inter_layer_prediction']:
+                if configs['TRAINING_HYPER_PARAM']['inter_layer_prediction']:
                     pred_y, inter_out = model(x1=seq_x, x2=x_charge)
                 else:
-                    if configs.TRAINING_HYPER_PARAM['two_stage']:
+                    if configs['TRAINING_HYPER_PARAM']['two_stage']:
                         pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge)
                     else:
                         pred_y = model(x1=seq_x, x2=x_charge)
@@ -327,7 +327,7 @@ def main():
             # print('-'*10, x_hydro)
             y = y.to(device)
             # pred_y[torch.where(y == -1)] = -1
-            if configs.TRAINING_HYPER_PARAM['inter_layer_prediction']:
+            if configs['TRAINING_HYPER_PARAM']['inter_layer_prediction']:
                 aux_loss = 0
                 for i in range(len(inter_out)):
                     if i < epoch / EPOCH:

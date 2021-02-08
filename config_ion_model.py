@@ -8,6 +8,8 @@ ExpName = ''
 TaskPurpose = 'Train'
 # TaskPurpose = 'Predict'
 
+PretrainParam = './PretrainParams/IonModel/best_model.pth'
+
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
     'repeat_factor': 4,
@@ -64,8 +66,6 @@ Ensemble_MODEL_CFG = dict(
 UsedModelCFG = MODEL_CFG
 
 TRAINING_HYPER_PARAM = dict(
-    pretrain_param='.checkpoint/ion_inten/ion_inten-R2P2-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_28_23_38_04/ckpts/best_model.pth',
-
     resume=False,
     Bert_pretrain=False,  # mask language models training MLM
     accumulate_mask_only=False,  # loss agregation style for MLM

@@ -3,8 +3,6 @@ from bisect import bisect_right
 import torch
 from torch.optim import Optimizer
 
-import deep_phospho.configs.config_main as cfg
-
 
 class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
     def __init__(
@@ -211,12 +209,12 @@ class NoamLR(torch.optim.lr_scheduler._LRScheduler):
         raise NotImplementedError
 
 
-def make_lr_scheduler(optimizer, steps: tuple, warmup_iters):
-    if cfg.TRAINING_HYPER_PARAM['lr_scheduler_type'] == 'Noam':
+def make_lr_scheduler(optimizer, steps: tuple, warmup_iters, configs):
+    if configs['TRAINING_HYPER_PARAM']['lr_scheduler_type'] == 'Noam':
         return NoamLR(optimizer,
-                      model_size=cfg.MODEL_CFG['embed_dim'],
-                      warmup_steps=cfg.TRAINING_HYPER_PARAM['warmup_steps'],
-                      factor=cfg.TRAINING_HYPER_PARAM['factor'])
+                      model_size=configs['UsedModelCFG']['embed_dim'],
+                      warmup_steps=configs['TRAINING_HYPER_PARAM']['warmup_steps'],
+                      factor=configs['TRAINING_HYPER_PARAM']['factor'])
     else:
         return WarmupMultiStepLR(
             optimizer,

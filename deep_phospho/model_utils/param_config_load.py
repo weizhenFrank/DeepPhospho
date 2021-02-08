@@ -35,7 +35,7 @@ def load_config_from_json(config):
     return cfg
 
 
-def load_param_from_file(model, f: str, partially=False, module_namelist=None, logger_name='IonIntensity'):
+def load_param_from_file(model, f: str, partially=False, module_namelist=None, logger_name='IonInten'):
     logger = logging.getLogger(logger_name)
     if partially:
         logger.info("partially load weight from %s" % f)
@@ -114,7 +114,7 @@ def save_checkpoint(model, optimizer, scheduler, output_dir, epoch):
 #     return model
 
 
-def load_weight_partially_from_file(model, f: str, module_namelist, logger_name='IonIntensity'):
+def load_weight_partially_from_file(model, f: str, module_namelist, logger_name='IonInten'):
     logger = logging.getLogger(logger_name)
     state_dict = torch.load(f, map_location=torch.device("cpu"), pickle_module=dill)['model']
     # ipdb.set_trace()
