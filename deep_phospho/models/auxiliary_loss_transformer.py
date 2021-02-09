@@ -7,9 +7,9 @@ from torch.nn import LayerNorm, Linear, Dropout
 from torch.nn import Module
 from torch.nn import MultiheadAttention
 
-from deep_phospho.model_utils.utils_functions import get_clones
 from .general_transformer import _get_activation_fn
 from .ion_model import PositionalEncoding
+from deep_phospho.model_utils.utils_functions import get_clones
 from deep_phospho.model_utils.utils_functions import custom_sigmoid
 
 

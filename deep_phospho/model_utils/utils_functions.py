@@ -1,16 +1,22 @@
-import shutil
 import os
-import numpy as np
 import re
 import argparse
-from deep_phospho.model_utils.loss_func import PearsonLoss, SALoss, SA_Pearson_Loss, RMSELoss, \
-    L1_SA_Pearson_Loss, MaskedLanguageLoss, SALoss_MSE, FocalLoss
+import copy
+import shutil
 from math import sqrt
-import torch
+
+from deep_phospho.model_utils.loss_func import (
+    RMSELoss, FocalLoss, MaskedLanguageLoss,
+    PearsonLoss, SALoss, SA_Pearson_Loss,
+    SALoss_MSE, L1_SA_Pearson_Loss
+)
+
+import numpy as np
 from scipy.stats import pearsonr
 from scipy.stats import spearmanr
+
+import torch
 from torch.nn import ModuleList
-import copy
 
 
 def get_clones(module, N):

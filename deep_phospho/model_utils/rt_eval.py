@@ -1,10 +1,12 @@
-import numpy as np
+from tqdm import tqdm
 import termcolor
+
+import numpy as np
+
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from tqdm import tqdm
-# import ipdb
+
 from deep_phospho.model_utils.utils_functions import Pearson, Delta_t95
 
 

@@ -1,23 +1,19 @@
 import copy
-
-import numpy as np
-import termcolor
-import torch
-import torch.nn.functional as F
-from scipy.stats import pearsonr
-from scipy.stats import spearmanr
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-# import ipdb
-from numpy import linalg as LA
 import logging
 from collections import *
-#
-# def RMSE(act, pred):
-#     '''
-#     accept two numpy arrays
-#     '''
-#     return sqrt(np.mean(np.square(act - pred)))
+
+import termcolor
+from tqdm import tqdm
+
+import numpy as np
+from numpy import linalg as LA
+
+from scipy.stats import pearsonr
+from scipy.stats import spearmanr
+
+import torch
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
 
 
 def SA(act, pred):

@@ -24,7 +24,9 @@ REQUIRES_PYTHON = '>=3.6.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy', 'pandas', 'scipy', 'torch', 'matplotlib'
+    'dill', 'termcolor', 'tqdm', 'ipdb',
+    'numpy', 'pandas', 'scipy', 'matplotlib',
+    'torch',
 ]
 
 # What packages are optional?

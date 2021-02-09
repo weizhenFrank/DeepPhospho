@@ -1,12 +1,10 @@
-import copy
-
 import torch
 import torch.nn.functional as F
-from torch.nn import LayerNorm, Linear, Dropout
-from torch.nn import Module
-from torch.nn import ModuleList
-from torch.nn import MultiheadAttention
 from torch.nn.init import xavier_uniform_
+from torch.nn import (
+    LayerNorm, Linear, Dropout,
+    Module, ModuleList, MultiheadAttention
+)
 
 from deep_phospho.model_utils.utils_functions import get_clones
 

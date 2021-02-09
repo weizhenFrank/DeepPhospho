@@ -11,6 +11,7 @@ import pandas as pd
 
 from deep_phospho.model_utils.utils_functions import match_frag, ion_types, get_index, get_pkl_path, intensity_load_check
 
+
 PADDING_CHAR = '#'
 ENDING_CHAR = '$'
 MASK_CHAR = "-"

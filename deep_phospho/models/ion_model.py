@@ -1,15 +1,13 @@
 import numpy as np
-import copy
 
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.nn import TransformerEncoderLayer
-from torch.nn import LayerNorm, Linear, Dropout
-from torch.nn import Module
-from torch.nn import ModuleList
-from torch.nn import MultiheadAttention
-from torch.nn.init import xavier_uniform_
+from torch.nn import (
+    TransformerEncoderLayer, LayerNorm,
+    Linear, Dropout,
+    Module, ModuleList, MultiheadAttention
+)
 
 from .general_transformer import TransformerEncoder
 
