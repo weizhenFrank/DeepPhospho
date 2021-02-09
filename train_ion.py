@@ -7,10 +7,10 @@ import logging
 import random
 from functools import partial
 
-import dill
 import ipdb
-import numpy as np
 import termcolor
+
+import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
@@ -547,8 +547,14 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
             else:
                 iteration = 0
                 logger.info(termcolor.colored("performance on holdout set:", "yellow"))
-                holdout_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, holdout_dataloader,
-                                                               logger, iteration)
+
+                if configs['TRAINING_HYPER_PARAM']['two_stage']:
+                    holdout_loss, holdout_reg_loss, holdout_cls_loss, holdout_acc, pearson_median, sa_median = eval(
+                        model, configs, loss_func_eval, holdout_dataloader, logger, iteration)
+                else:
+                    holdout_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, holdout_dataloader,
+                                                                   logger, iteration)
+
                 tf_writer_holdout.write_data(iteration, pearson_median, 'test_eval_metric/pearson')
                 tf_writer_holdout.write_data(iteration, sa_median, 'test_eval_metric/sa_median')
                 tf_writer_holdout.write_data(iteration, holdout_loss, "test/loss")
