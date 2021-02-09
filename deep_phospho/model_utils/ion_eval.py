@@ -10,7 +10,6 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 # import ipdb
 from numpy import linalg as LA
-from deep_phospho.configs import config_main as cfg
 import logging
 from collections import *
 #
@@ -128,7 +127,7 @@ def pretrain_eval(model, loss_func, test_dataloader: DataLoader, iteration, logg
     return test_loss, masked_acc, hidden_norm
 
 
-def eval(model, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
+def eval(model, configs, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
     model.eval()
     logger = logging.getLogger("IonIntensity")
     logger.info("start validation")
@@ -151,7 +150,7 @@ def eval(model, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
                 seq_x = seq_x.cuda()
                 x_charge = x_charge.cuda()
                 x_nce = x_nce.cuda()
-                if cfg.TRAINING_HYPER_PARAM['two_stage']:
+                if configs['TRAINING_HYPER_PARAM']['two_stage']:
                     pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge, x3=x_nce)
                 else:
                     pred_y = model(x1=seq_x, x2=x_charge, x3=x_nce)
@@ -161,7 +160,7 @@ def eval(model, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
                 seq_x = seq_x.cuda()
                 # print('-' * 10, seq_x)
                 x_charge = x_charge.cuda()
-                if cfg.TRAINING_HYPER_PARAM['two_stage']:
+                if configs['TRAINING_HYPER_PARAM']['two_stage']:
                     pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge)
                 else:
                     pred_y = model(x1=seq_x, x2=x_charge)
@@ -174,10 +173,10 @@ def eval(model, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
                     hidden_norm.append(hidden_vec_norm.cpu())
 
             # pred_y[torch.where(y == 0)] = 0
-            if cfg.TRAINING_HYPER_PARAM['two_stage']:
+            if configs['TRAINING_HYPER_PARAM']['two_stage']:
                 loss_func, loss_func_cls = loss_funcs
 
-                lambda_cls = cfg.TRAINING_HYPER_PARAM['lambda_cls']
+                lambda_cls = configs['TRAINING_HYPER_PARAM']['lambda_cls']
                 y_cls = torch.ones_like(y)
                 y_cls[y == -2] = 0   # phos loc is set 0 for cls, nans and value bigger than 0 are set 1 for cls
                 y_cls[y == -1] = -1  # padding loc will be ignored for cls
@@ -214,7 +213,7 @@ def eval(model, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
             pred_ys.append(pred_y.cpu())
             label_y.append(y.cpu())
 
-    if cfg.TRAINING_HYPER_PARAM['two_stage']:
+    if configs['TRAINING_HYPER_PARAM']['two_stage']:
         test_loss_cls = np.mean(np.array(loss_log['loss_cls']))
         test_loss_reg = np.mean(np.array(loss_log['loss_reg']))
         logger.info("\niteration %d, loss %.5f" % (iteration, test_loss_cls))
@@ -266,7 +265,7 @@ def eval(model, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
     logger.info(termcolor.colored("pearson_eval:   %.3f\n" % pearson_eval_median))
 
     model.train()
-    if cfg.TRAINING_HYPER_PARAM['two_stage']:
+    if configs['TRAINING_HYPER_PARAM']['two_stage']:
         return test_loss, test_loss_reg, test_loss_cls, acc_peps, pearson_eval_median, sa_eval_median
     else:
         return test_loss, pearson_eval_median, sa_eval_median

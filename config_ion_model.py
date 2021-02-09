@@ -8,7 +8,7 @@ ExpName = ''
 TaskPurpose = 'Train'
 # TaskPurpose = 'Predict'
 
-PretrainParam = './PretrainParams/IonModel/best_model.pth'
+PretrainParam = './PretrainParams/IonModel/1.pth'
 
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
@@ -79,7 +79,7 @@ TRAINING_HYPER_PARAM = dict(
     warmup_iters=0,  # warm up_steps for other scheduler
     # interval(iteration) of saving the the parameters
     save_param_interval=300,
-    GPU_INDEX='1',
+    GPU_INDEX='0',
     module_namelist=None,
     remove_ac_pep=False,  # here to remove peptide of ac in N terminal
     # MSE L1 PearsonLoss SALoss SA_Pearson_Loss L1_SA_Pearson_Loss SALoss_MSE
@@ -87,7 +87,7 @@ TRAINING_HYPER_PARAM = dict(
     loss_func="MSE",
     LR_STEPS=(2000, 6000),
     BATCH_SIZE=128,
-    EPOCH=10,
+    EPOCH=3,
 
     use_prosit_pretrain=False,
     # this means we first to predict whether it exists for each fragment under

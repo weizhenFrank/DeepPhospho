@@ -5,6 +5,7 @@ import datetime
 import copy
 import logging
 import random
+from functools import partial
 
 import dill
 import ipdb
@@ -152,11 +153,10 @@ def main():
                                                        mask_ratio=configs['Intensity_DATA_PREPROCESS_CFG']['mask_ratio'])
 
         else:
-            train_dataset = IonDataset(ion_train_data)
-            test_dataset = IonDataset(ion_test_data)
+            train_dataset = IonDataset(ion_train_data, configs)
+            test_dataset = IonDataset(ion_test_data, configs)
             if use_holdout:
-                holdout_dataset = IonDataset(ion_holdout_data)
-        from functools import partial
+                holdout_dataset = IonDataset(ion_holdout_data, configs)
 
         train_dataloader = DataLoader(dataset=train_dataset,
                                       batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
@@ -168,24 +168,24 @@ def main():
                                           batch_size=256,
                                           shuffle=False,
                                           num_workers=0,
-                                          collate_fn=collate_fn)
+                                          collate_fn=partial(collate_fn, configs=configs))
 
         test_dataloader = DataLoader(dataset=test_dataset,
                                      shuffle=False,
                                      batch_size=256,
                                      num_workers=0,
-                                     collate_fn=collate_fn)
+                                     collate_fn=partial(collate_fn, configs=configs))
         holdout_dataloader = DataLoader(
             dataset=holdout_dataset,
             batch_size=256,
             shuffle=False,
             num_workers=0,
-            collate_fn=collate_fn
+            collate_fn=partial(collate_fn, configs=configs)
         )
 
     else:
-        train_dataset = IonDataset(ion_train_data)
-        holdout_dataset = IonDataset(ion_holdout_data)
+        train_dataset = IonDataset(ion_train_data, configs)
+        holdout_dataset = IonDataset(ion_holdout_data, configs)
         index_split = list(range(ion_train_data.data_size))
         Train_ratio = 72
         Test_ratio = 18
@@ -194,20 +194,20 @@ def main():
         train_dataloader = DataLoader(dataset=train_dataset,
                                       batch_size=configs.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                       sampler=torch.utils.data.SubsetRandomSampler(train_index),
-                                      collate_fn=collate_fn)
+                                      collate_fn=partial(collate_fn, configs=configs))
         train_val_dataloader = DataLoader(dataset=train_dataset,
                                           batch_size=configs.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                           sampler=torch.utils.data.SubsetRandomSampler(train_index),
-                                          collate_fn=collate_fn)
+                                          collate_fn=partial(collate_fn, configs=configs))
         test_dataloader = DataLoader(dataset=train_dataset,
                                      batch_size=configs.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                      sampler=torch.utils.data.SubsetRandomSampler(test_index),
-                                     collate_fn=collate_fn)
+                                     collate_fn=partial(collate_fn, configs=configs))
         holdout_dataloader = DataLoader(
             dataset=holdout_dataset,
             batch_size=2048,
             shuffle=False,
-            collate_fn=collate_fn
+            collate_fn=partial(collate_fn, configs=configs)
         )
     if configs['TRAINING_HYPER_PARAM']['two_stage']:
         loss_func, loss_func_cls = get_loss_func(configs)
@@ -258,7 +258,7 @@ def main():
                                  LR,
                                  weight_decay=configs['TRAINING_HYPER_PARAM']['weight_decay'])
     scheduler = make_lr_scheduler(optimizer=optimizer, steps=configs['TRAINING_HYPER_PARAM']['LR_STEPS'],
-                                  warmup_iters=configs['TRAINING_HYPER_PARAM']['warmup_iters'])
+                                  warmup_iters=configs['TRAINING_HYPER_PARAM']['warmup_iters'], configs=configs)
 
     meters = MetricLogger(delimiter="  ", )
     max_iter = EPOCH * len(train_dataloader)
@@ -338,7 +338,7 @@ def main():
                 loss = loss_func(pred_y[torch.where(y != -1)], y[torch.where(y != -1)]) + aux_loss
 
             else:
-                if configs.TRAINING_HYPER_PARAM['two_stage']:
+                if configs['TRAINING_HYPER_PARAM']['two_stage']:
                     # ipdb.set_trace()
                     y_cls = torch.ones_like(y)
                     y_cls[y == -2] = 0
@@ -422,18 +422,18 @@ def main():
                 tf_writer_train.write_data(iteration, lr_rate, "lr/lr_iter")
                 # tf_writer_train.write_data(iter='model', meter=[model, *inputs])
 
-            if iteration % configs.TRAINING_HYPER_PARAM['save_param_interval'] == 0 and iteration != 0 \
+            if iteration % configs['TRAINING_HYPER_PARAM']['save_param_interval'] == 0 and iteration != 0 \
                     or idx == len(train_dataloader) - 1:
 
                 # evaluation in training
-                if configs.TRAINING_HYPER_PARAM['Bert_pretrain']:
+                if configs['TRAINING_HYPER_PARAM']['Bert_pretrain']:
                     pass
                 else:
                     if use_holdout:
                         best_test_res, iteration_best, best_model = evaluation(model, logger,
                                                                                tf_writer_train,
                                                                                tf_writer_test,
-                                                                               get_loss_func(),
+                                                                               get_loss_func(configs),
                                                                                test_dataloader,
                                                                                train_val_dataloader,
                                                                                iteration,
@@ -447,7 +447,7 @@ def main():
                         best_test_res, iteration_best, best_model = evaluation(model, logger,
                                                                                tf_writer_train,
                                                                                tf_writer_test,
-                                                                               get_loss_func(),
+                                                                               get_loss_func(configs),
                                                                                test_dataloader,
                                                                                train_val_dataloader,
                                                                                iteration,
@@ -472,7 +472,7 @@ def main():
         model = best_model
         model.to(device)
         evaluation(model, logger, tf_writer_train, tf_writer_test,
-                   get_loss_func(), test_dataloader, train_val_dataloader,
+                   get_loss_func(configs), test_dataloader, train_val_dataloader,
                    iteration=0, best_test_res=None, iteration_best=None,
                    best_model=None, holdout_dataloader=holdout_dataloader,
                    tf_writer_holdout=tf_writer_holdout,
@@ -487,15 +487,15 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
     model.eval()
 
     with torch.no_grad():
-        if configs.TRAINING_HYPER_PARAM['Bert_pretrain']:
+        if configs['TRAINING_HYPER_PARAM']['Bert_pretrain']:
             pass
         else:
             if not use_holdout:
                 logger.info("start evaluation on iteration: %d" % iteration)
 
                 logger.info(termcolor.colored("performance on training set:", "yellow"))
-                if configs.TRAINING_HYPER_PARAM['two_stage']:
-                    train_loss, train_reg_loss, train_cls_loss, train_acc, pearson_median, sa_median = eval(model,
+                if configs['TRAINING_HYPER_PARAM']['two_stage']:
+                    train_loss, train_reg_loss, train_cls_loss, train_acc, pearson_median, sa_median = eval(model, configs,
                                                                                                             loss_func_eval,
                                                                                                             train_val_dataloader,
                                                                                                             logger,
@@ -505,7 +505,7 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
                     tf_writer_train.write_data(iteration, train_cls_loss, "loss/loss_cls_loss")
                     tf_writer_train.write_data(iteration, train_acc, 'eval_metric/ion_acc_median')
                 else:
-                    train_loss, pearson_median, sa_median = eval(model, loss_func_eval, train_val_dataloader, logger,
+                    train_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, train_val_dataloader, logger,
                                                                  iteration)
 
                 tf_writer_train.write_data(iteration, pearson_median, 'eval_metric/pearson_median')
@@ -514,8 +514,8 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
 
                 logger.info(termcolor.colored("performance on validation set:", "yellow"))
 
-                if configs.TRAINING_HYPER_PARAM['two_stage']:
-                    test_loss, test_reg_loss, test_cls_loss, test_acc, pearson_median, sa_median = eval(model,
+                if configs['TRAINING_HYPER_PARAM']['two_stage']:
+                    test_loss, test_reg_loss, test_cls_loss, test_acc, pearson_median, sa_median = eval(model, configs,
                                                                                                         loss_func_eval,
                                                                                                         test_dataloader,
                                                                                                         logger,
@@ -526,7 +526,7 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
                     tf_writer_test.write_data(iteration, test_acc, 'eval_metric/ion_acc_median')
 
                 else:
-                    test_loss, pearson_median, sa_median = eval(model, loss_func_eval, test_dataloader, logger,
+                    test_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, test_dataloader, logger,
                                                                 iteration)
 
                 tf_writer_test.write_data(iteration, test_loss, "loss/total_loss")
@@ -547,7 +547,7 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
             else:
                 iteration = 0
                 logger.info(termcolor.colored("performance on holdout set:", "yellow"))
-                holdout_loss, pearson_median, sa_median = eval(model, loss_func_eval, holdout_dataloader,
+                holdout_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, holdout_dataloader,
                                                                logger, iteration)
                 tf_writer_holdout.write_data(iteration, pearson_median, 'test_eval_metric/pearson')
                 tf_writer_holdout.write_data(iteration, sa_median, 'test_eval_metric/sa_median')

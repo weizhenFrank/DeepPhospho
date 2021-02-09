@@ -100,8 +100,9 @@ class RandomMaskingDataset(Dataset):
 
 
 class IonDataset(Dataset):
-    def __init__(self, ion_data):
+    def __init__(self, ion_data, configs):
         self.ion_data = ion_data
+        self.configs = configs
 
     def __getitem__(self, item):
 
@@ -111,7 +112,7 @@ class IonDataset(Dataset):
             x2 = np.array(self.ion_data.X2[item], dtype=np.float).squeeze()
             x2 = x2.reshape(-1, 1)
 
-            if cfg.data_name == 'Prosit':
+            if self.configs['Intensity_DATA_CFG']['DataName'] == 'Prosit':
                 x3 = np.array(self.ion_data.X3[item], dtype=np.float).squeeze()
                 x3 = x3.reshape(-1, 1)
 

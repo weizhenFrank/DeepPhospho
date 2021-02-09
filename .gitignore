@@ -1,6 +1,7 @@
 result/
 Data/**/*.pkl
 PretrainParams
+DeepPhospho_raw
 
 # PyCharm
 .idea

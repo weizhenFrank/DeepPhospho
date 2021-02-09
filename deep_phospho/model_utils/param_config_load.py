@@ -49,84 +49,33 @@ def load_param_from_file(model, f: str, partially=False, module_namelist=None, l
     return model
 
 
-# def save_model(model, output_dir, epoch):
-#     param_dir = os.path.join(output_dir, "ckpts")
-#     if not os.path.exists(param_dir):
-#         os.makedirs(param_dir)
-#
-#     data = {}
-#     data["model"] = model.state_dict()
-#
-#     save_file = os.path.join(param_dir, "{}.pth".format(epoch))
-#     print("Saving checkpoint to {}".format(save_file))
-#     torch.save(data, save_file, pickle_module=dill)
-
-def save_checkpoint(model, optimizer, scheduler, output_dir, epoch):
+def save_checkpoint(model, optimizer=None, scheduler=None, output_dir=None, epoch=None):
     param_dir = os.path.join(output_dir, "ckpts")
     if not os.path.exists(param_dir):
         os.makedirs(param_dir)
 
     data = {}
     data["model"] = model.state_dict()
-    data['optimizer'] = optimizer.state_dict()
-    data['scheduler'] = scheduler.state_dict()
+    if optimizer is not None:
+        data['optimizer'] = optimizer.state_dict()
+    if scheduler is not None:
+        data['scheduler'] = scheduler.state_dict()
 
     save_file = os.path.join(param_dir, "{}.pth".format(epoch))
     print("Saving checkpoint to {}".format(save_file))
     torch.save(data, save_file, pickle_module=dill)
 
-#
-# def load_weight_partially_from_file(model, f: str, module_namelist):
-#     logger = logging.getLogger("DeepRT.load_param")
-#     state_dict = torch.load(f, map_location=torch.device("cpu"), pickle_module=dill)['model']
-#     own_state = model.state_dict()
-#     for name, param in state_dict.items():
-#         if name.startswith('module'):
-#             name = name.strip('module.')
-#         try:
-#             skip = True
-#             if module_namelist is not None:
-#                 for to_load_name in module_namelist:
-#                     if to_load_name.startswith('module'):
-#                         to_load_name = to_load_name.strip('module.')
-#                     if to_load_name in name:
-#                         skip = False
-#
-#             else:
-#                 skip = False
-#             if skip:
-#                 continue
-#
-#             if name not in own_state:
-#                 logger.info('[Missed]: {}'.format(name))
-#                 continue
-#             if isinstance(param, torch.nn.Parameter):
-#                 # backwards compatibility for serialized parameters
-#                 param = param.data
-#             own_state[name].copy_(param)
-#             print("[Copied]: {}".format(name))
-#             logger.info("[Copied]: {}".format(name))
-#         except RuntimeError:
-#             logger.info('[Missed] Size Mismatch... : {}'.format(name))
-#             print('[Missed] Size Mismatch... : {}'.format(name))
-#     logger.info("load the pretrain model %s" % f)
-#
-#     return model
-
 
 def load_weight_partially_from_file(model, f: str, module_namelist, logger_name='IonInten'):
     logger = logging.getLogger(logger_name)
     state_dict = torch.load(f, map_location=torch.device("cpu"), pickle_module=dill)['model']
-    # ipdb.set_trace()
     own_state = model.state_dict()
     if module_namelist is not None:
 
         for to_load_name in module_namelist:
             param = state_dict[to_load_name]
             if to_load_name.startswith('module'):
-                # ipdb.set_trace()
                 to_load_name = to_load_name.replace('module.', '')
-                # ipdb.set_trace()
             try:
                 if isinstance(param, torch.nn.Parameter):
                     param = param.data
@@ -144,7 +93,6 @@ def load_weight_partially_from_file(model, f: str, module_namelist, logger_name=
             if name.startswith('module'):
                 name = name.replace('module.', '')
             try:
-
                 if name not in own_state:
                     logger.info('[Missed]: {}'.format(name))
                     continue
@@ -152,7 +100,6 @@ def load_weight_partially_from_file(model, f: str, module_namelist, logger_name=
                     # backwards compatibility for serialized parameters
                     param = param.data
                 own_state[name].copy_(param)
-                # ipdb.set_trace()
                 # print("[Copied]: {}".format(name))
                 logger.info("[Copied]: {}".format(name))
             except RuntimeError:

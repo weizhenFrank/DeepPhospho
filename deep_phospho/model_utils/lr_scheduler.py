@@ -98,6 +98,12 @@ class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
             self.is_better = lambda a, best: a > best + threshold
             self.mode_worse = -float('Inf')
 
+    def state_dict(self):
+        """
+        Exclude is_better func to load the state_dict out of env
+        """
+        return {key: value for key, value in self.__dict__.items() if key != 'optimizer' and not callable(value)}
+
     def epoch_step(self, metrics, epoch=None):
         current = metrics
         if epoch is None:
