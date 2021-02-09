@@ -1,5 +1,14 @@
 
-# TODO Package all config dict to class
+# If the work folder defined as Here, the folder will be where the config file in
+# Else define a specific folder
+WorkFolder = 'Here'
+
+ExpName = ''
+
+TaskPurpose = 'Train'
+# TaskPurpose = 'Predict'
+
+PretrainParam = './PretrainParams/IonModel/best_model.pth'
 
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
@@ -15,11 +24,11 @@ Intensity_DATA_CFG = {
     "PRECURSOR_CHARGE": 'charge',
 
     "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
-    'refresh_cache': True,
+    'refresh_cache': False,
 
-    "TrainPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
-    "TestPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
-    "HoldoutPATH": "./data/to_pred/20201219-IntenInput-For_PhosDIA_DIA18.txt",
+    "TrainPATH": "./Data/IonModel_TestData/20201010-Inten_Train-RPE1_DIA-seed0_811.json",
+    "TestPATH": "./Data/IonModel_TestData/20201010-Inten_Test-RPE1_DIA-seed0_811.json",
+    "HoldoutPATH": "./Data/IonModel_TestData/20201010-Inten_Holdout-RPE1_DIA-seed0_811.json",
 }
 
 MODEL_CFG = dict(
@@ -70,7 +79,7 @@ TRAINING_HYPER_PARAM = dict(
     warmup_iters=0,  # warm up_steps for other scheduler
     # interval(iteration) of saving the the parameters
     save_param_interval=300,
-    GPU_INDEX='1',
+    GPU_INDEX='0',
     module_namelist=None,
     remove_ac_pep=False,  # here to remove peptide of ac in N terminal
     # MSE L1 PearsonLoss SALoss SA_Pearson_Loss L1_SA_Pearson_Loss SALoss_MSE
@@ -78,7 +87,7 @@ TRAINING_HYPER_PARAM = dict(
     loss_func="MSE",
     LR_STEPS=(2000, 6000),
     BATCH_SIZE=128,
-    EPOCH=10,
+    EPOCH=3,
 
     use_prosit_pretrain=False,
     # this means we first to predict whether it exists for each fragment under
@@ -90,7 +99,6 @@ TRAINING_HYPER_PARAM = dict(
     add_phos_principle=True,
     use_all_data=False,
     only_two_ions=False,
-    pretrain_param='.checkpoint/ion_inten/ion_inten-R2P2-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_28_23_38_04/ckpts/best_model.pth',
 )
 
 TEST_HYPER_PARAM = {

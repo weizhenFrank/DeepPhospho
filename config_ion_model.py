@@ -8,7 +8,7 @@ ExpName = ''
 TaskPurpose = 'Train'
 # TaskPurpose = 'Predict'
 
-PretrainParam = './PretrainParams/IonModel/1.pth'
+PretrainParam = './PretrainParams/IonModel/best_model.pth'
 
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
