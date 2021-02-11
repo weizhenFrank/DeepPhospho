@@ -8,7 +8,7 @@ ExpName = ''
 TaskPurpose = 'Train'
 # TaskPurpose = 'Predict'
 
-PretrainParam = './PretrainParams/IonModel/best_model.pth'
+PretrainParam = ''
 
 Intensity_DATA_PREPROCESS_CFG = {
     'MAX_SEQ_LEN': 74,
@@ -87,7 +87,7 @@ TRAINING_HYPER_PARAM = dict(
     loss_func="MSE",
     LR_STEPS=(2000, 6000),
     BATCH_SIZE=128,
-    EPOCH=3,
+    EPOCH=2,
 
     use_prosit_pretrain=False,
     # this means we first to predict whether it exists for each fragment under

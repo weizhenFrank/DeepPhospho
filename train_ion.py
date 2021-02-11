@@ -116,12 +116,18 @@ def main():
     logger.info(config_msg)
 
     # Choose device (Set GPU index or default one, or use CPU)
-    if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX']:
-        device = torch.device(f'cuda:{configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
-    elif torch.cuda.is_available():
-        device = torch.device('cuda:0')
+    if torch.cuda.is_available():
+        if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX']:
+            device = torch.device(f'cuda:{configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
+            logger.info(f'Cuda available. Use config defined GPU {configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
+        else:
+            device = torch.device('cuda:0')
+            logger.info(f'Cuda available. No GPU defined in config. Use "cuda:0"')
+        use_cuda = True
     else:
         device = torch.device('cpu')
+        logger.info(f'Cuda not available. Use CPU')
+        use_cuda = False
 
     # Init tfs
     tf_writer_train = TFBoardWriter(output_dir, type='train')
@@ -390,6 +396,10 @@ def main():
 
             if iteration % 300 == 0:
                 model = model.to(device)
+                if use_cuda:
+                    memory_allo = torch.cuda.max_memory_allocated() / 1024.0 / 1024.0
+                else:
+                    memory_allo = 0
                 logger.info(termcolor.colored(meters.delimiter.join(
                     [
                         "\ninstance id: {instance_name}\n",
@@ -412,7 +422,7 @@ def main():
                     max_iter=len(train_dataloader),
                     total_iter=iteration,
                     lr=optimizer.param_groups[0]["lr"],
-                    memory=torch.cuda.max_memory_allocated() / 1024.0 / 1024.0,
+                    memory=memory_allo,
                 ), "green")
 
                 )
@@ -461,7 +471,8 @@ def main():
                 save_checkpoint(model, optimizer, scheduler, output_dir, iteration)
                 model.train()
                 model = model.to(device)
-                torch.cuda.empty_cache()
+                if use_cuda:
+                    torch.cuda.empty_cache()
 
     save_checkpoint(model, optimizer, scheduler, output_dir, "last_epoch")
     save_checkpoint(best_model, optimizer, scheduler, output_dir, "best_model")
