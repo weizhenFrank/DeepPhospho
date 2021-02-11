@@ -1,4 +1,4 @@
-name: deepphospho
+name: deep_phospho
 channels:
   - pytorch
   - defaults
@@ -110,5 +110,3 @@ dependencies:
     - pygments==2.7.4
     - traitlets==5.0.5
     - wcwidth==0.2.5
-prefix: D:\Anaconda3\envs\deepphospho
-

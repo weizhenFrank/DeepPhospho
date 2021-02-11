@@ -53,7 +53,7 @@
 * In this repository, we supported a conda enviroment config file for quick setup
 
   ```
-  conda env create -f DeepPhospho_ENV.yml -n deep_phospho
+  conda env create -f DeepPhospho_ENV.yaml -n deep_phospho
   ```
 
 ## <span id="use_gpu">Use GPU (optional)</span>
