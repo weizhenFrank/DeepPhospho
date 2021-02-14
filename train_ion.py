@@ -75,7 +75,6 @@ torch.autograd.set_detect_anomaly(True)
 
 
 def main():
-    args = get_parser('Ion intne model')
 
     # Get data path here for ease of use
     train_file = configs['Intensity_DATA_CFG']['TrainPATH']

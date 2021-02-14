@@ -1,4 +1,15 @@
 
+# If the work folder defined as Here, the folder will be where the config file in
+# Else define a specific folder
+WorkFolder = 'Here'
+
+ExpName = ''
+
+TaskPurpose = 'Train'
+# TaskPurpose = 'Predict'
+
+PretrainParam = './PretrainParams/RTModel/4.pth'
+
 RT_DATA_PREPROCESS_CATALOG = {
     "MIN_RT": -100,
     "MAX_RT": 200,
@@ -7,16 +18,18 @@ RT_DATA_PREPROCESS_CATALOG = {
 
 RT_DATA_CFG = {
     'DataName': '',
+
     "SEQUENCE_FIELD_NAME": 'IntPep',
     "RT_FIELD_NAME": "iRT",
     "SCALE_BY_ZERO_ONE": True,
 
     "DATA_PROCESS_CFG": RT_DATA_PREPROCESS_CATALOG,
-    'refresh_cache': True,
+    'refresh_cache': False,
+    'Use_cache': True,
 
-    'TrainPATH': "./data/to_pred/20201219-RTInput-For_PhosDIA_DIA18.txt",
-    'TestPATH': "./data/to_pred/20201219-RTInput-For_PhosDIA_DIA18.txt",
-    'HoldoutPATH': "./data/to_pred/20201219-RTInput-For_PhosDIA_DIA18.txt",
+    'TrainPATH': "./Data/RT_TestData/20201010-RT_Train-RPE1_DIA-seed0_811.txt",
+    'TestPATH': "./Data/RT_TestData/20201010-RT_Test-RPE1_DIA-seed0_811.txt",
+    'HoldoutPATH': "./Data/RT_TestData/20201010-RT_Holdout-RPE1_DIA-seed0_811.txt",
 }
 
 MODEL_CFG = dict(
@@ -51,20 +64,19 @@ Ensemble_MODEL_CFG = dict(
     transformer_hidden_dim=1024,
 )
 
-UsedModelCFG = Ensemble_MODEL_CFG
+UsedModelCFG = MODEL_CFG
 
 TRAINING_HYPER_PARAM = dict(
     # MSE L1 PearsonLoss SALoss SA_Pearson_Loss L1_SA_Pearson_Loss SALoss_MSE
     # RMSE
     loss_func="RMSE",
     BATCH_SIZE=64,
-    EPOCH=60,
+    EPOCH=2,
     LR_STEPS=(10000, 20000),
     add_hydro=False,
     # this means we first to predict whether it exists for each fragment under
     # physical rule, then do regression.
     add_rc=False,
-    pretrain_param='',
 
     resume=False,
     Bert_pretrain=False,  # mask language models training MLM
@@ -79,7 +91,7 @@ TRAINING_HYPER_PARAM = dict(
     warmup_iters=0,  # warm up_steps for other scheduler
     # interval(iteration) of saving the the parameters
     save_param_interval=300,
-    GPU_INDEX='1',
+    GPU_INDEX='0',
     module_namelist=None,
     remove_ac_pep=False,  # here to remove peptide of ac in N terminal
 )

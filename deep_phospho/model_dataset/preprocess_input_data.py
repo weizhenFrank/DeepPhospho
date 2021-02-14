@@ -296,20 +296,16 @@ class RTdata(object):
     Tokenize the sequences
     """
 
-    def __init__(self, data_cfg, path=None, dictionary=None, ):
+    def __init__(self, configs, path=None, dictionary=None, ):
         """
-        :param data_cfg:
-        :param path: data path
-        :param dictionary: use exists dictionary to tokenize
         """
-        if path is None:
-            path = os.path.join(data_cfg['data_path'], data_cfg['data_fn'])
+        data_cfg = configs['RT_DATA_CFG']
         assert os.path.exists(path)
         if dictionary is None:
-            dictionary = Dictionary(path)
+            dictionary = Dictionary()
+        self.dictionary = dictionary
 
         logger = logging.getLogger("RT")
-        self.dictionary = dictionary
         _, file_extension = os.path.splitext(path)
         # ipdb.set_trace()
         logger.info(f"Reading Files...! \n{path}")
@@ -321,31 +317,29 @@ class RTdata(object):
         RT_FIELD_NAME = data_cfg['RT_FIELD_NAME']
         # ipdb.set_trace()
 
-        if cfg.DATA_PROCESS_CFG['MAX_SEQ_LEN'] is None:
-            count_max = lambda pep_list: max([len(aas)-1 for aas in pep_list])
+        if data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] is None:
             # here get the len of each peptide in input and minus one is as a result of ac modification
-            self.MAX_SEQ_LEN = count_max(seq_data[SEQUENCE_FIELD_NAME])
+            self.MAX_SEQ_LEN = max([len(aas)-1 for aas in seq_data[SEQUENCE_FIELD_NAME]])
         else:
-            self.MAX_SEQ_LEN = cfg.DATA_PROCESS_CFG['MAX_SEQ_LEN']
+            self.MAX_SEQ_LEN = data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN']
         if RT_FIELD_NAME not in seq_data.columns.values:
             seq_data[RT_FIELD_NAME] = np.zeros(len(seq_data[SEQUENCE_FIELD_NAME]))
 
-        if cfg.DATA_PROCESS_CFG['MIN_RT'] is None:
+        if data_cfg['DATA_PROCESS_CFG']['MIN_RT'] is None:
             self.MIN_RT = int(np.floor(min(seq_data[RT_FIELD_NAME])))
         else:
-            self.MIN_RT = cfg.DATA_PROCESS_CFG['MIN_RT']
+            self.MIN_RT = data_cfg['DATA_PROCESS_CFG']['MIN_RT']
 
-        if cfg.DATA_PROCESS_CFG['MAX_RT'] is None:
+        if data_cfg['DATA_PROCESS_CFG']['MAX_RT'] is None:
             self.MAX_RT = int(np.ceil(max(seq_data[RT_FIELD_NAME])))
         else:
-            self.MAX_RT = cfg.DATA_PROCESS_CFG['MAX_RT']
+            self.MAX_RT = data_cfg['DATA_PROCESS_CFG']['MAX_RT']
 
-        N_seq = len(seq_data[SEQUENCE_FIELD_NAME])
-        self.number_seq = N_seq
+        data_size = len(seq_data[SEQUENCE_FIELD_NAME])
+        self.number_seq = data_size
         self.N_time_step = self.MAX_SEQ_LEN + 2  # ending and ac tokens
         self.N_aa = len(dictionary)
-        data_size = N_seq
-        if cfg.TRAINING_HYPER_PARAM['DEBUG']:
+        if configs['TRAINING_HYPER_PARAM']['DEBUG']:
             data_size = 50000
         self.scale_by_zero_one_on = data_cfg['SCALE_BY_ZERO_ONE']
 
@@ -353,7 +347,7 @@ class RTdata(object):
         if os.path.exists(path + '.pkl'):
             if data_cfg['refresh_cache']:
                 os.remove(path + '.pkl')
-            elif cfg.Use_cache:
+            elif data_cfg['Use_cache']:
                 with open(path + '.pkl', 'rb') as f:
                     pre_load_data = pickle.load(f)
 
@@ -370,7 +364,7 @@ class RTdata(object):
 
         # todo add multiprocessing here?
         for seq_index, seq in tqdm(enumerate(seq_data[SEQUENCE_FIELD_NAME]), total=len(seq_data[SEQUENCE_FIELD_NAME])):
-            if cfg.TRAINING_HYPER_PARAM['DEBUG']:
+            if configs['TRAINING_HYPER_PARAM']['DEBUG']:
                 if seq_index >= data_size:
                     print("debug on, break")
                     break
@@ -383,7 +377,7 @@ class RTdata(object):
                 self.X1[seq_index, :len(wrapped_seq)] = [self.dictionary.word2idx[aa] for aa in wrapped_seq]
             except ValueError:
                 ipdb.set_trace()
-            if 'To_Predict' in data_cfg and data_cfg['To_Predict']:
+            if configs['TaskPurpose'].lower() == 'predict':
                 continue
             else:
                 self.y[seq_index] = seq_data.iloc[seq_index][RT_FIELD_NAME]
@@ -394,7 +388,7 @@ class RTdata(object):
             # Normalize by even distribution
             self.y = (self.y - self.MIN_RT) / (self.MAX_RT - self.MIN_RT)
         # ipdb.set_trace()
-        if not cfg.TRAINING_HYPER_PARAM['DEBUG'] and cfg.Save_cache:
+        if not configs['TRAINING_HYPER_PARAM']['DEBUG'] and configs['TaskPurpose'].lower() != 'predict':
             with open(path + '.pkl', 'wb') as f:
                 pickle.dump({'X1': self.X1, 'y': self.y}, f)
         logger.info(f"Reading Files...Done! {path}")

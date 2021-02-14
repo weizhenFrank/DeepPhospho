@@ -1,12 +1,13 @@
 import os
+import sys
 import time
 import datetime
 import copy
 import logging
 import random
+from functools import partial
 
 import dill
-import ipdb
 import numpy as np
 import termcolor
 
@@ -22,22 +23,48 @@ from deep_phospho.model_utils.rt_eval import eval
 from deep_phospho.model_utils.logger import MetricLogger, setup_logger, save_config, TFBoardWriter
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
 from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status, get_parser
-from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config
-
+from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config_as_module, load_config_from_json
 
 # ---------------- User defined space Start --------------------
 
-# Define config path as the model work dir
-ConfigPath = r''
-WorkFolder = os.path.dirname(ConfigPath)
-
-cfg = load_config(ConfigPath)
+"""
+Config file can be defined as
+    a json file here
+    or fill in the config_ion_model.py in DeepPhospho main folder
+    or the default config will be used
+"""
+config_path = r''
+SEED = 666
 
 # ---------------- User defined space End --------------------
 
 
+this_script_dir = os.path.dirname(os.path.abspath(__file__))
+
+if config_path != '':
+    config_msg = f'Use config file path defined in train script: {config_path}'
+elif len(sys.argv) == 2:
+    config_path = sys.argv[1]
+    config_msg = f'Use config file path defined in command line: {config_path}'
+if config_path:
+    configs = load_config_from_json(config_path)
+    config_dir = os.path.dirname(config_path)
+else:
+    try:
+        import config_rt_model as config_module
+
+        config_path = os.path.join(this_script_dir, 'config_rt_model.py')
+        config_msg = f'Use config_rt_model.py in DeepPhospho main folder as config file: {config_path}'
+    except ModuleNotFoundError:
+        from deep_phospho.configs import rt_config as config_module
+
+        config_path = os.path.join(this_script_dir, 'deep_phospho', 'configs', 'rt_config.py')
+        config_msg = f'Use default config file rt_config.py in DeepPhospho config module as config file'
+    finally:
+        configs = load_config_as_module(config_module)
+        config_dir = this_script_dir
+
 logging.basicConfig(level=logging.INFO)
-SEED = 666
 torch.manual_seed(SEED)
 random.seed(SEED)
 np.random.seed(SEED)
@@ -47,87 +74,107 @@ torch.autograd.set_detect_anomaly(True)
 
 
 def main():
-    # from deep_phospho.configs import rt_config as cfg
-    args = get_parser('RT model')
+    # Get data path here for ease of use
+    train_file = configs['RT_DATA_CFG']['TrainPATH']
+    test_file = configs['RT_DATA_CFG']['TestPATH']
+    holdout_file = configs['RT_DATA_CFG']['HoldoutPATH']
+    if holdout_file:
+        use_holdout = True
+    else:
+        use_holdout = False
 
-    resume = 'RESUME' if cfg.TRAINING_HYPER_PARAM['resume'] else ''
-    info = "{}-{}-{}{}".format(
-        cfg.RT_DATA_CFG['DataName'],
-        cfg.UsedModelCFG['model_name'],
-        args.exp_name,
-        resume)
+    # Define task name as the specific identifier
+    resume = 'RESUME' if configs['TRAINING_HYPER_PARAM']['resume'] else ''
+    task_info = (
+        f'{configs["RT_DATA_CFG"]["DataName"]}'
+        f'-{configs["UsedModelCFG"]["model_name"]}'
+        f'-{configs["ExpName"]}'
+        f'-{resume}'
+    )
 
     init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
-    instance_name = f'{init_time}-{info}'
+    instance_name = f'{init_time}-{task_info}'
 
-    # output_dir = os.path.join('../result/RT', instance_name)
-    output_dir = os.path.join(WorkFolder, instance_name)
+    # Get work folder and define output dir
+    work_folder = configs['WorkFolder']
+    if work_folder.lower() == 'here' or work_folder == '':
+        work_folder = config_dir
+    output_dir = os.path.join(work_folder, instance_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    # Setup logger and add task info and the config msg
     logger = setup_logger("RT", output_dir)
+    logger.info(f'Work folder is set to {work_folder}')
+    logger.info(f'Task start time: {init_time}')
+    logger.info(f'Task information: {task_info}')
+    logger.info(config_msg)
 
-    if args.ad_hoc is not None:
-        cfg.MODEL_CFG['num_encd_layer'] = int(args.ad_hoc)
-
-    if cfg.TRAINING_HYPER_PARAM['GPU_INDEX']:
-        device = torch.device(f'cuda:{cfg.TRAINING_HYPER_PARAM["GPU_INDEX"]}')
-    elif torch.cuda.is_available():
-        device = torch.device('cuda:0')
+    # Choose device (Set GPU index or default one, or use CPU)
+    if torch.cuda.is_available():
+        if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX']:
+            device = torch.device(f'cuda:{configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
+            logger.info(f'Cuda available. Use config defined GPU {configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
+        else:
+            device = torch.device('cuda:0')
+            logger.info(f'Cuda available. No GPU defined in config. Use "cuda:0"')
+        use_cuda = True
     else:
         device = torch.device('cpu')
+        logger.info(f'Cuda not available. Use CPU')
+        use_cuda = False
 
+    # Init tfs
     tf_writer_train = TFBoardWriter(output_dir, type='train')
     tf_writer_test = TFBoardWriter(output_dir, type="val")
+    tf_writer_holdout = TFBoardWriter(output_dir, type='test')
 
     print("Preparing dataset")
     dictionary = Dictionary()
-    rt_train_data = RTdata(cfg.RT_DATA_CFG['Train'], dictionary=dictionary)
-    rt_test_data = RTdata(cfg.RT_DATA_CFG['Test'], dictionary=dictionary)
 
-    if args.use_holdout:
-        rt_holdout_data = RTdata(cfg.RT_DATA_CFG['Holdout'], dictionary=dictionary)
-        holdout_dataset = IonDataset(rt_holdout_data)
-        holdout_dataloader = DataLoader(
-            dataset=holdout_dataset,
-            batch_size=256,
-            shuffle=False,
-            num_workers=2,
-            collate_fn=collate_fn
-        )
-        tf_writer_holdout = TFBoardWriter(output_dir, type='test')
+    rt_train_data = RTdata(configs, train_file, dictionary=dictionary)
+    rt_test_data = RTdata(configs, test_file, dictionary=dictionary)
 
-    train_dataset = IonDataset(rt_train_data)
-    test_dataset = IonDataset(rt_test_data)
+    train_dataset = IonDataset(rt_train_data, configs)
+    test_dataset = IonDataset(rt_test_data, configs)
 
     train_dataloader = DataLoader(dataset=train_dataset,
-                                  batch_size=cfg.TRAINING_HYPER_PARAM['BATCH_SIZE'],
+                                  batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
                                   shuffle=False,
                                   num_workers=4,
-                                  collate_fn=collate_fn, drop_last=True)
+                                  collate_fn=partial(collate_fn, configs=configs), drop_last=True)
 
     train_val_dataloader = DataLoader(dataset=train_dataset,
                                       batch_size=1024,
                                       shuffle=False,
                                       num_workers=2,
-                                      collate_fn=collate_fn)
+                                      collate_fn=partial(collate_fn, configs=configs))
 
     test_dataloader = DataLoader(dataset=test_dataset,
                                  shuffle=False,
                                  batch_size=1024,
                                  num_workers=2,
-                                 collate_fn=collate_fn)
+                                 collate_fn=partial(collate_fn, configs=configs))
 
-    loss_func = get_loss_func()
+    if use_holdout:
+        rt_holdout_data = RTdata(configs, holdout_file, dictionary=dictionary)
+        holdout_dataset = IonDataset(rt_holdout_data, configs)
+        holdout_dataloader = DataLoader(
+            dataset=holdout_dataset,
+            batch_size=256,
+            shuffle=False,
+            num_workers=2,
+            collate_fn=partial(collate_fn, configs=configs)
+        )
+
+    loss_func = get_loss_func(configs)
     loss_func_eval = copy.deepcopy(loss_func)
 
-    logger.info(save_config(cfg, save_dir=output_dir))
+    EPOCH = configs['TRAINING_HYPER_PARAM']['EPOCH']
+    LR = configs['TRAINING_HYPER_PARAM']['LR']
 
-    EPOCH = cfg.TRAINING_HYPER_PARAM['EPOCH']
-    LR = cfg.TRAINING_HYPER_PARAM['LR']
-
-    if cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
-        cfg_to_load = copy.deepcopy(cfg.MODEL_CFG)
+    if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
+        cfg_to_load = copy.deepcopy(configs['UsedModelCFG'])
 
         model = LSTMTransformer(
             # ntoken=Iontrain.N_aa,
@@ -143,32 +190,32 @@ def main():
     logger.info(str(model))
     logger.info("model parameters statuts: \n%s" % show_params_status(model))
 
-    copy_files("deep_phospho/models/ion_model.py", output_dir)
-    copy_files("deep_phospho/models/EnsembelModel.py", output_dir)
-    copy_files("train_rt.py", output_dir)
-    copy_files("deep_phospho/configs", output_dir)
+    copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'ion_model.py'), output_dir)
+    copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'EnsembelModel.py'), output_dir)
+    copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'auxiliary_loss_transformer.py'), output_dir)
+    copy_files(os.path.join(this_script_dir, 'train_rt.py'), output_dir)
+    copy_files(config_path, output_dir)
 
-    pretrain_param = cfg.TRAINING_HYPER_PARAM.get("pretrain_param")
+    pretrain_param = configs.get('PretrainParam')
     if pretrain_param is not None and pretrain_param != '':
         load_param_from_file(model,
                              pretrain_param,
                              partially=True,
-                             module_namelist=None, logger_name='RT')
+                             module_namelist=None,
+                             logger_name='RT')
 
     model = model.to(device)
     model.train()
 
     optimizer = torch.optim.Adam((p for p in model.parameters() if p.requires_grad),
                                  LR,
-                                 weight_decay=cfg.TRAINING_HYPER_PARAM['weight_decay'])
+                                 weight_decay=configs['TRAINING_HYPER_PARAM']['weight_decay'])
+    scheduler = make_lr_scheduler(optimizer=optimizer, steps=configs['TRAINING_HYPER_PARAM']['LR_STEPS'],
+                                  warmup_iters=configs['TRAINING_HYPER_PARAM']['warmup_iters'], configs=configs)
 
-    scheduler = make_lr_scheduler(optimizer=optimizer, steps=cfg.TRAINING_HYPER_PARAM['LR_STEPS'],
-                                  warmup_iters=cfg.TRAINING_HYPER_PARAM['warmup_iters'])
-
-    if pretrain_param is not None and cfg.TRAINING_HYPER_PARAM['resume']:
-        checkpoint = torch.load(cfg.TRAINING_HYPER_PARAM['pretrain_param'], map_location=torch.device("cpu"),
+    if pretrain_param is not None and configs['TRAINING_HYPER_PARAM']['resume']:
+        checkpoint = torch.load(pretrain_param, map_location=torch.device("cpu"),
                                 pickle_module=dill)
-        ipdb.set_trace()
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
 
@@ -183,13 +230,11 @@ def main():
     best_model = None
 
     for epoch in range(EPOCH):
-        if cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
+        if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
             # transform to LSTM + transform end to end finetune mode.
-            if epoch >= cfg.TRAINING_HYPER_PARAM['transformer_on_epoch']:
-                # ipdb.set_trace()
+            if epoch >= configs['TRAINING_HYPER_PARAM']['transformer_on_epoch']:
                 if hasattr(model, "transformer_flag"):
                     if not model.transformer_flag:
-                        # ipdb.set_trace()
                         model.set_transformer()
                         logger.info("set transformer on")
                 else:
@@ -208,11 +253,9 @@ def main():
                 x_rc = x_rc.to(device)
                 pred_y = model(x1=seq_x, x2=x_hydro, x3=x_rc).squeeze()
             else:
-                # ipdb.set_trace()
                 inputs = inputs.to(device)
                 pred_y = model(x1=inputs).squeeze()
             y = y.to(device)
-            # ipdb.set_trace()
             loss = loss_func(pred_y, y)
 
             meters.update(training_loss=loss.item())
@@ -232,6 +275,10 @@ def main():
 
             if iteration % 300 == 0:
                 model = model.to(device)
+                if use_cuda:
+                    memory_allo = torch.cuda.max_memory_allocated() / 1024.0 / 1024.0
+                else:
+                    memory_allo = 0
                 logger.info(termcolor.colored(meters.delimiter.join(
                     [
                         "\ninstance id: {instance_name}\n",
@@ -254,7 +301,7 @@ def main():
                     max_iter=len(train_dataloader),
                     total_iter=iteration,
                     lr=optimizer.param_groups[0]["lr"],
-                    memory=torch.cuda.max_memory_allocated() / 1024.0 / 1024.0,
+                    memory=memory_allo,
                 ), "green")
 
                 )
@@ -262,40 +309,43 @@ def main():
                 tf_writer_train.write_data(iteration / len(train_dataloader), lr_rate, "lr/lr_epoch")
                 tf_writer_train.write_data(iteration, lr_rate, "lr/lr_iter")
                 # tf_writer_train.write_data(iter='model', meter=[model, (seq_x, x_hydro, x_rc)])
-            if iteration % cfg.TRAINING_HYPER_PARAM['save_param_interval'] == 0 and iteration != 0 \
+            if iteration % configs['TRAINING_HYPER_PARAM']['save_param_interval'] == 0 and iteration != 0 \
                     or idx == len(train_dataloader) - 2:
                 # evaluation during training
-                if args.use_holdout:
-                    best_test_res, iteration_best, best_model = evaluation(model, logger, tf_writer_train,
-                                                                           tf_writer_test,
-                                                                           loss_func_eval, test_dataloader,
-                                                                           train_val_dataloader,
-                                                                           iteration, best_test_res,
-                                                                           iteration_best, best_model,
-                                                                           holdout_dataloader, tf_writer_holdout,
-                                                                           use_holdout=True)
-                else:
-                    best_test_res, iteration_best, best_model = evaluation(model, logger, tf_writer_train,
-                                                                           tf_writer_test,
-                                                                           loss_func_eval, test_dataloader,
-                                                                           train_val_dataloader,
-                                                                           iteration, best_test_res,
-                                                                           iteration_best, best_model,
-                                                                           holdout_dataloader=None,
-                                                                           tf_writer_holdout=None,
-                                                                           use_holdout=False)
+
+                best_test_res, iteration_best, best_model = evaluation(model, logger, tf_writer_train,
+                                                                       tf_writer_test,
+                                                                       loss_func_eval, test_dataloader,
+                                                                       train_val_dataloader,
+                                                                       iteration, best_test_res,
+                                                                       iteration_best, best_model,
+                                                                       holdout_dataloader=None,
+                                                                       tf_writer_holdout=None,
+                                                                       use_holdout=False)
+
+                if use_holdout:
+                    evaluation(model, logger, tf_writer_train,
+                               tf_writer_test,
+                               loss_func_eval, test_dataloader,
+                               train_val_dataloader,
+                               iteration, best_test_res,
+                               iteration_best, best_model,
+                               holdout_dataloader=holdout_dataloader,
+                               tf_writer_holdout=tf_writer_holdout,
+                               use_holdout=True)
 
                 save_checkpoint(model, optimizer, scheduler, output_dir, iteration)
                 model.train()
                 model = model.to(device)
-                torch.cuda.empty_cache()
+                if use_cuda:
+                    torch.cuda.empty_cache()
 
     tf_writer_test.write_data(iteration_best, best_test_res, 'eval_metric/Best_delta_t95')
     logger.info("best_test_res: %s in iter %s" % (best_test_res, iteration_best))
     save_checkpoint(model, optimizer, scheduler, output_dir, "last_epochless")
     save_checkpoint(best_model, optimizer, scheduler, output_dir, "best_model")
 
-    if args.use_holdout:
+    if use_holdout:
         model = best_model
         model.to(device)
         evaluation(model, logger, tf_writer_train, tf_writer_test,
