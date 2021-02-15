@@ -1,0 +1,126 @@
+\begin{thebibliography}{10}\itemsep=-1pt
+
+\bibitem{arnold2006machine}
+Randy~J Arnold, Narmada Jayasankar, Divya Aggarwal, Haixu Tang, and Predrag
+  Radivojac.
+\newblock A machine learning approach to predicting peptide fragmentation
+  spectra.
+\newblock In {\em Biocomputing 2006}, pages 219--230. World Scientific, 2006.
+
+\bibitem{frank2009ranking}
+Ari~M Frank.
+\newblock A ranking-based scoring function for peptide- spectrum matches.
+\newblock {\em Journal of proteome research}, 8(5):2241--2252, 2009.
+
+\bibitem{gessulat2019prosit}
+Siegfried Gessulat, Tobias Schmidt, Daniel~Paul Zolg, Patroklos Samaras,
+  Karsten Schnatbaum, Johannes Zerweck, Tobias Knaute, Julia Rechenberger,
+  Bernard Delanghe, Andreas Huhmer, et~al.
+\newblock Prosit: proteome-wide prediction of peptide tandem mass spectra by
+  deep learning.
+\newblock {\em Nature methods}, 16(6):509--518, 2019.
+
+\bibitem{guo1986prediction}
+Dacheng Guo, Colin~T Mant, Ashok~K Taneja, JM~Robert Parker, and Robert~S
+  Rodges.
+\newblock Prediction of peptide retention times in reversed-phase
+  high-performance liquid chromatography i. determination of retention
+  coefficients of amino acid residues of model synthetic peptides.
+\newblock {\em Journal of Chromatography A}, 359:499--518, 1986.
+
+\bibitem{li2011accuracy}
+Sujun Li, Randy~J Arnold, Haixu Tang, and Predrag Radivojac.
+\newblock On the accuracy and limits of peptide fragmentation spectrum
+  prediction.
+\newblock {\em Analytical chemistry}, 83(3):790--796, 2011.
+
+\bibitem{ma2018improved}
+Chunwei Ma, Yan Ren, Jiarui Yang, Zhe Ren, Huanming Yang, and Siqi Liu.
+\newblock Improved peptide retention time prediction in liquid chromatography
+  through deep learning.
+\newblock {\em Analytical chemistry}, 90(18):10881--10888, 2018.
+
+\bibitem{maboudi2017uncertainty}
+Heydar Maboudi~Afkham, Xuanbin Qiu, Matthew The, and Lukas K{\"a}ll.
+\newblock Uncertainty estimation of predictions of peptides’ chromatographic
+  retention times in shotgun proteomics.
+\newblock {\em Bioinformatics}, 33(4):508--513, 2017.
+
+\bibitem{moruz2012chromatographic}
+Luminita Moruz, An Staes, Joseph~M Foster, Maria Hatzou, Evy Timmerman, Lennart
+  Martens, and Lukas K{\"a}ll.
+\newblock Chromatographic retention time prediction for posttranslationally
+  modified peptides.
+\newblock {\em Proteomics}, 12(8):1151--1159, 2012.
+
+\bibitem{moruz2010training}
+Luminita Moruz, Daniela Tomazela, and Lukas Käll.
+\newblock Training, selection, and robust calibration of retention time models
+  for targeted proteomics.
+\newblock {\em Journal of proteome research}, 9(10):5209--5216, 2010.
+
+\bibitem{sabour2017dynamic}
+Sara Sabour, Nicholas Frosst, and Geoffrey~E Hinton.
+\newblock Dynamic routing between capsules.
+\newblock In {\em Advances in neural information processing systems}, pages
+  3856--3866, 2017.
+
+\bibitem{sun2012ms}
+Shiwei Sun, Fuquan Yang, Qing Yang, Hong Zhang, Yaojun Wang, Dongbo Bu, and Bin
+  Ma.
+\newblock Ms-simulator: predicting y-ion intensities for peptides with two
+  charges based on the intensity ratio of neighboring ions.
+\newblock {\em Journal of proteome research}, 11(9):4509--4516, 2012.
+
+\bibitem{tiwary2019high}
+Shivani Tiwary, Roie Levy, Petra Gutenbrunner, Favio~Salinas Soto, Krishnan~K
+  Palaniappan, Laura Deming, Marc Berndl, Arthur Brant, Peter Cimermancic, and
+  J{\"u}rgen Cox.
+\newblock High-quality ms/ms spectrum prediction for data-dependent and
+  data-independent acquisition data analysis.
+\newblock {\em Nature methods}, 16(6):519--525, 2019.
+
+\bibitem{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock In {\em Advances in neural information processing systems}, pages
+  5998--6008, 2017.
+
+\bibitem{wang2015openms}
+Yaojun Wang, Fei Yang, Peng Wu, Dongbo Bu, and Shiwei Sun.
+\newblock Openms-simulator: an open-source software for theoretical tandem mass
+  spectrum prediction.
+\newblock {\em BMC bioinformatics}, 16(1):110, 2015.
+
+\bibitem{xiong2020layer}
+Ruibin Xiong, Yunchang Yang, Di He, Kai Zheng, Shuxin Zheng, Chen Xing,
+  Huishuai Zhang, Yanyan Lan, Liwei Wang, and Tie-Yan Liu.
+\newblock On layer normalization in the transformer architecture, 2020.
+
+\bibitem{zeng2019ms}
+Wen-Feng Zeng, Xie-Xuan Zhou, Wen-Jing Zhou, Hao Chi, Jianfeng Zhan, and Si-Min
+  He.
+\newblock Ms/ms spectrum prediction for modified peptides using pdeep2 trained
+  by transfer learning.
+\newblock {\em Analytical chemistry}, 91(15):9724--9731, 2019.
+
+\bibitem{zhang2004prediction}
+Zhongqi Zhang.
+\newblock Prediction of low-energy collision-induced dissociation spectra of
+  peptides.
+\newblock {\em Analytical chemistry}, 76(14):3908--3922, 2004.
+
+\bibitem{zhang2005prediction}
+Zhongqi Zhang.
+\newblock Prediction of low-energy collision-induced dissociation spectra of
+  peptides with three or more charges.
+\newblock {\em Analytical chemistry}, 77(19):6364--6373, 2005.
+
+\bibitem{zhou2017pdeep}
+Xie-Xuan Zhou, Wen-Feng Zeng, Hao Chi, Chunjie Luo, Chao Liu, Jianfeng Zhan,
+  Si-Min He, and Zhifei Zhang.
+\newblock pdeep: predicting ms/ms spectra of peptides with deep learning.
+\newblock {\em Analytical chemistry}, 89(23):12690--12697, 2017.
+
+\end{thebibliography}
