@@ -1,16 +1,15 @@
-import argparse
-import copy
-import datetime
 import os
+import sys
 import random
+import datetime
+import copy
 import json
+from functools import partial
 from tqdm import tqdm
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
-import ipdb
 
 import torch
 from torch.utils.data import DataLoader
@@ -22,70 +21,112 @@ from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
 from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
 
 from deep_phospho.model_utils.logger import setup_logger
-from deep_phospho.model_utils.param_config_load import load_param_from_file
+from deep_phospho.model_utils.param_config_load import load_param_from_file, load_config_as_module, load_config_from_json
 from deep_phospho.model_utils.ion_eval import SA, Pearson
-from deep_phospho.model_utils.utils_functions import show_params_status
-from deep_phospho.model_utils.utils_functions import give_name_ion
+from deep_phospho.model_utils.utils_functions import show_params_status, give_name_ion
 
 
 # ---------------- User defined space Start --------------------
 
-# Define config path as the model work dir
-ConfigPath = r''
-WorkFolder = os.path.dirname(ConfigPath)
-
-cfg = load_config(ConfigPath)
-
-load_model_path = "/p300/projects/IonAndRT/result/ion_inten/AcData/ion_inten-PhosDIA_DIA18-LSTMTransformer-RemoveSigmoidRemove0AssignEpoch90OfJeffVeroE6R2P2-remove_ac_pepFalse-add_phos_principleTrue-LossTypeMSE-use_holdoutFalse-2020_10_29_09_37_41/ckpts/best_model.pth"
+"""
+Config file can be defined as
+    a json file here
+    or fill in the config_ion_model.py in DeepPhospho main folder
+"""
+config_path = r''
+SEED = 666
 
 # ---------------- User defined space End --------------------
-from deep_phospho.configs import ion_inten_config as cfg
 
 
-def get_parser():
-    parser = argparse.ArgumentParser(description='IonIntensity prediction Analysis')
-    parser.add_argument('--exp_name', type=str, default='', help="expriments name for output dir")
-    parser.add_argument('--GPU', default=None, help="index of GPU")
-    parser.add_argument('--pretrain_param', default=None, type=str, help="path of pretrained_model")
-    return parser.parse_args()
+this_script_dir = os.path.dirname(os.path.abspath(__file__))
+
+if config_path != '':
+    config_msg = f'Use config file path defined in train script: {config_path}'
+elif len(sys.argv) == 2:
+    config_path = sys.argv[1]
+    config_msg = f'Use config file path defined in command line: {config_path}'
+if config_path:
+    configs = load_config_from_json(config_path)
+    config_dir = os.path.dirname(config_path)
+else:
+    try:
+        import config_ion_model as config_module
+        config_path = os.path.join(this_script_dir, 'config_ion_model.py')
+        config_msg = f'Use config_ion_model.py in DeepPhospho main folder as config file: {config_path}'
+    except ModuleNotFoundError:
+        from deep_phospho.configs import ion_inten_config as config_module
+        config_path = os.path.join(this_script_dir, 'deep_phospho', 'configs', 'ion_inten_config.py')
+        config_msg = f'Use default config file ion_inten_config.py in DeepPhospho config module as config file'
+    finally:
+        configs = load_config_as_module(config_module)
+        config_dir = this_script_dir
 
 
-args = get_parser()
-
-info = f'ion_inten-{cfg.Intensity_DATA_CFG["DataName"]}-{cfg.MODEL_CFG["model_name"]}-{args.exp_name}'
-init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
-instance_name = f'{info}-{init_time}'
-
-output_dir = os.path.join(WorkFolder, instance_name)
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-logger = setup_logger("IonIntensity", output_dir)
-
-SEED = 666
 torch.manual_seed(SEED)
 random.seed(SEED)
 np.random.seed(SEED)
 torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
 
-if cfg.TRAINING_HYPER_PARAM['GPU_INDEX']:
-    device = torch.device(f'cuda:{cfg.TRAINING_HYPER_PARAM["GPU_INDEX"]}')
-elif torch.cuda.is_available():
-    device = torch.device('cuda:0')
+
+# Get data path here for ease of use
+pred_input_file = configs['Intensity_DATA_CFG']['PredInputPATH']
+if not os.path.exists(pred_input_file):
+    raise FileNotFoundError(f'Input file is not existed in {pred_input_file}')
+
+# Define task name as the specific identifier
+task_info = (
+    f'ion_inten-{configs["Intensity_DATA_CFG"]["DataName"]}'
+    f'-{configs["UsedModelCFG"]["model_name"]}'
+    f'-{configs["ExpName"]}'
+    f'-remove_ac_pep{configs["TRAINING_HYPER_PARAM"]["remove_ac_pep"]}'
+)
+
+init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
+instance_name = f'{init_time}-{task_info}'
+
+# Get work folder and define output dir
+work_folder = configs['WorkFolder']
+if work_folder.lower() == 'here' or work_folder == '':
+    work_folder = config_dir
+output_dir = os.path.join(work_folder, instance_name)
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+# Setup logger and add task info and the config msg
+logger = setup_logger("IonInten", output_dir)
+logger.info(f'Work folder is set to {work_folder}')
+logger.info(f'Task start time: {init_time}')
+logger.info(f'Task information: {task_info}')
+logger.info(config_msg)
+
+# Choose device (Set GPU index or default one, or use CPU)
+if torch.cuda.is_available():
+    if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX']:
+        device = torch.device(f'cuda:{configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
+        logger.info(f'Cuda available. Use config defined GPU {configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
+    else:
+        device = torch.device('cuda:0')
+        logger.info(f'Cuda available. No GPU defined in config. Use "cuda:0"')
+    use_cuda = True
 else:
     device = torch.device('cpu')
+    logger.info(f'Cuda not available. Use CPU')
+    use_cuda = False
 
+
+# Init dictionary
 dictionary = Dictionary()
 idx2aa = dictionary.idx2word
 
-Iontest = IonData(cfg.Intensity_DATA_CFG['HoldoutPATH'], dictionary=dictionary)
-test_dataset = IonDataset(Iontest)
+Iontest = IonData(configs, pred_input_file, dictionary=dictionary)
+test_dataset = IonDataset(Iontest, configs)
 test_dataloader = DataLoader(dataset=test_dataset,
                              shuffle=False,
                              batch_size=64 * 8 * 3,
                              num_workers=0,
-                             collate_fn=collate_fn)
+                             collate_fn=partial(collate_fn, configs=configs))
 
 
 def idxtoaa(arr):
@@ -93,9 +134,8 @@ def idxtoaa(arr):
     return ''.join(peptide).replace('#', '').replace('$', '')
 
 
-if cfg.MODEL_CFG['model_name'] == "StackedLSTM":
-    cfg_to_load = copy.deepcopy(cfg.MODEL_CFG)
-    cfg_to_load.pop("pretrain_param")
+if configs['UsedModelCFG']['model_name'] == "StackedLSTM":
+    cfg_to_load = copy.deepcopy(configs['UsedModelCFG'])
     model = StackedLSTM(
         # ntoken=Ionholdout.N_aa,
         ntoken=31,
@@ -103,30 +143,27 @@ if cfg.MODEL_CFG['model_name'] == "StackedLSTM":
         # row_num=Ionholdout.row_num,
         row_num=53,
         # for prosit, it has 30 max length
-        use_prosit=cfg.data_name == 'Prosit',
+        use_prosit=configs.data_name == 'Prosit',
         **cfg_to_load,
     )
-elif cfg.MODEL_CFG['model_name'] == "LSTMTransformer":
-    cfg_to_load = copy.deepcopy(cfg.MODEL_CFG)
+elif configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
+    cfg_to_load = copy.deepcopy(configs['UsedModelCFG'])
     model = LSTMTransformer(
         # ntoken=Iontrain.N_aa,
         RT_mode=False,
         ntoken=len(dictionary) - 1,  # before is 31
         # for prosit, it has 0-21
-        use_prosit=cfg.Intensity_DATA_CFG["DataName"] == 'Prosit',
-        pdeep2mode=cfg.TRAINING_HYPER_PARAM['pdeep2mode'],
-        two_stage=cfg.TRAINING_HYPER_PARAM['two_stage'],
+        use_prosit=configs['Intensity_DATA_CFG']["DataName"] == 'Prosit',
+        pdeep2mode=configs['TRAINING_HYPER_PARAM']['pdeep2mode'],
+        two_stage=configs['TRAINING_HYPER_PARAM']['two_stage'],
         **cfg_to_load,
     )
 else:
     raise Exception("No model given!")
 
-if args.pretrain_param is not None:
-    load_model_path = args.pretrain_param
-
 model = load_param_from_file(model,
-                             load_model_path,
-                             partially=False, logger_name='IonIntensity')
+                             configs['PretrainParam'],
+                             partially=False, logger_name='IonInten')
 
 logger.info(str(model))
 logger.info("model parameters statuts: \n%s" % show_params_status(model))
@@ -142,10 +179,7 @@ hidden_norm = []
 pearson_eval = []
 short_angle = []
 
-if torch.cuda.device_count() > 1:
-    print("Let's use", torch.cuda.device_count(), "GPUs!")
-    model = torch.nn.DataParallel(model)
-model = model.cuda()
+model = model.to(device)
 model.eval()
 # ipdb.set_trace()
 logger.info("Start Testing")
@@ -166,22 +200,22 @@ with torch.no_grad():
             seq_x = inputs[0]
             x_charge = inputs[1]
             x_gb = inputs[2]
-            seq_x = seq_x.cuda()
-            x_charge = x_charge.cuda()
-            x_gb = x_gb.cuda()
+            seq_x = seq_x.to(device)
+            x_charge = x_charge.to(device)
+            x_gb = x_gb.to(device)
             pred_y = model(x1=seq_x, x2=x_charge, x3=x_gb)
         else:
             seq_x = inputs[0]
             x_charge = inputs[1]
-            seq_x = seq_x.cuda()
-            x_charge = x_charge.cuda()
+            seq_x = seq_x.to(device)
+            x_charge = x_charge.to(device)
             # ipdb.set_trace()
             # try:
             #     pred_y = model(x1=seq_x, x2=x_charge)
             # except RuntimeError:
             #     ipdb.set_trace()
             pred_y = model(x1=seq_x, x2=x_charge)
-        y = y.cuda()
+        y = y.to(device)
         # ipdb.set_trace()
 
         if isinstance(pred_y, tuple):
@@ -200,7 +234,6 @@ with torch.no_grad():
         pep_charge = x_charge.reshape(x_charge.shape[0], -1)[:, 0]
         charges.append(pep_charge.detach().cpu())
         pep_len.append(((seq_x != 0).sum(axis=-1) - 2).detach().cpu())
-        # torch.cuda.empty_cache()
 
 
 pred_matrix_all = torch.cat(pred_matrix).numpy()
@@ -224,12 +257,11 @@ all_charge = []
 
 below_cut_counts = 0
 
-# TODO This var controls whether with label or not, be True or False in Config (has been deleted)
-No_Intensity = cfg.HOLDOUT_DATA_CFG['To_Predict']
+WithLabel = configs['Intensity_DATA_CFG']['InputWithLabel']
 
 for pred_inten_mat, pep_inten_mat, aas, length_aas, charge in zip(pred_matrix_all, y_matrix_all, pep, pep_len, charges):
 
-    if not No_Intensity:
+    if WithLabel:
         # ipdb.set_trace()
         pred_inten__vec = pred_inten_mat.reshape(-1)
         pep_inten__vec = pep_inten_mat.reshape(-1)
@@ -255,24 +287,25 @@ if below_cut_counts > 0:
     logger.info(f"There is {below_cut_counts} precursors below cut off!")
 
 logger.info("Start write into file")
-if not No_Intensity:
-    ion_pred = pd.DataFrame({"pred_with_name": all_pred_ions_with_name, "gt_ion_with_name": all_gt_ion_with_name, "PCCs": pearson_eval, "SA": short_angle,
-                             "peptide": all_aa, "charge": all_charge, "length_peptide": all_len})
-    ion_pred.to_json(os.path.join(output_dir, f"{instance_name}-IonIntensity_Pred_label.json"))
+if WithLabel:
+    ion_pred = pd.DataFrame({"PredInten": all_pred_ions_with_name,
+                             "IntPep": all_aa, "PrecCharge": all_charge, "PepLen": all_len,
+                             "gt_ion_with_name": all_gt_ion_with_name, "PCCs": pearson_eval, "SA": short_angle})
+    ion_pred.to_json(os.path.join(output_dir, f"{instance_name}-PredOutput.json"))
 
 else:
     out_put = {}
     ion_pred = pd.DataFrame(
-        {"pred_with_name": all_pred_ions_with_name,
-         "peptide": all_aa, "charge": all_charge, "length_peptide": all_len})
+        {"PredInten": all_pred_ions_with_name,
+         "IntPep": all_aa, "PrecCharge": all_charge, "PepLen": all_len})
     # ion_pred.to_hdf(os.path.join(output_dir, f"{instance_name}-IonIntensity_Pred_label.h5"), key='df', mode='w')
     for pred_ion, aa, charge in zip(all_pred_ions_with_name, all_aa, all_charge):
         out_put['%s.%d' % (aa, charge)] = pred_ion
-    with open(os.path.join(output_dir, f"{instance_name}-IonIntensity_Pred_label.json"), 'w') as outfile:
-        json.dump(out_put, outfile)
+    with open(os.path.join(output_dir, f"{instance_name}-PredOutput.json"), 'w') as outfile:
+        json.dump(out_put, outfile, indent=4)
     # ion_pred.to_json(os.path.join(output_dir, f"{instance_name}-IonIntensity_Pred_label.json"))
 
-if not No_Intensity:
+if WithLabel:
     pearson_eval_median = np.median(pearson_eval)
     sa_eval_median = np.median(short_angle)
     logger.info(
@@ -316,5 +349,5 @@ if not No_Intensity:
                       f'75% : {quantiles_sa[2]:.3}\nN={len(short_angle)}', fontdict=font, transform=ax2.transAxes)
     ax2.grid()
     ax2.set_title(f"SA distribution")
-    fig.suptitle(f'{cfg.data_name} test result', fontsize=20)
+    fig.suptitle(f'{configs["Intensity_DATA_CFG"]["DataName"]} test result', fontsize=20)
     plt.savefig(os.path.join(output_dir, f"{instance_name}-Histogram.png"), dpi=300)
