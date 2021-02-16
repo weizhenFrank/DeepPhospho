@@ -30,7 +30,7 @@ from deep_phospho.model_utils.param_config_load import save_checkpoint, load_par
 """
 Config file can be defined as
     a json file here
-    or fill in the config_train_rt.py in DeepPhospho main folder
+    or fill in the config_rt_model.py in DeepPhospho main folder
     or the default config will be used
 """
 config_path = r''
@@ -51,10 +51,10 @@ if config_path:
     config_dir = os.path.dirname(config_path)
 else:
     try:
-        import config_train_rt as config_module
+        import config_rt_model as config_module
 
-        config_path = os.path.join(this_script_dir, 'config_train_rt.py')
-        config_msg = f'Use config_train_rt.py in DeepPhospho main folder as config file: {config_path}'
+        config_path = os.path.join(this_script_dir, 'config_rt_model.py')
+        config_msg = f'Use config_rt_model.py in DeepPhospho main folder as config file: {config_path}'
     except ModuleNotFoundError:
         from deep_phospho.configs import rt_config as config_module
 
