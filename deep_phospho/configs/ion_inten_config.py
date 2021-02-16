@@ -5,8 +5,8 @@ WorkFolder = 'Here'
 
 ExpName = ''
 
-TaskPurpose = 'Train'
-# TaskPurpose = 'Predict'
+# TaskPurpose = 'Train'
+TaskPurpose = 'Predict'
 
 PretrainParam = './PretrainParams/IonModel/best_model.pth'
 
@@ -19,16 +19,19 @@ Intensity_DATA_PREPROCESS_CFG = {
 Intensity_DATA_CFG = {
     'DataName': '',
 
+    "TrainPATH": "./Data/IonModel_TestData/20201010-Inten_Train-RPE1_DIA-seed0_811.json",
+    "TestPATH": "./Data/IonModel_TestData/20201010-Inten_Test-RPE1_DIA-seed0_811.json",
+    "HoldoutPATH": "./Data/IonModel_TestData/20201010-Inten_Holdout-RPE1_DIA-seed0_811.json",
+
+    "PredInputPATH": "./demo/IonInput.txt",
+    'InputWithLabel': False,
+
     "Intensity_FIELD_NAME": "normalized_intensity",
     "SEQUENCE_FIELD_NAME": 'sequence',
     "PRECURSOR_CHARGE": 'charge',
 
     "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
     'refresh_cache': False,
-
-    "TrainPATH": "./Data/IonModel_TestData/20201010-Inten_Train-RPE1_DIA-seed0_811.json",
-    "TestPATH": "./Data/IonModel_TestData/20201010-Inten_Test-RPE1_DIA-seed0_811.json",
-    "HoldoutPATH": "./Data/IonModel_TestData/20201010-Inten_Holdout-RPE1_DIA-seed0_811.json",
 }
 
 MODEL_CFG = dict(
@@ -87,7 +90,7 @@ TRAINING_HYPER_PARAM = dict(
     loss_func="MSE",
     LR_STEPS=(2000, 6000),
     BATCH_SIZE=128,
-    EPOCH=3,
+    EPOCH=2,
 
     use_prosit_pretrain=False,
     # this means we first to predict whether it exists for each fragment under
