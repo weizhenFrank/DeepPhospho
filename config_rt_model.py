@@ -5,10 +5,20 @@ WorkFolder = 'Here'
 
 ExpName = ''
 
-TaskPurpose = 'Train'
-# TaskPurpose = 'Predict'
+# TaskPurpose = 'Train'
+TaskPurpose = 'Predict'
 
 PretrainParam = './PretrainParams/RTModel/4.pth'
+
+# If use ensembl - A dict with key-value pairs as Encoder layer number: param path
+# If use single model - Str of param path
+ParamsForPred = {
+    4: "./PretrainParams/RTModel/4.pth",
+    5: "./PretrainParams/RTModel/5.pth",
+    6: "./PretrainParams/RTModel/6.pth",
+    7: "./PretrainParams/RTModel/7.pth",
+    8: "./PretrainParams/RTModel/8.pth",
+}
 
 RT_DATA_PREPROCESS_CATALOG = {
     "MIN_RT": -100,
@@ -19,6 +29,13 @@ RT_DATA_PREPROCESS_CATALOG = {
 RT_DATA_CFG = {
     'DataName': '',
 
+    'TrainPATH': "./Data/RT_TestData/20201010-RT_Train-RPE1_DIA-seed0_811.txt",
+    'TestPATH': "./Data/RT_TestData/20201010-RT_Test-RPE1_DIA-seed0_811.txt",
+    'HoldoutPATH': "./Data/RT_TestData/20201010-RT_Holdout-RPE1_DIA-seed0_811.txt",
+
+    "PredInputPATH": "./demo/RTInput.txt",
+    'InputWithLabel': False,
+
     "SEQUENCE_FIELD_NAME": 'IntPep',
     "RT_FIELD_NAME": "iRT",
     "SCALE_BY_ZERO_ONE": True,
@@ -26,10 +43,6 @@ RT_DATA_CFG = {
     "DATA_PROCESS_CFG": RT_DATA_PREPROCESS_CATALOG,
     'refresh_cache': False,
     'Use_cache': True,
-
-    'TrainPATH': "./Data/RT_TestData/20201010-RT_Train-RPE1_DIA-seed0_811.txt",
-    'TestPATH': "./Data/RT_TestData/20201010-RT_Test-RPE1_DIA-seed0_811.txt",
-    'HoldoutPATH': "./Data/RT_TestData/20201010-RT_Holdout-RPE1_DIA-seed0_811.txt",
 }
 
 MODEL_CFG = dict(
@@ -64,7 +77,7 @@ Ensemble_MODEL_CFG = dict(
     transformer_hidden_dim=1024,
 )
 
-UsedModelCFG = MODEL_CFG
+UsedModelCFG = Ensemble_MODEL_CFG
 
 TRAINING_HYPER_PARAM = dict(
     # MSE L1 PearsonLoss SALoss SA_Pearson_Loss L1_SA_Pearson_Loss SALoss_MSE
