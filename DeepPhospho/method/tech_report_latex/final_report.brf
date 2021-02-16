@@ -17,10 +17,10 @@
 \backcite {li2011accuracy}{{2}{2.2}{subsection.2.2}}
 \backcite {zhou2017pdeep}{{2}{2.2}{subsection.2.2}}
 \backcite {zeng2019ms}{{2}{2.2}{subsection.2.2}}
-\backcite {hochreiter1997long}{{3}{3.2}{section*.1}}
-\backcite {vaswani2017attention}{{3}{3.2}{section*.1}}
-\backcite {xiong2020layer}{{3}{3.2}{section*.2}}
-\backcite {vaswani2017attention}{{3}{3.2}{section*.2}}
-\backcite {kingma2017adam}{{3}{3.4}{subsection.3.4}}
+\backcite {hochreiter1997long}{{3}{3.1}{section*.1}}
+\backcite {vaswani2017attention}{{3}{3.1}{section*.1}}
+\backcite {xiong2020layer}{{3}{3.1}{section*.2}}
+\backcite {vaswani2017attention}{{3}{3.1}{section*.2}}
+\backcite {kingma2017adam}{{3}{3.3}{subsection.3.3}}
 \backcite {zeng2019ms}{{4}{4.1}{section*.3}}
 \backcite {gessulat2019prosit}{{4}{4.1}{section*.6}}

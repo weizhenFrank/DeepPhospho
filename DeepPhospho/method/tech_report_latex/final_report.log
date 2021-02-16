@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.9.17)  17 FEB 2021 05:43
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.9.17)  17 FEB 2021 06:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -294,21 +294,21 @@ File: hpdftex.def 2018/02/06 v6.86b Hyperref driver for pdfTeX
 (./final_report.aux)
 \openout1 = `final_report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Try loading font information for OT1+ptm on input line 15.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 18.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
@@ -372,7 +372,7 @@ e
 ))
 \AtBeginShipoutBox=\box32
 Package atbegshi Info: Package `everyshi' patched.
-Package hyperref Info: Link coloring ON on input line 15.
+Package hyperref Info: Link coloring ON on input line 18.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -382,22 +382,22 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count140
 )
-LaTeX Info: Redefining \ref on input line 15.
-LaTeX Info: Redefining \pageref on input line 15.
-LaTeX Info: Redefining \nameref on input line 15.
+LaTeX Info: Redefining \ref on input line 18.
+LaTeX Info: Redefining \pageref on input line 18.
+LaTeX Info: Redefining \nameref on input line 18.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 27.
-LaTeX Font Info:    Try loading font information for U+msa on input line 27.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 29.
+LaTeX Font Info:    Try loading font information for U+msa on input line 29.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 27.
+LaTeX Font Info:    Try loading font information for U+msb on input line 29.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 27.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 29.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
@@ -406,59 +406,17 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 1.
 ) (./Intro.tex
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 9.
-
-
-LaTeX Warning: Citation `arnold2006machine' on page 1 undefined on input line 9
-.
-
-
-LaTeX Warning: Citation `zhou2017pdeep' on page 1 undefined on input line 10.
-
-
-LaTeX Warning: Citation `ma2018improved' on page 1 undefined on input line 10.
-
-
-LaTeX Warning: Citation `tiwary2019high' on page 1 undefined on input line 10.
-
-
-LaTeX Warning: Citation `zeng2019ms' on page 1 undefined on input line 10.
-
-
-LaTeX Warning: Citation `gessulat2019prosit' on page 1 undefined on input line 
-10.
-
-
-LaTeX Warning: Citation `ma2018improved' on page 1 undefined on input line 10.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 10.
 
 
 LaTeX Warning: Citation `hochreiter1997long' on page 1 undefined on input line 
 10.
 
-
-LaTeX Warning: Citation `zeng2019ms' on page 1 undefined on input line 10.
-
-) [1{/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+[1{/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 
-]
+])
 (./Related.tex
-
-LaTeX Warning: Citation `guo1986prediction' on page 2 undefined on input line 3
-.
-
-
-LaTeX Warning: Citation `moruz2010training' on page 2 undefined on input line 6
-.
-
-
-LaTeX Warning: Citation `moruz2012chromatographic' on page 2 undefined on input
- line 6.
-
-
-LaTeX Warning: Citation `maboudi2017uncertainty' on page 2 undefined on input l
-ine 6.
-
 
 ./Related.tex:7: Package inputenc Error: Unicode character ﬁ (U+FB01)
 (inputenc)                not set up for use with LaTeX.
@@ -487,17 +445,6 @@ You may provide a definition with
 \DeclareUnicodeCharacter 
 
 
-LaTeX Warning: Citation `ma2018improved' on page 2 undefined on input line 16.
-
-
-LaTeX Warning: Citation `gessulat2019prosit' on page 2 undefined on input line 
-16.
-
-
-LaTeX Warning: Citation `sabour2017dynamic' on page 2 undefined on input line 1
-8.
-
-
 ./Related.tex:19: Package inputenc Error: Unicode character ﬁ (U+FB01)
 (inputenc)                not set up for use with LaTeX.
 
@@ -512,24 +459,6 @@ You may provide a definition with
 \DeclareUnicodeCharacter 
 
 
-LaTeX Warning: Citation `vaswani2017attention' on page 2 undefined on input lin
-e 24.
-
-
-LaTeX Warning: Citation `zhang2004prediction' on page 2 undefined on input line
- 29.
-
-
-LaTeX Warning: Citation `zhang2005prediction' on page 2 undefined on input line
- 29.
-
-
-LaTeX Warning: Citation `sun2012ms' on page 2 undefined on input line 29.
-
-
-LaTeX Warning: Citation `wang2015openms' on page 2 undefined on input line 29.
-
-
 ./Related.tex:31: Package inputenc Error: Unicode character ﬁ (U+FB01)
 (inputenc)                not set up for use with LaTeX.
 
@@ -541,26 +470,6 @@ l.31 ... parameters of the models are tuned to ﬁ
                                                   t the data
 You may provide a definition with
 \DeclareUnicodeCharacter 
-
-
-LaTeX Warning: Citation `arnold2006machine' on page 2 undefined on input line 3
-5.
-
-
-LaTeX Warning: Citation `li2011accuracy' on page 2 undefined on input line 35.
-
-
-LaTeX Warning: Citation `frank2009ranking' on page 2 undefined on input line 36
-.
-
-
-LaTeX Warning: Citation `li2011accuracy' on page 2 undefined on input line 38.
-
-
-LaTeX Warning: Citation `zhou2017pdeep' on page 2 undefined on input line 42.
-
-
-LaTeX Warning: Citation `zeng2019ms' on page 2 undefined on input line 46.
 
 
 ./Related.tex:48: Package inputenc Error: Unicode character ﬁ (U+FB01)
@@ -596,36 +505,12 @@ LaTeX Warning: Citation `hochreiter1997long' on page 3 undefined on input line
 10.
 
 
-LaTeX Warning: Citation `vaswani2017attention' on page 3 undefined on input lin
-e 12.
-
-
-LaTeX Warning: Citation `xiong2020layer' on page 3 undefined on input line 19.
-
-
-LaTeX Warning: Citation `vaswani2017attention' on page 3 undefined on input lin
-e 22.
-
-
 LaTeX Warning: Citation `kingma2017adam' on page 3 undefined on input line 46.
 
 ) (./experiments.tex [3]
 
-LaTeX Warning: Citation `zeng2019ms' on page 4 undefined on input line 25.
-
-
-LaTeX Warning: Citation `gessulat2019prosit' on page 4 undefined on input line 
-43.
-
-
-LaTeX Warning: Reference `table:Human' on page 4 undefined on input line 52.
-
-
 LaTeX Warning: Reference `fig:Human_results' on page 4 undefined on input line 
 52.
-
-
-LaTeX Warning: Reference `table:Jeff' on page 4 undefined on input line 52.
 
 
 LaTeX Warning: Reference `fig:Jeff_results' on page 4 undefined on input line 5
@@ -635,29 +520,41 @@ LaTeX Warning: Reference `fig:Jeff_results' on page 4 undefined on input line 5
 LaTeX Warning: Reference `fig:DDA' on page 4 undefined on input line 77.
 
 
-LaTeX Warning: Reference `table:DDA' on page 4 undefined on input line 77.
-
-
 LaTeX Warning: Reference `fig:DIA18' on page 4 undefined on input line 77.
-
-
-LaTeX Warning: Reference `table:DIA18' on page 4 undefined on input line 78.
 
 
 LaTeX Warning: Reference `fig:DIA18_direct' on page 4 undefined on input line 8
 1.
 
+) (./conclusion.tex [4]) (./final_report.bbl (./final_report.brf)
+\tf@brf=\write3
+\openout3 = `final_report.brf'.
 
-LaTeX Warning: Reference `table:DIA18_direct' on page 4 undefined on input line
- 81.
 
-) (./conclusion.tex [4])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 55.
- [5]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 55.
+
+./final_report.bbl:61: Package inputenc Error: Unicode character ̈ (U+308)
+(inputenc)                not set up for use with LaTeX.
+
+See the inputenc package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.61 
+     
+You may provide a definition with
+\DeclareUnicodeCharacter 
+
+[5])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 57.
+ [6
+
+]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 57.
  (./final_report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 55.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 55.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 57.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 57.
+Package rerunfilecheck Info: File `final_report.brf' has not changed.
+(rerunfilecheck)             Checksum: 5086F710E29E318295C2574B1A6813B4;1500.
 
 
 LaTeX Warning: There were undefined references.
@@ -667,13 +564,13 @@ LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
  ) 
 Here is how much of TeX's memory you used:
- 6949 strings out of 492649
- 99203 string characters out of 6129622
- 208069 words of memory out of 5000000
- 10689 multiletter control sequences out of 15000+600000
- 29551 words of font info for 70 fonts, out of 8000000 for 9000
+ 7060 strings out of 492649
+ 101284 string characters out of 6129622
+ 210163 words of memory out of 5000000
+ 10772 multiletter control sequences out of 15000+600000
+ 31235 words of font info for 72 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 32i,11n,27p,1207b,340s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 32i,11n,27p,1207b,477s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
 exlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/te
 xlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texl
@@ -687,10 +584,10 @@ f-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2018/texmf-dist/f
 onts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1
 /urw/times/utmr8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/times
 /utmri8a.pfb>
-Output written on final_report.pdf (5 pages, 155263 bytes).
+Output written on final_report.pdf (6 pages, 164128 bytes).
 PDF statistics:
- 114 PDF objects out of 1000 (max. 8388607)
- 94 compressed objects within 1 object stream
- 32 named destinations out of 1000 (max. 500000)
+ 207 PDF objects out of 1000 (max. 8388607)
+ 185 compressed objects within 2 object streams
+ 53 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

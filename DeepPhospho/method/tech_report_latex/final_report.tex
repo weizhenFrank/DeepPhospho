@@ -6,14 +6,16 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
-%\graphicspath{{../images/}}
-
+\graphicspath{{images/}}
 \usepackage[pagebackref=true,breaklinks=true,colorlinks,bookmarks=false]{hyperref}
 
 
+\def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
+\def\confYear{CVPR 2021}
+%\setcounter{page}{4321} % For final version only
+
 
 \begin{document}
-
 %%%%%%%%% TITLE
 \title{DeepPhospho: A Transformer-based Deep Network for Peptide \\Tandem Mass Spectra Prediction}
 
@@ -47,9 +49,9 @@ ShanghaiTech University\\
 \input{conclusion.tex}
 
 
-%{\small
-%\bibliographystyle{ieee_fullname}
-%\bibliography{egbib}
-%}
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
 
 \end{document}
