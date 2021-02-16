@@ -110,83 +110,83 @@ on DIA18, and are even similar to pdeep2's results on DIA18.
 %\label{fig:DIA18_direct}
 %\end{figure}
 %
-%\begin{table}
-%   \begin{center}
-%   \begin{tabular}{|l|c|c|}
-%   \hline
-%   Model & $\Delta$$t_{95\%}$ & parameters \\
-%   \hline\hline
-%   DeepRT & 15.67 & 3.1M \\
-%   LSTM & 14.73 & 1.1M \\
-%   LSTM+transformer(ours) & 14.70 & 1.5M \\
-%   transformer & 17.00 & 3M \\
-%   \hline
-%   \end{tabular}
-%   \end{center}
-%   \caption{Human Dataset results.   Ours is better.}
-%   \label{table:Human}
-%   \end{table}
-%
-%
-%   \begin{table}
-%      \begin{center}
-%      \begin{tabular}{|l|c|c|}
-%      \hline
-%      Model & $\Delta$$t_{95\%}$ & parameters \\
-%      \hline\hline
-%      DeepRT & 19.7 & 3.1M \\
-%      LSTM & 17.6 & 1.1M \\
-%      LSTM+transformer(ours) & 17.3 & 1.5M \\
-%      transformer & 20.8 & 3M \\
-%      \hline
-%      \end{tabular}
-%      \end{center}
-%      \caption{Jeff Dataset results.   Ours is better.}
-%      \label{table:Jeff}
-%      \end{table}
-%
-%\begin{table}
-%   \begin{center}
-%   \begin{tabular}{|l|c|c|}
-%   \hline
-%   Model & Median PCC & Median SA \\
-%   \hline\hline
-%   pdeep2 & 0.954 & 0.856 \\
-%   LSTM+transformer$\star$ & 0.975 & 0.891 \\
-%   \hline
-%   \end{tabular}
-%   \end{center}
-%   \caption{DDA Dataset results.Ours is better.}
-%   \label{table:DDA}
-%   \end{table}
-%
-%\begin{table}
-%   \begin{center}
-%   \begin{tabular}{|l|c|c|}
-%   \hline
-%   Model & Median PCC & Median SA \\
-%   \hline\hline
-%   pdeep2 & 0.896 & 0.773 \\
-%   LSTM+transformer$\star$ & 0.911 & 0.796 \\
-%   \hline
-%   \end{tabular}
-%   \end{center}
-%   \caption{DIA18 Dataset results.Ours is better.}
-%   \label{table:DIA18}
-%\end{table}
-%
-%\begin{table}
-%   \begin{center}
-%   \begin{tabular}{|l|c|c|}
-%   \hline
-%   Model & Median PCC & Median SA \\
-%   \hline\hline
-%   Direct Test & 0.895 & 0.781 \\
-%   Train then Test & 0.911 & 0.796 \\
-%   \hline
-%   \end{tabular}
-%   \end{center}
-%   \caption{DIA18 Dataset results. Direct test only drops little compared to training and test}
-%   \label{table:DIA18_direct}
-%\end{table}
+\begin{table}
+   \begin{center}
+   \begin{tabular}{|l|c|c|}
+   \hline
+   Model & $\Delta$$t_{95\%}$ & parameters \\
+   \hline\hline
+   DeepRT & 15.67 & 3.1M \\
+   LSTM & 14.73 & 1.1M \\
+   LSTM+transformer(ours) & 14.70 & 1.5M \\
+   transformer & 17.00 & 3M \\
+   \hline
+   \end{tabular}
+   \end{center}
+   \caption{Human Dataset results.   Ours is better.}
+   \label{table:Human}
+   \end{table}
+
+
+   \begin{table}
+      \begin{center}
+      \begin{tabular}{|l|c|c|}
+      \hline
+      Model & $\Delta$$t_{95\%}$ & parameters \\
+      \hline\hline
+      DeepRT & 19.7 & 3.1M \\
+      LSTM & 17.6 & 1.1M \\
+      LSTM+transformer(ours) & 17.3 & 1.5M \\
+      transformer & 20.8 & 3M \\
+      \hline
+      \end{tabular}
+      \end{center}
+      \caption{Jeff Dataset results.   Ours is better.}
+      \label{table:Jeff}
+      \end{table}
+
+\begin{table}
+   \begin{center}
+   \begin{tabular}{|l|c|c|}
+   \hline
+   Model & Median PCC & Median SA \\
+   \hline\hline
+   pdeep2 & 0.954 & 0.856 \\
+   LSTM+transformer$\star$ & 0.975 & 0.891 \\
+   \hline
+   \end{tabular}
+   \end{center}
+   \caption{DDA Dataset results.Ours is better.}
+   \label{table:DDA}
+   \end{table}
+
+\begin{table}
+   \begin{center}
+   \begin{tabular}{|l|c|c|}
+   \hline
+   Model & Median PCC & Median SA \\
+   \hline\hline
+   pdeep2 & 0.896 & 0.773 \\
+   LSTM+transformer$\star$ & 0.911 & 0.796 \\
+   \hline
+   \end{tabular}
+   \end{center}
+   \caption{DIA18 Dataset results.Ours is better.}
+   \label{table:DIA18}
+\end{table}
+
+\begin{table}
+   \begin{center}
+   \begin{tabular}{|l|c|c|}
+   \hline
+   Model & Median PCC & Median SA \\
+   \hline\hline
+   Direct Test & 0.895 & 0.781 \\
+   Train then Test & 0.911 & 0.796 \\
+   \hline
+   \end{tabular}
+   \end{center}
+   \caption{DIA18 Dataset results. Direct test only drops little compared to training and test}
+   \label{table:DIA18_direct}
+\end{table}
 %%-------------------------------------------------------------------------

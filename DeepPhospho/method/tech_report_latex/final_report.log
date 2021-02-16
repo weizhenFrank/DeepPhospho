@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.9.17)  16 FEB 2021 01:17
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.9.17)  17 FEB 2021 05:43
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -653,9 +653,7 @@ LaTeX Warning: Reference `table:DIA18_direct' on page 4 undefined on input line
 
 ) (./conclusion.tex [4])
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 55.
- [5
-
-]
+ [5]
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 55.
  (./final_report.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 55.
@@ -664,13 +662,16 @@ Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 55.
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
  ) 
 Here is how much of TeX's memory you used:
- 6941 strings out of 492649
- 99138 string characters out of 6129622
- 202069 words of memory out of 5000000
- 10687 multiletter control sequences out of 15000+600000
- 27966 words of font info for 68 fonts, out of 8000000 for 9000
+ 6949 strings out of 492649
+ 99203 string characters out of 6129622
+ 208069 words of memory out of 5000000
+ 10689 multiletter control sequences out of 15000+600000
+ 29551 words of font info for 70 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  32i,11n,27p,1207b,340s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
@@ -686,10 +687,10 @@ f-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2018/texmf-dist/f
 onts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1
 /urw/times/utmr8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/times
 /utmri8a.pfb>
-Output written on final_report.pdf (5 pages, 153165 bytes).
+Output written on final_report.pdf (5 pages, 155263 bytes).
 PDF statistics:
- 108 PDF objects out of 1000 (max. 8388607)
- 88 compressed objects within 1 object stream
- 27 named destinations out of 1000 (max. 500000)
+ 114 PDF objects out of 1000 (max. 8388607)
+ 94 compressed objects within 1 object stream
+ 32 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
