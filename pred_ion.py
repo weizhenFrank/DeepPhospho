@@ -23,7 +23,7 @@ from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
 from deep_phospho.model_utils.logger import setup_logger
 from deep_phospho.model_utils.param_config_load import load_param_from_file, load_config_as_module, load_config_from_json
 from deep_phospho.model_utils.ion_eval import SA, Pearson
-from deep_phospho.model_utils.utils_functions import show_params_status, give_name_ion
+from deep_phospho.model_utils.utils_functions import show_params_status, give_name_ion, copy_files
 
 
 # ---------------- User defined space Start --------------------
@@ -167,6 +167,12 @@ model = load_param_from_file(model,
 
 logger.info(str(model))
 logger.info("model parameters statuts: \n%s" % show_params_status(model))
+
+copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'ion_model.py'), output_dir)
+copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'EnsembelModel.py'), output_dir)
+copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'auxiliary_loss_transformer.py'), output_dir)
+copy_files(os.path.join(this_script_dir, 'pred_ion.py'), output_dir)
+copy_files(config_path, output_dir)
 
 pred_matrix = []
 y_matrix = []
