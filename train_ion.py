@@ -135,6 +135,7 @@ def main():
 
     print("Preparing dataset")
     dictionary = Dictionary()
+    _ = dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
 
     ion_train_data = IonData(configs, path=train_file, dictionary=dictionary)
     ion_test_data = IonData(configs, path=test_file, dictionary=dictionary)

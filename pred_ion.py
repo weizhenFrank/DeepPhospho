@@ -118,6 +118,7 @@ else:
 
 # Init dictionary
 dictionary = Dictionary()
+_ = dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
 idx2aa = dictionary.idx2word
 
 Iontest = IonData(configs, pred_input_file, dictionary=dictionary)
