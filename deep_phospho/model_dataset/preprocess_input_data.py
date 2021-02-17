@@ -48,7 +48,6 @@ ALPHABET = [
     'W',
     'Y',
     'U',
-    'X',
 ]
 
 CharToIdx = {char: idx for idx, char in enumerate(ALPHABET)}
