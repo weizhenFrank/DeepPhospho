@@ -4,7 +4,6 @@ import operator
 import logging
 
 from tqdm import tqdm
-import ipdb
 
 import numpy as np
 import pandas as pd
@@ -158,7 +157,6 @@ class IonData(object):
                     self.y = self.y[pep_index_without_ac, ]
 
                     logger.info(f'Remove {total_sample - no_ac_sample} ac_pep from total {total_sample} peps ')
-                # ipdb.set_trace()
                 return
 
         logger.info(f"Reading Files...\n{path}")
@@ -307,7 +305,6 @@ class RTdata(object):
 
         logger = logging.getLogger("RT")
         _, file_extension = os.path.splitext(path)
-        # ipdb.set_trace()
         logger.info(f"Reading Files...! \n{path}")
         if file_extension == '.csv':
             seq_data = pd.read_csv(path)
@@ -315,7 +312,6 @@ class RTdata(object):
             seq_data = pd.read_csv(path, sep="\t")
         SEQUENCE_FIELD_NAME = data_cfg['SEQUENCE_FIELD_NAME']
         RT_FIELD_NAME = data_cfg['RT_FIELD_NAME']
-        # ipdb.set_trace()
 
         if data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] is None:
             # here get the len of each peptide in input and minus one is as a result of ac modification
@@ -353,7 +349,6 @@ class RTdata(object):
 
                 self.X1 = pre_load_data["X1"][:data_size]
                 self.y = pre_load_data['y'][:data_size]
-                # ipdb.set_trace()
                 # if cfg.TRAINING_HYPER_PARAM['add_hydro']:
                 #     self.X2 = pre_load_data["X2"][:data_size]
                 # if cfg.TRAINING_HYPER_PARAM['add_rc']:
@@ -376,18 +371,16 @@ class RTdata(object):
             try:
                 self.X1[seq_index, :len(wrapped_seq)] = [self.dictionary.word2idx[aa] for aa in wrapped_seq]
             except ValueError:
-                ipdb.set_trace()
+                raise
             if configs['TaskPurpose'].lower() == 'predict':
                 continue
             else:
                 self.y[seq_index] = seq_data.iloc[seq_index][RT_FIELD_NAME]
 
         logger.info("Y max: %f min: %f" % (self.MAX_RT, self.MIN_RT))
-        # ipdb.set_trace()
         if data_cfg["SCALE_BY_ZERO_ONE"]:
             # Normalize by even distribution
             self.y = (self.y - self.MIN_RT) / (self.MAX_RT - self.MIN_RT)
-        # ipdb.set_trace()
         if not configs['TRAINING_HYPER_PARAM']['DEBUG'] and configs['TaskPurpose'].lower() != 'predict':
             with open(path + '.pkl', 'wb') as f:
                 pickle.dump({'X1': self.X1, 'y': self.y}, f)
