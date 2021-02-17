@@ -99,6 +99,7 @@ TRAINING_HYPER_PARAM = dict(
     LR=1e-4,
     transformer_on_epoch=-1,
     factor=0.2,  # the scheduler curve of Noam LR
+    warmup_factor=1 / 3,  # the scheduler curve of Noam LR
     warmup_steps=5000,  # warm up_steps for Noam LR scheduler
     weight_decay=1e-8,
     warmup_iters=0,  # warm up_steps for other scheduler

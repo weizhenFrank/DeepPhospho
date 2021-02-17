@@ -227,6 +227,6 @@ def make_lr_scheduler(optimizer, steps: tuple, warmup_iters, configs):
             steps,
             warmup_iters,
             # gamma=0.1,
-            warmup_factor=1. / 5,
+            warmup_factor=configs['TRAINING_HYPER_PARAM']['warmup_factor'],
             warmup_method="linear",
         )
