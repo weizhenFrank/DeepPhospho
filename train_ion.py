@@ -180,13 +180,14 @@ def main():
                                      batch_size=256,
                                      num_workers=0,
                                      collate_fn=partial(collate_fn, configs=configs))
-        holdout_dataloader = DataLoader(
-            dataset=holdout_dataset,
-            batch_size=256,
-            shuffle=False,
-            num_workers=0,
-            collate_fn=partial(collate_fn, configs=configs)
-        )
+        if use_holdout:
+            holdout_dataloader = DataLoader(
+                dataset=holdout_dataset,
+                batch_size=256,
+                shuffle=False,
+                num_workers=0,
+                collate_fn=partial(collate_fn, configs=configs)
+            )
 
     else:
         train_dataset = IonDataset(ion_train_data, configs)
@@ -208,12 +209,13 @@ def main():
                                      batch_size=configs.TRAINING_HYPER_PARAM['BATCH_SIZE'],
                                      sampler=torch.utils.data.SubsetRandomSampler(test_index),
                                      collate_fn=partial(collate_fn, configs=configs))
-        holdout_dataloader = DataLoader(
-            dataset=holdout_dataset,
-            batch_size=2048,
-            shuffle=False,
-            collate_fn=partial(collate_fn, configs=configs)
-        )
+        if use_holdout:
+            holdout_dataloader = DataLoader(
+                dataset=holdout_dataset,
+                batch_size=2048,
+                shuffle=False,
+                collate_fn=partial(collate_fn, configs=configs)
+            )
     if configs['TRAINING_HYPER_PARAM']['two_stage']:
         loss_func, loss_func_cls = get_loss_func(configs)
     else:
