@@ -1,4 +1,3 @@
-
 \documentclass[final]{cvpr}
 
 \usepackage{times}
@@ -6,9 +5,13 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\graphicspath{{images/}}
+\usepackage{tabularx}
+\usepackage{siunitx}
 \usepackage[pagebackref=true,breaklinks=true,colorlinks,bookmarks=false]{hyperref}
 
+\sisetup{group-separator={,}}
+\graphicspath{{images/}}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
 
 \def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
 \def\confYear{CVPR 2021}

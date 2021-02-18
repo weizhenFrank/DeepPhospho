@@ -1,15 +1,16 @@
 
 \subsection{Dataset}
-\subsubsection*{Data composition and preprocess}
+\paragraph*{Data composition and preprocess}
 The sequence is represented by the symbol of amino acids such as L, K, M, etc., typically 7-50
 in length. Specially, we use 1 to represent the oxidation of methionine (M), and we use 2,3,4 to represent the phosphorylation of serine(S), threonine(T), tyrosine(Y), respectively. And those representation is also used in the Ion Intensity task.
-Retention time (RT) is a measure of the time taken for a solute to pass through a chromatography column.
-It is calculated as the time from injection to detection.
 
-The RT datasets are comprised of pairs of
+% Retention time (RT) is a measure of the time taken for a solute to pass through a chromatography column.
+% It is calculated as the time from injection to detection.
+For RT datasets, they are comprised of pairs of
 \( \{X, y\} \). $X:= \{ <x_1, x_2, x_3,\dots, x_n> \}$, $x_i$
-is amino acid,
-and \( y \) is the retention time. For building the virtual library, we split the dataset into train : validation = 9 : 1,
+is amino acid,and \( y \) is the retention time. 
+To train a better model, we first sequentially pre-train the models in four datasets called 
+For building the virtual library, we split the dataset into train : validation = 9 : 1,
 selecting the best model on validation set; for model comparison, the dataset is split into train : validation : test
 = 8 : 1 : 1, reporting results on the test set.
 
@@ -22,14 +23,14 @@ Like RT dataset, the ion intensity datasets are comprised of pairs of
 is the charge carried by the
 peptide sequence before it is fragmented in the mass spectrometer. And \( y \) is the spectrum of the peptide. Each y is composed of pairs of key and value.
 The key is the ion's name, such as y2+1, b6+2, and the value is their corresponding raw intensity.
-We divide each intensity by the maximum of the intensities within a peptide sequence to normalize each intensity into 0-1. As kinds of ions in the dataset is severely imbalanced, we only select the 8 types of ions same as pdeep2\cite{zeng2019ms}, that is
+We divide each intensity by the maximum of the intensities within a peptide sequence to normalize each intensity into 0-1. As kinds of ions in the dataset is severely imbalanced, we only select the 8 types of ions same as pdeep2~\cite{zeng2019ms}, that is
 b(y)i+1-noloss, b(y)i+2-noloss, b(y)i+1-1,H3PO4 and b(y)i+2-1,H3PO4, i indicating the site of b(y)ion,
 to feed the neural network and predict those 8 types of ion intensity. Those ion intensities are formed as the matrix of shape 8 * length of the sequence (illustrated in the supplementary).
 There are two types of fragment ion intensity values that have no contribution in the loss calculation and are removed in the prediction. One is that related to padding, like y20 for a 7-mer; the other is related to the phosphorylation site. For example, the phosphorylation site is located in the b5, then the b1,b2, b3, and b4 ions cannot lose phosphate so that the ion intensity with phosphate loss must be 0. This ignorance of impossible phosphorylation site potentially help model to learn the implicitly rule of phosphorylation, benefiting the prediction accuracy of intensity of ion with phosphate loss. Otherwise, the only way for model to learn this rule is from the ion intensity data which would be much more inefficient than the injecting the prior knowledge directly to the model learning.
 The data split, N-terminal acetyl modification indicator and padding operation are the same as the RT dataset.
 
 
-\subsubsection*{Metric}
+\paragraph*{Metric}
 \subsubsection*{RT}
 The $\Delta$$t_{95\%}$ metric is used as the main metric, which represents
 the minimal time window containing the deviations between observed and predicted RTs for 95\% of
@@ -40,7 +41,7 @@ We select the model by $\Delta$$t_{95\%}$ metric.
 Pearson Correlation Coefficient (PCC) is also referred.
 \subsubsection*{Ion Intensity}
 We compute each peptide's PCC and select the median of those PCCs as the final evaluation metric.
-Primarily, we follow Prosit\cite{gessulat2019prosit} using normalized
+Primarily, we follow Prosit~\cite{gessulat2019prosit} using normalized
 spectral angle(SA) as another metric and the median of those SAs is reported as the final evaluation result.
 SA's formula is as follows:
 
@@ -110,6 +111,27 @@ on DIA18, and are even similar to pdeep2's results on DIA18.
 %\label{fig:DIA18_direct}
 %\end{figure}
 %
+
+\begin{table}
+   \begin{center}
+   \begin{tabularx}{\columnwidth}{|Y|Y|}
+   \hline
+   data description & no. of peptides \\
+   \hline
+   HumanPhosDB~\cite{lawrence2016plug} & 204560 \\
+   Jeff~\cite{liu2018vivo} & 67,552 \\
+   VeroE6~\cite{bouhaddou2020global} & 43,407  \\
+   R2P2~\cite{leutert2019r2} & 35,810 \\
+   U2OS-DIA~\cite{wang2020naguider} & 48,329\\
+   RPE1-DIA~\cite{bekker2020rapid} & 33,578  \\
+   RPE1-DDA~\cite{bekker2020rapid} & 129,111  \\
+   \hline
+   \end{tabularx}
+   \end{center}
+   \caption{Retention time pretraining datasets}
+   \label{table:pretrained_Dataset}
+   \end{table}
+
 \begin{table}
    \begin{center}
    \begin{tabular}{|l|c|c|}
@@ -118,12 +140,12 @@ on DIA18, and are even similar to pdeep2's results on DIA18.
    \hline\hline
    DeepRT & 15.67 & 3.1M \\
    LSTM & 14.73 & 1.1M \\
-   LSTM+transformer(ours) & 14.70 & 1.5M \\
+   DeepPhospho & 14.70 & 1.5M \\
    transformer & 17.00 & 3M \\
    \hline
    \end{tabular}
    \end{center}
-   \caption{Human Dataset results.   Ours is better.}
+   \caption{Human Dataset results. Ours is better.}
    \label{table:Human}
    \end{table}
 
@@ -136,7 +158,7 @@ on DIA18, and are even similar to pdeep2's results on DIA18.
       \hline\hline
       DeepRT & 19.7 & 3.1M \\
       LSTM & 17.6 & 1.1M \\
-      LSTM+transformer(ours) & 17.3 & 1.5M \\
+      DeepPhospho & 17.3 & 1.5M \\
       transformer & 20.8 & 3M \\
       \hline
       \end{tabular}
@@ -152,7 +174,7 @@ on DIA18, and are even similar to pdeep2's results on DIA18.
    Model & Median PCC & Median SA \\
    \hline\hline
    pdeep2 & 0.954 & 0.856 \\
-   LSTM+transformer$\star$ & 0.975 & 0.891 \\
+   DeepPhospho$\star$ & 0.975 & 0.891 \\
    \hline
    \end{tabular}
    \end{center}
@@ -167,7 +189,7 @@ on DIA18, and are even similar to pdeep2's results on DIA18.
    Model & Median PCC & Median SA \\
    \hline\hline
    pdeep2 & 0.896 & 0.773 \\
-   LSTM+transformer$\star$ & 0.911 & 0.796 \\
+   DeepPhospho$\star$ & 0.911 & 0.796 \\
    \hline
    \end{tabular}
    \end{center}

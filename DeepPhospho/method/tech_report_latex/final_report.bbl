@@ -7,6 +7,21 @@ Randy~J Arnold, Narmada Jayasankar, Divya Aggarwal, Haixu Tang, and Predrag
   spectra.
 \newblock In {\em Biocomputing 2006}, pages 219--230. World Scientific, 2006.
 
+\bibitem{bekker2020rapid}
+Dorte~B Bekker-Jensen, Oliver~M Bernhardt, Alexander Hogrebe, Ana Martinez-Val,
+  Lynn Verbeke, Tejas Gandhi, Christian~D Kelstrup, Lukas Reiter, and Jesper~V
+  Olsen.
+\newblock Rapid and site-specific deep phosphoproteome profiling by
+  data-independent acquisition without the need for spectral libraries.
+\newblock {\em Nature communications}, 11(1):1--12, 2020.
+
+\bibitem{bouhaddou2020global}
+Mehdi Bouhaddou, Danish Memon, Bjoern Meyer, Kris~M White, Veronica~V Rezelj,
+  Miguel~Correa Marrero, Benjamin~J Polacco, James~E Melnyk, Svenja Ulferts,
+  Robyn~M Kaake, et~al.
+\newblock The global phosphorylation landscape of sars-cov-2 infection.
+\newblock {\em Cell}, 182(3):685--712, 2020.
+
 \bibitem{frank2009ranking}
 Ari~M Frank.
 \newblock A ranking-based scoring function for peptide- spectrum matches.
@@ -28,11 +43,40 @@ Dacheng Guo, Colin~T Mant, Ashok~K Taneja, JM~Robert Parker, and Robert~S
   coefficients of amino acid residues of model synthetic peptides.
 \newblock {\em Journal of Chromatography A}, 359:499--518, 1986.
 
+\bibitem{hochreiter1997long}
+Sepp Hochreiter and J{\"u}rgen Schmidhuber.
+\newblock Long short-term memory.
+\newblock {\em Neural computation}, 9(8):1735--1780, 1997.
+
+\bibitem{kingma2017adam}
+Diederik~P. Kingma and Jimmy Ba.
+\newblock Adam: A method for stochastic optimization, 2017.
+
+\bibitem{lawrence2016plug}
+Robert~T Lawrence, Brian~C Searle, Ariadna Llovet, and Judit Vill{\'e}n.
+\newblock Plug-and-play analysis of the human phosphoproteome by targeted
+  high-resolution mass spectrometry.
+\newblock {\em Nature methods}, 13(5):431--434, 2016.
+
+\bibitem{leutert2019r2}
+Mario Leutert, Ricard~A Rodr{\'\i}guez-Mias, Noelle~K Fukuda, and Judit
+  Vill{\'e}n.
+\newblock R2-p2 rapid-robotic phosphoproteomics enables multidimensional cell
+  signaling studies.
+\newblock {\em Molecular systems biology}, 15(12):e9021, 2019.
+
 \bibitem{li2011accuracy}
 Sujun Li, Randy~J Arnold, Haixu Tang, and Predrag Radivojac.
 \newblock On the accuracy and limits of peptide fragmentation spectrum
   prediction.
 \newblock {\em Analytical chemistry}, 83(3):790--796, 2011.
+
+\bibitem{liu2018vivo}
+Jeffrey~J Liu, Kirti Sharma, Luca Zangrandi, Chongguang Chen, Sean~J Humphrey,
+  Yi-Ting Chiu, Mariana Spetea, Lee-Yuan Liu-Chen, Christoph Schwarzer, and
+  Matthias Mann.
+\newblock In vivo brain gpcr signaling elucidated by phosphoproteomics.
+\newblock {\em Science}, 360(6395), 2018.
 
 \bibitem{ma2018improved}
 Chunwei Ma, Yan Ren, Jiarui Yang, Zhe Ren, Huanming Yang, and Siqi Liu.
@@ -86,6 +130,13 @@ Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
 \newblock Attention is all you need.
 \newblock In {\em Advances in neural information processing systems}, pages
   5998--6008, 2017.
+
+\bibitem{wang2020naguider}
+Shisheng Wang, Wenxue Li, Liqiang Hu, Jingqiu Cheng, Hao Yang, and Yansheng
+  Liu.
+\newblock Naguider: performing and prioritizing missing value imputations for
+  consistent bottom-up proteomic analyses.
+\newblock {\em Nucleic acids research}, 48(14):e83--e83, 2020.
 
 \bibitem{wang2015openms}
 Yaojun Wang, Fei Yang, Peng Wu, Dongbo Bu, and Shiwei Sun.

@@ -1,3 +1,5 @@
+\backcite {gessulat2019prosit}{{1}{1}{section.1}}
+\backcite {gessulat2019prosit}{{1}{1}{section.1}}
 \backcite {arnold2006machine}{{1}{1}{section.1}}
 \backcite {zhou2017pdeep,ma2018improved,tiwary2019high,zeng2019ms,gessulat2019prosit}{{1}{1}{section.1}}
 \backcite {ma2018improved}{{1}{1}{section.1}}
@@ -24,3 +26,10 @@
 \backcite {kingma2017adam}{{3}{3.3}{subsection.3.3}}
 \backcite {zeng2019ms}{{4}{4.1}{section*.3}}
 \backcite {gessulat2019prosit}{{4}{4.1}{section*.6}}
+\backcite {lawrence2016plug}{{5}{4.4}{subsection.4.4}}
+\backcite {liu2018vivo}{{5}{4.4}{subsection.4.4}}
+\backcite {bouhaddou2020global}{{5}{4.4}{subsection.4.4}}
+\backcite {leutert2019r2}{{5}{4.4}{subsection.4.4}}
+\backcite {wang2020naguider}{{5}{4.4}{subsection.4.4}}
+\backcite {bekker2020rapid}{{5}{4.4}{subsection.4.4}}
+\backcite {bekker2020rapid}{{5}{4.4}{subsection.4.4}}

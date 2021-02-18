@@ -1,7 +1,7 @@
 %task description and challenges
 
-A fundamental problem in proteome analysis is to seek a predictive relationship between a peptide and its measured chemico-physical properties, such as the chromatographic retention time (RT) and fragment ion intensity in LC-MS/MS (ref). In particular, bottom-up proteomic approaches can greatly benefit from
-high-quality mass spectra prediction from amino acid sequences (ref).
+A fundamental problem in proteome analysis is to seek a predictive relationship between a peptide and its measured chemico-physical properties, such as the chromatographic retention time (RT) and fragment ion intensity in LC-MS/MS~\cite{gessulat2019prosit}. In particular, bottom-up proteomic approaches can greatly benefit from
+high-quality mass spectra prediction from amino acid sequences~\cite{gessulat2019prosit}.
 However, such a prediction task is particularly challenging due to the complex quantum effect within peptides and noisy measurement process.
 
 % what has done before
@@ -14,7 +14,7 @@ Notably, deep learning based approaches have shown promising performances in the
 In this work, we present a novel deep learning framework, termed DeepPhospho, which tackles the challenge of peptide representation learning for RT and ion intensity prediction. To this end, we develop a hybrid deep network design, capable of better capturing the global structure of the peptide.
 Specifically, we first employ a bi-LSTM network to compute the embedding of amino acids. This produces a context-aware local representations as each amino acid is enriched by the features of other amino acids in the same peptide. Given the new embedding, we then introduce a flexible Transformer-based network that uses self-attention to model long-range dependency in the peptide sequences. The Transformer module enables us to directly attend to multiple sites of the peptide, such as the pairs of b and y ion, without needing the recurrent computation. Finally, the network outputs a new representation for the input peptide, which is then fed into a linear regressor to generate predictions for RT or ion intensities.
 
-We demonstrate the efficacy of the DeepPhospho on multiple challenging benchmarks of RT/ion-intensity prediction and provide detailed ablative study on the model design. Moreover, we have built a ready-to-use web server based on our model for the scientific community \footnote{\url{https://xxx.shanghaitech.edu.cn/xxx}}, and will also release our code ().
+We demonstrate the efficacy of the DeepPhospho on multiple challenging benchmarks of RT/ion-intensity prediction and provide detailed ablative study on the model design. Moreover, we have built a ready-to-use web server based on our model for the scientific community \footnote{\url{https://xxx.shanghaitech.edu.cn/xxx}}, and will also release our code(\url{https://github.com/weizhenFrank/DeepPhospho.git}).
 
 %To the best of our knowledge, DeepPhospho is the first work to utilize the Transformer on the peptide spectrum prediction though it has been prevalently used in the natural language processing domain.
 
