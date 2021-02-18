@@ -54,10 +54,10 @@ def pretrain_eval(model, loss_func, test_dataloader: DataLoader, iteration, logg
     for idx, (seq_x, x_hydro, y) in tqdm(enumerate(test_dataloader),
                                          total=len(test_dataloader)):
 
-        seq_x = seq_x.cuda()
+        seq_x = seq_x.to(device)
         # print('-' * 10, seq_x)
-        x_hydro = x_hydro.cuda()
-        y = y.cuda()
+        x_hydro = x_hydro.to(device)
+        y = y.to(device)
         pred_y = model(seq_x, x_hydro)
         if isinstance(pred_y, tuple):
             pred_y, hidden_vec_norm = pred_y
@@ -123,7 +123,7 @@ def pretrain_eval(model, loss_func, test_dataloader: DataLoader, iteration, logg
     return test_loss, masked_acc, hidden_norm
 
 
-def eval(model, configs, loss_funcs, test_dataloader: DataLoader, logger, iteration=-1):
+def eval(model, configs, loss_funcs, test_dataloader: DataLoader, logger, device, iteration=-1):
     model.eval()
     logger = logging.getLogger("IonIntensity")
     logger.info("start validation")
@@ -143,9 +143,9 @@ def eval(model, configs, loss_funcs, test_dataloader: DataLoader, logger, iterat
                 seq_x = inputs[0]
                 x_charge = inputs[1]
                 x_nce = inputs[2]
-                seq_x = seq_x.cuda()
-                x_charge = x_charge.cuda()
-                x_nce = x_nce.cuda()
+                seq_x = seq_x.to(device)
+                x_charge = x_charge.to(device)
+                x_nce = x_nce.to(device)
                 if configs['TRAINING_HYPER_PARAM']['two_stage']:
                     pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge, x3=x_nce)
                 else:
@@ -153,14 +153,14 @@ def eval(model, configs, loss_funcs, test_dataloader: DataLoader, logger, iterat
             else:
                 seq_x = inputs[0]
                 x_charge = inputs[1]
-                seq_x = seq_x.cuda()
+                seq_x = seq_x.to(device)
                 # print('-' * 10, seq_x)
-                x_charge = x_charge.cuda()
+                x_charge = x_charge.to(device)
                 if configs['TRAINING_HYPER_PARAM']['two_stage']:
                     pred_y, pred_y_cls = model(x1=seq_x, x2=x_charge)
                 else:
                     pred_y = model(x1=seq_x, x2=x_charge)
-            y = y.cuda()
+            y = y.to(device)
 
             if isinstance(pred_y, tuple):
                 pred_y, hidden_vec_norm = pred_y
@@ -176,14 +176,14 @@ def eval(model, configs, loss_funcs, test_dataloader: DataLoader, logger, iterat
                 y_cls = torch.ones_like(y)
                 y_cls[y == -2] = 0   # phos loc is set 0 for cls, nans and value bigger than 0 are set 1 for cls
                 y_cls[y == -1] = -1  # padding loc will be ignored for cls
-                y_cls = y_cls.cuda()
+                y_cls = y_cls.to(device)
 
                 loss_cls = loss_func_cls(pred_y_cls[torch.where(y_cls != -1)], y_cls[torch.where(y_cls != -1)])
 
                 y_no_priori = copy.deepcopy(y)
                 y_no_priori[y == -1] = 0  # padding
                 y_no_priori[y == -2] = 0  # phos
-                y_no_priori = y_no_priori.cuda()
+                y_no_priori = y_no_priori.to(device)
                 gate_y = torch.ones_like(y)
                 gate_y[y_no_priori == 0] = 0
                 gated_pred_y = gate_y * pred_y

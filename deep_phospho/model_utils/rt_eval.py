@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from deep_phospho.model_utils.utils_functions import Pearson, Delta_t95
 
 
-def pretrain_eval(model, loss_func, test_dataloader: DataLoader, iteration, logger):
+def pretrain_eval(model, loss_func, test_dataloader: DataLoader, iteration, device, logger):
     model.eval()
 
     loss_log = []
@@ -21,8 +21,8 @@ def pretrain_eval(model, loss_func, test_dataloader: DataLoader, iteration, logg
     for idx, (seq_x, y) in tqdm(enumerate(test_dataloader),
                                 total=len(test_dataloader)):
 
-        seq_x = seq_x.cuda()
-        y = y.cuda()
+        seq_x = seq_x.to(device)
+        y = y.to(device)
         # print("#" * 10, '\n', y, '\n')
         pred_y = model(seq_x)
 
@@ -102,7 +102,7 @@ def pretrain_eval(model, loss_func, test_dataloader: DataLoader, iteration, logg
     return test_loss, masked_acc, all_acc, hidden_norm
 
 
-def eval(model, loss_func, test_dataloader: DataLoader, logger, iteration=-1):
+def eval(model, loss_func, test_dataloader: DataLoader, logger, device, iteration=-1):
     model.eval()
     if hasattr(model, "module"):
         if hasattr(model.module, "transformer_flag"):
@@ -124,14 +124,14 @@ def eval(model, loss_func, test_dataloader: DataLoader, logger, iteration=-1):
 
         if isinstance(inputs, tuple):
             seq_x, x_hydro, x_rc = inputs
-            seq_x = seq_x.cuda()
-            x_hydro = x_hydro.cuda()
-            x_rc = x_rc.cuda()
+            seq_x = seq_x.to(device)
+            x_hydro = x_hydro.to(device)
+            x_rc = x_rc.to(device)
             pred_y = model(x1=seq_x, x2=x_hydro, x3=x_rc).squeeze()
         else:
-            inputs = inputs.cuda()
+            inputs = inputs.to(device)
             pred_y = model(x1=inputs).squeeze()
-        y = y.cuda()
+        y = y.to(device)
 
         if isinstance(pred_y, tuple):
             pred_y, hidden_vec_norm = pred_y

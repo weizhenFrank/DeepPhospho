@@ -442,7 +442,7 @@ def main():
                     pass
                 else:
                     if use_holdout:
-                        best_test_res, iteration_best, best_model = evaluation(model, logger,
+                        best_test_res, iteration_best, best_model = evaluation(model, device, logger,
                                                                                tf_writer_train,
                                                                                tf_writer_test,
                                                                                get_loss_func(configs),
@@ -456,7 +456,7 @@ def main():
                                                                                tf_writer_holdout=tf_writer_holdout,
                                                                                use_holdout=False)
                     else:
-                        best_test_res, iteration_best, best_model = evaluation(model, logger,
+                        best_test_res, iteration_best, best_model = evaluation(model, device, logger,
                                                                                tf_writer_train,
                                                                                tf_writer_test,
                                                                                get_loss_func(configs),
@@ -484,7 +484,7 @@ def main():
     if use_holdout:
         model = best_model
         model.to(device)
-        evaluation(model, logger, tf_writer_train, tf_writer_test,
+        evaluation(model, device, logger, tf_writer_train, tf_writer_test,
                    get_loss_func(configs), test_dataloader, train_val_dataloader,
                    iteration=0, best_test_res=None, iteration_best=None,
                    best_model=None, holdout_dataloader=holdout_dataloader,
@@ -492,7 +492,7 @@ def main():
                    use_holdout=True)
 
 
-def evaluation(model, logger, tf_writer_train, tf_writer_test,
+def evaluation(model, device, logger, tf_writer_train, tf_writer_test,
                loss_func_eval, test_dataloader, train_val_dataloader,
                iteration, best_test_res, iteration_best, best_model, holdout_dataloader,
                tf_writer_holdout,
@@ -511,15 +511,15 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
                     train_loss, train_reg_loss, train_cls_loss, train_acc, pearson_median, sa_median = eval(model, configs,
                                                                                                             loss_func_eval,
                                                                                                             train_val_dataloader,
-                                                                                                            logger,
-                                                                                                            iteration)
+                                                                                                            logger, device=device,
+                                                                                                            iteration=iteration)
 
                     tf_writer_train.write_data(iteration, train_reg_loss, "loss/loss_reg_loss")
                     tf_writer_train.write_data(iteration, train_cls_loss, "loss/loss_cls_loss")
                     tf_writer_train.write_data(iteration, train_acc, 'eval_metric/ion_acc_median')
                 else:
                     train_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, train_val_dataloader, logger,
-                                                                 iteration)
+                                                                 device=device, iteration=iteration)
 
                 tf_writer_train.write_data(iteration, pearson_median, 'eval_metric/pearson_median')
                 tf_writer_train.write_data(iteration, sa_median, 'eval_metric/sa_median')
@@ -531,8 +531,8 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
                     test_loss, test_reg_loss, test_cls_loss, test_acc, pearson_median, sa_median = eval(model, configs,
                                                                                                         loss_func_eval,
                                                                                                         test_dataloader,
-                                                                                                        logger,
-                                                                                                        iteration)
+                                                                                                        logger, device=device,
+                                                                                                        iteration=iteration)
 
                     tf_writer_test.write_data(iteration, test_reg_loss, "loss/loss_reg_loss")
                     tf_writer_test.write_data(iteration, test_cls_loss, "loss/loss_cls_loss")
@@ -540,7 +540,7 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
 
                 else:
                     test_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, test_dataloader, logger,
-                                                                iteration)
+                                                                device=device, iteration=iteration)
 
                 tf_writer_test.write_data(iteration, test_loss, "loss/total_loss")
                 tf_writer_test.write_data(iteration, pearson_median, 'eval_metric/pearson_median')
@@ -563,10 +563,10 @@ def evaluation(model, logger, tf_writer_train, tf_writer_test,
 
                 if configs['TRAINING_HYPER_PARAM']['two_stage']:
                     holdout_loss, holdout_reg_loss, holdout_cls_loss, holdout_acc, pearson_median, sa_median = eval(
-                        model, configs, loss_func_eval, holdout_dataloader, logger, iteration)
+                        model, configs, loss_func_eval, holdout_dataloader, logger, device=device, iteration=iteration)
                 else:
                     holdout_loss, pearson_median, sa_median = eval(model, configs, loss_func_eval, holdout_dataloader,
-                                                                   logger, iteration)
+                                                                   logger, device=device, iteration=iteration)
 
                 tf_writer_holdout.write_data(iteration, pearson_median, 'test_eval_metric/pearson')
                 tf_writer_holdout.write_data(iteration, sa_median, 'test_eval_metric/sa_median')
