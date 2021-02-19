@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.10.5)  18 FEB 2021 23:40
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.10.5)  20 FEB 2021 00:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -695,23 +695,22 @@ Missing character: There is no Å in font ptmr7t!
 ) [2] (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/methods.tex
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 4.
-) (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/experiments.tex [3]
+ [3]) (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/experiments.tex
 
-LaTeX Warning: Reference `fig:Human_results' on page 4 undefined on input line 53.
-
-
-LaTeX Warning: Reference `fig:Jeff_results' on page 4 undefined on input line 53.
+LaTeX Warning: Reference `fig:DDA' on page 4 undefined on input line 46.
 
 
-LaTeX Warning: Reference `fig:DDA' on page 4 undefined on input line 78.
+LaTeX Warning: Reference `fig:DIA18' on page 4 undefined on input line 46.
 
 
-LaTeX Warning: Reference `fig:DIA18' on page 4 undefined on input line 78.
+LaTeX Warning: Reference `fig:DIA18_direct' on page 4 undefined on input line 50.
 
+(/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/tables_figures.tex
+Overfull \hbox (5.19797pt too wide) in paragraph at lines 42--42
+[]|\OT1/ptm/m/n/10 HumanPhosDB [[]][]| 
+ []
 
-LaTeX Warning: Reference `fig:DIA18_direct' on page 4 undefined on input line 82.
-
-) (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/conclusion.tex [4]) (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.bbl (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.brf)
+[4])) (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/conclusion.tex) (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.bbl (/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.brf)
 \tf@brf=\write3
 \openout3 = `final_report.brf'.
 
@@ -729,25 +728,25 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 68.
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 68.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 68.
 Package rerunfilecheck Info: File `final_report.brf' has not changed.
-(rerunfilecheck)             Checksum: BF3288DE21209C25A73D593B79A80D2E;1978.
+(rerunfilecheck)             Checksum: 7A75AA6897C5D719EC8738D0FC630D27;2635.
 
 
 LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 16901 strings out of 492995
- 322735 string characters out of 6132704
- 381107 words of memory out of 5000000
- 20207 multiletter control sequences out of 15000+600000
- 35389 words of font info for 86 fonts, out of 8000000 for 9000
+ 16910 strings out of 492995
+ 322967 string characters out of 6132704
+ 380181 words of memory out of 5000000
+ 20211 multiletter control sequences out of 15000+600000
+ 37152 words of font info for 93 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  34i,13n,33p,10522b,862s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on /Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.pdf (6 pages, 191890 bytes).
+{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on /Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.pdf (6 pages, 216441 bytes).
 PDF statistics:
- 266 PDF objects out of 1000 (max. 8388607)
- 226 compressed objects within 3 object streams
- 62 named destinations out of 1000 (max. 500000)
+ 292 PDF objects out of 1000 (max. 8388607)
+ 249 compressed objects within 3 object streams
+ 59 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
