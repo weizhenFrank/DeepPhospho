@@ -139,7 +139,7 @@ if configs['UsedModelCFG']['model_name'] == "StackedLSTM":
     cfg_to_load = copy.deepcopy(configs['UsedModelCFG'])
     model = StackedLSTM(
         # ntoken=Ionholdout.N_aa,
-        ntoken=31,
+        ntoken=len(dictionary),
         # for prosit, it has 0-21
         # row_num=Ionholdout.row_num,
         row_num=53,
@@ -152,7 +152,7 @@ elif configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
     model = LSTMTransformer(
         # ntoken=Iontrain.N_aa,
         RT_mode=False,
-        ntoken=len(dictionary) - 1,  # before is 31
+        ntoken=len(dictionary),
         # for prosit, it has 0-21
         use_prosit=configs['Intensity_DATA_CFG']["DataName"] == 'Prosit',
         pdeep2mode=configs['TRAINING_HYPER_PARAM']['pdeep2mode'],
@@ -269,7 +269,6 @@ WithLabel = configs['Intensity_DATA_CFG']['InputWithLabel']
 for pred_inten_mat, pep_inten_mat, aas, length_aas, charge in zip(pred_matrix_all, y_matrix_all, pep, pep_len, charges):
 
     if WithLabel:
-        # ipdb.set_trace()
         pred_inten__vec = pred_inten_mat.reshape(-1)
         pep_inten__vec = pep_inten_mat.reshape(-1)
         select = (pep_inten__vec != 0) * (pep_inten__vec != -1) * (pep_inten__vec != -2)
@@ -295,16 +294,15 @@ if below_cut_counts > 0:
 
 logger.info("Start write into file")
 if WithLabel:
-    ion_pred = pd.DataFrame({"PredInten": all_pred_ions_with_name,
-                             "IntPep": all_aa, "PrecCharge": all_charge, "PepLen": all_len,
-                             "gt_ion_with_name": all_gt_ion_with_name, "PCCs": pearson_eval, "SA": short_angle})
+    ion_pred = pd.DataFrame({"IntPep": all_aa, "PrecCharge": all_charge, "PepLen": all_len,
+                             "gt_ion_with_name": all_gt_ion_with_name, "PredInten": all_pred_ions_with_name,
+                             "PCCs": pearson_eval, "SA": short_angle})
     ion_pred.to_json(os.path.join(output_dir, f"{instance_name}-PredOutput.json"))
 
 else:
     out_put = {}
     ion_pred = pd.DataFrame(
-        {"PredInten": all_pred_ions_with_name,
-         "IntPep": all_aa, "PrecCharge": all_charge, "PepLen": all_len})
+        {"IntPep": all_aa, "PrecCharge": all_charge, "PepLen": all_len, "PredInten": all_pred_ions_with_name})
     # ion_pred.to_hdf(os.path.join(output_dir, f"{instance_name}-IonIntensity_Pred_label.h5"), key='df', mode='w')
     for pred_ion, aa, charge in zip(all_pred_ions_with_name, all_aa, all_charge):
         out_put['%s.%d' % (aa, charge)] = pred_ion
