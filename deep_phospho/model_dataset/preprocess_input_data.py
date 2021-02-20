@@ -162,10 +162,12 @@ class IonData(object):
         logger.info(f"Reading Files...\n{path}")
         if path.split(".")[-1] == 'json':
             seq_data = pd.read_json(path)
+            no_title = True
             # the expected data format: rows and columns are ion types and precursors, correspondingly
         else:
             seq_data = pd.read_csv(path)
-        if configs['TaskPurpose'].lower() == 'predict':
+            no_title = False
+        if configs['TaskPurpose'].lower() == 'predict' and not no_title:
             pep_info = seq_data[data_cfg['SEQUENCE_FIELD_NAME']]
         else:
             pep_info = seq_data.columns.values
@@ -213,7 +215,9 @@ class IonData(object):
                 self.X1[seq_index, :len(wrapped_seq)] = [self.dictionary.word2idx[aa] for aa in wrapped_seq]
                 self.X2[seq_index, :len(wrapped_seq)] = [charge for aa in wrapped_seq]
 
-                if configs['TaskPurpose'].lower() == 'train':
+                if configs['TaskPurpose'].lower() == 'train' or (
+                        configs['TaskPurpose'].lower() == 'predict'
+                        and configs['Intensity_DATA_CFG']['InputWithLabel']):
 
                     raw_intensity = seq_data.iloc[:, seq_index][seq_data.iloc[:, seq_index] > 0]
                     to_load_intensity = dict(raw_intensity / np.max(raw_intensity))
