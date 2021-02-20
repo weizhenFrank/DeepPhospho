@@ -1,0 +1,40 @@
+%task description and challenges
+
+A fundamental problem in proteome analysis is to seek a predictive relationship between a peptide and its measured chemico-physical properties, such as the chromatographic retention time (RT) and fragment ion intensity in LC-MS/MS (ref). In particular, bottom-up proteomic approaches can greatly benefit from 
+high-quality mass spectra prediction from amino acid sequences (ref).
+However, such a prediction task is particularly challenging due to the complex quantum effect within peptides and noisy measurement process. 
+
+% what has done before 
+
+Recently, thanks to the availability of large-scale peptide databases, data-driven strategies have been adopted to tackle this problem~\cite{arnold2006machine}.
+Notably, deep learning based approaches have shown promising performances in the task of retention time and/or mass spectrum estimation~\cite{zhou2017pdeep,ma2018improved,tiwary2019high,zeng2019ms,gessulat2019prosit}. The existing deep learning methods typically first embed amino acids into a vector representation, and then feed them into a multilayer neural network (CNN or LSTM) which extracts a global representation of the input peptide and predicts its retention time/ion intensity. Specifically, some of early works adopt convolutional neural networks (CNN) or its variants, which have limited capacity in modeling sequences of varying lengths and are largely restricted to predicting a single property of peptides (e.g., DeepRT~\cite{ma2018improved}). Recent efforts attempt to utilize recurrent neural networks, such as LSTMs~\cite{hochreiter1997long}, to capture the structural dependency in the peptide sequences~\cite{zeng2019ms}. Nevertheless, they only achieves limited success due to their restrictive structural assumption on the design of deep networks, including the linear embedding of amino acids and recurrent network topology.
+
+% our idea and model design
+%the long-range dependency         
+In this work, we present a novel deep learning framework, termed DeepPhospho, which tackles the challenge of peptide representation learning for RT and ion intensity prediction. To this end, we develop a hybrid deep network design, capable of better capturing the global structure of the peptide. 
+Specifically, we first employ a bi-LSTM network to compute the embedding of amino acids. This produces a context-aware local representations as each amino acid is enriched by the features of other amino acids in the same peptide. Given the new embedding, we then introduce a flexible Transformer-based network that uses self-attention to model long-range dependency in the peptide sequences. The Transformer module enables us to directly attend to multiple sites of the peptide, such as the pairs of b and y ion, without needing the recurrent computation. Finally, the network outputs a new representation for the input peptide, which is then fed into a linear regressor to generate predictions for RT or ion intensities.       
+
+We demonstrate the efficacy of the DeepPhospho on multiple challenging benchmarks of RT/ion-intensity prediction and provide detailed ablative study on the model design. Moreover, we have built a ready-to-use web server based on our model for the scientific community \footnote{\url{https://xxx.shanghaitech.edu.cn/xxx}}, and will also release our code ().
+
+%To the best of our knowledge, DeepPhospho is the first work to utilize the Transformer on the peptide spectrum prediction though it has been prevalently used in the natural language processing domain.
+
+%In this work, we develop a novel deep learning framework, termed DeepPhospho, capable of better capturing the local and global property of the peptide, as well as its phosphine modification cues. 
+%by exploiting a large amount of peptide retention time and mass spectra data. 
+%In particular, our design takes into account the phosphine modification in model training/inference, which improves the prediction quality of ion intensity.   
+
+ 
+%We use the LSTM + Transformer as its architecture; the LSTM could learn a good amino acid representation for the downstream Transformer module. By exploiting self-attention, the Transformer module could capture the difference of amino acids much more precisely. More importantly, the self-attention mechanism could potentially force model to attend the pair of b ion and y ion as these two ions are broke down at the same time in mass spectrometer.
+%In the supplementary, we show the superiority of LSTM + Transformer compared to solely Transformer or LSTM. 
+%Based on the observation that the Transformer module needs the good initial embedding of amino acid, we wonder that if whether or not a convolutional neural network (CNN) could replace the LSTM module to learn a good representation of amino acid, and the results show that the LSTM module is better than the CNN module configured before the Transformer. 
+%In further, we want to know a purely deep CNN whether if better than the LSTM + Transformer; however, results show a deep CNN could not generalize well compared with LSTM + Transformer architecture.
+
+ 
+
+%There have been several tools that successfully utilized deep learning in RT and Ion intensity prediction, such as DeepRT\cite{ma2018improved} and pDeep2\cite{zeng2019ms}.
+
+%DeepRT use the capsule network (CapsNet) \cite{sabour2017dynamic}  model to predict RT. However, the DeepRT did not explain very well for the choice of CapsNet, and CapsNet's structure cannot fully utilize the sequence's characteristics.
+ 
+%pDeep2 just use the bi-directional LSTM model to predict the ion intensity, and it does not explicitly take the relations of amino acids into the consideration of model design.
+
+% Our model design
+
