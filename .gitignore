@@ -1,20 +1,4 @@
-<<<<<<< HEAD
 
-PutOnGitHub/method/latex/full_method.aux
-PutOnGitHub/method/latex/full_method.bbl
-PutOnGitHub/method/latex/full_method.blg
-PutOnGitHub/method/latex/full_method.brf
-PutOnGitHub/method/latex/full_method.log
-PutOnGitHub/method/latex/full_method.pdf
-PutOnGitHub/method/latex/full_method.synctex.gz
-DeepPhospho/method/latex/full_method.aux
-DeepPhospho/method/latex/full_method.bbl
-DeepPhospho/method/latex/full_method.blg
-DeepPhospho/method/latex/full_method.brf
-DeepPhospho/method/latex/full_method.log
-DeepPhospho/method/latex/full_method.pdf
-DeepPhospho/method/latex/full_method.synctex.gz
-=======
 result/
 Data/**/*.pkl
 PretrainParams
@@ -109,4 +93,3 @@ venv/
 ENV/
 env.bak/
 venv.bak/
->>>>>>> e19fa1ecf427183f65c8078e3ec39924884f109c
