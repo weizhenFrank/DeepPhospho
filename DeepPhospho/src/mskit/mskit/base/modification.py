@@ -1,4 +1,0 @@
-
-class Modifications(object):
-    pass
-

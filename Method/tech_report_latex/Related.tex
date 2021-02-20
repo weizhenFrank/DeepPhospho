@@ -1,0 +1,50 @@
+\subsection{Retention Time Prediction}
+For retention time prediction, efforts to date to predict peptide RTs are mainly based on retention coefficients (Rc) of amino acids,
+while SSRCalc~\cite{guo1986prediction} is the most popular Rc-based predictor. Rc is a parameter to appraise the contribution of an individual amino
+acid to peptide RT, and the sum of all the Rcs of amino acids in a peptide could serve for RT estimation.
+Additional factors such as peptide length, charge, and helicity are also considered during peptide RT prediction.
+Several predictors based on Rc and other measurable factors have been proposed and reported in some studies. For example, Elude~\cite{moruz2010training,moruz2012chromatographic} and GPTime~\cite{maboudi2017uncertainty} developed from support vector machine (SVM) and Gaussian process
+regression employed Rcs learned from data sets and can also provide RT prediction for post-translationally modiﬁed (PTM) peptides.
+All these tools produced RT with $R^2$ values of less than 0.965 on various data sets. On the other hand, it is well recognized
+that we are still lacking of enough knowledge to fully understand the physicochemical properties of peptides and the complex
+interactions between peptides and stationary phase, which leads to the less-than optimum prediction of peptide RT. In terms
+of the algorithm, the traditional model shows its limitation in tracing the many subtle factors that affect the peptide behaviors
+on LC. Hence, in the ﬁeld of peptide RT prediction, there is still large room for improvement.
+
+Deep learning, an advanced machine learning method, has shown extraordinary capability to learn complex relationships
+from large-scale data. There have been several tools that successfully utilized deep learning in RT prediction, such as
+DeepRT~\cite{ma2018improved}, and Prosit~\cite{gessulat2019prosit}.
+
+DeepRT use the capsule network (CapsNet)~\cite{sabour2017dynamic}
+model. DeepRT could foresaw the RTs for the peptides at even different modiﬁcation status included as oxidation of methionine, phosphorylation of
+serine, threonine, tyrosine and at varied LC conditions included RPLC, SCX, HILIC.
+Prosit utilizes the LTSM model and like the DeepRT, it could predict the retention time given the peptide sequence.
+However, the DeepRT did not explain very well for the choice of CapsNet, and it did not fully consider the sequence's characteristics.
+Prosit use the LSTM model to capture the this pattern. But, LSTM model has been beaten by the transformer model
+in multiple tasks~\cite{vaswani2017attention}. Herein, we select the LSTM+transformer architecture.
+
+\subsection{Ion Intensity Prediction}
+Investigation of the peptide fragmentation is valuable both in theory and in practice. There are some researchers
+focusing on the prediction of theoretical MS/MS spectra of peptides, including kinetic model-based methods and machine
+learning based methods. MassAnalyzer~\cite{zhang2004prediction, zhang2005prediction} and MS-Simulator~\cite{sun2012ms,wang2015openms}
+are two major kinetic model-based tools designed based on
+the mobile proton hypothesis with some basic assumptions, and the key parameters of the models are tuned to ﬁt the data
+by statistics. The disadvantage of the kinetic model is that it cannot consistently be used to model the peptide
+fragmentation under HCD, ETD, or electron-transfer and higher-energy collision dissociation (EThcD). PeptideART is
+ a pure machine learning based tool which models the theoretical spectrum prediction as a classification problem, and
+ the probability of the occurrence of each peak is learned by using a shallow feed-forward neural network~\cite{arnold2006machine,li2011accuracy}.
+ Other previous work~\cite{frank2009ranking} predicts intensity ranks instead of relative intensities using learning-to-rank algorithms.
+ It has been shown that a good prediction method can boost the identification of peptides. However, peptide
+ fragmentation is very complex to predict; Li et al.~\cite{li2011accuracy} pointed out that the cross experiment correlations of PeptideART
+ based on collision induced dissociation (CID) spectra were significantly lower than within-experiment analyses. To
+ handle the complexity of peptide fragmentation, more powerful algorithms such as deep learning should be considered.
+
+pDeep~\cite{zhou2017pdeep}, a deep learning-based method based on LSTM model to predict the intensity distribution of product ions of a peptide. pDeep can
+work well in predicting not only HCD spectra but also ETD and EThcD spectra.pDeep achieved  $>$0.9 median PCCs (Pearson correlation coefficient)
+in predicting HCD, ETD, and EThcD spectra, which is significantly higher than kinetic model-based MassAnalyzer and MS-Simulator as well
+as the machine learning-based PeptideART. But, similarly like the RT prediction task, LSTM could not learn better than transformer, and this is why
+we also choose the LSTM + transformer architecture for this task. After pDeep, the modified version of pDeep, called pDeep2~\cite{zeng2019ms}.
+
+pDeep2 is spectrum predictor for modiﬁed peptides based on the deep learning model. It use the transfer-learning technique to transfer pDeep model
+parameters to the prediction of modified peptide's spectrum. It claims that it's accurate model for predicting the spectra of peptides with common PTMs or low-abundance PTMs,
+even if we only had a limited scale of benchmark modiﬁed PSMs.  Similarly, our model design make us to predict the spectrum of modified peptide.
