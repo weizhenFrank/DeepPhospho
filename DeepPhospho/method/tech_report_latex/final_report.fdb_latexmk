@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex final_report"] 1613751177 "final_report.aux" "final_report.bbl" "final_report" 1613751178
+["bibtex final_report"] 1613833815 "final_report.aux" "final_report.bbl" "final_report" 1613833896
   "./ieee_fullname.bst" 1613573814 19905 72b73f4cb1c51eaa1a7af8ecad2b6bfb ""
   "egbib.bib" 1613653367 11988 04d830eeb4d51e8585b6d34da5fbe441 ""
-  "final_report.aux" 1613751178 9627 07e51d7a146f041ebc18b1bdba38209f ""
+  "final_report.aux" 1613833896 11112 034999ad693080be8dc0efd90ef4e155 ""
   (generated)
   "final_report.bbl"
   "final_report.blg"
-["pdflatex"] 1613751178 "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.tex" "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.pdf" "final_report" 1613751178
-  "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.aux" 1613751178 9627 07e51d7a146f041ebc18b1bdba38209f ""
+["pdflatex"] 1613833895 "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.tex" "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.pdf" "final_report" 1613833896
+  "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.aux" 1613833896 11112 034999ad693080be8dc0efd90ef4e155 ""
   "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.tex" 1613656769 1780 bc4b25c901f940528e387521d53d4a4c ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc" 1480098666 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2017/texmf-dist/fonts/map/fontname/texfonts.map" 1480098670 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
@@ -147,17 +147,18 @@
   "abstract.tex" 1613573814 1034 b7e1088533f9f30aa349400b8780bbe9 ""
   "conclusion.tex" 1613573814 1359 f896f396e50ffe1226e3c28eb7c72b0c ""
   "cvpr.cls" 1613573814 20566 94fe0374a1aefb79e6d48d815a6f6901 ""
-  "experiments.tex" 1613751084 5759 920450afbe2f2bdb9273e6cfb9f46553 ""
-  "final_report.aux" 1613751178 9627 07e51d7a146f041ebc18b1bdba38209f ""
-  "final_report.bbl" 1613751178 7398 d2b08fa52545f3e4db4234dd783800c3 "bibtex final_report"
-  "final_report.brf" 1613751178 2635 7a75aa6897c5d719ec8738d0fc630d27 ""
+  "experiments.tex" 1613833629 7473 26cbe0866ad4231d9d5e7db41ea79493 ""
+  "final_report.aux" 1613833896 11112 034999ad693080be8dc0efd90ef4e155 ""
+  "final_report.bbl" 1613833815 7398 d2b08fa52545f3e4db4234dd783800c3 "bibtex final_report"
+  "final_report.brf" 1613833896 3435 985add6c6aa5dbbc3659617013583f4e ""
   "final_report.tex" 1613656769 1780 bc4b25c901f940528e387521d53d4a4c ""
-  "methods.tex" 1613713747 5403 00fcc9ee26e11ddc7314956df60ef214 ""
-  "tables_figures.tex" 1613751176 3020 336611a19b8105dbd550d32abeec40cb ""
+  "images/arch.png" 1613573814 149532 1362ef0838eeccdd8ca773748d9ffabb ""
+  "methods.tex" 1613833895 4762 fb6b5adfe7f0ef7ea9ad25df05b5d950 ""
+  "tables_figures.tex" 1613833782 2683 976b469af8d30c916b84af92787c51cb ""
   (generated)
   "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.log"
+  "final_report.aux"
+  "final_report.log"
   "/Users/admin/VSCodeProjects/DeepPhospho/DeepPhospho/method/tech_report_latex/final_report.pdf"
   "final_report.brf"
-  "final_report.log"
   "final_report.pdf"
-  "final_report.aux"

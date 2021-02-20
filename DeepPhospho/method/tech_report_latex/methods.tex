@@ -6,12 +6,19 @@ function \( F \) could map the \( X \) to the \( y \), either retention time or 
 \[ \hat{y} = F(X;\Theta) \]
 $\Theta$ is the parameters of the model.we find the optimal parameters \( \Theta^\star\) by minimizing  the loss function \( L \).
 \[ \Theta^\star = \arg\min_{\Theta} L(\hat{y}, y) \]
-We use the LSTM + Transformer model (illustrated in the Figure) to solve the retention time (RT) and ion intensity prediction task.
+We use the LSTM + Transformer model (illustrated in the Figure~\ref{fig:architecture}) to solve the retention time (RT) and ion intensity prediction task.
 The long short-term memory (LSTM)~\cite{hochreiter1997long} module comprises of two stacks of bi-directional LSTM. For each stack of LSTM, it has two layers and the dimension of input embedding and hidden state are 256 and 512, respectively. After one stack of LSTM, a combination of LeakyReLU-dropout-linear layer is configured. LSTM is a kind of recurrent neural network(RNN) trying to use gate function to capture the long dependency in the input sequence. The bi-directional LSTM, expecting to learn a good token embedding for the network's downstream layers, is scheduled as the first module of our model.
 
 Transformer~\cite{vaswani2017attention} is the second module composed of n Transformer encoder.
 Each Transformer encoder has 8 attention head, then a feedforward layer configured after attention head.
 
+\begin{figure}[t]
+    \includegraphics[width=3.5in]{arch.png}
+    \caption{Model architecture}
+  \label{fig:architecture}
+  \end{figure}
+
+\subsection{RT prediction}
 \paragraph*{Self-attention and position encoding}
 Transformer is an entirely different model by exploiting the self-attention compared to RNN.
 Self-attention is an attention mechanism relating different positions of a single sequence to compute a representation of the sequence. Self-attention has been used successfully in a variety of tasks, including reading
@@ -26,7 +33,7 @@ We take the same way of position encoding as~\cite{vaswani2017attention} which i
 \end{align*}
 where $pos$  is the position, $i$ is the dimension and $d_{model}$ have the same dimensions with input embeddings.
 
-\subsection{RT prediction}
+
 
 For this task, we implement
 5 models with two units of two layers bi-directional LSTM and 4, 5, 6, 7, 8 Transformer encoder layers, correspondingly. We train and select those 5 models independently. After obtaining the best models, those 5 predictions of retention time are averaged as the final prediction for each peptide.
@@ -38,7 +45,6 @@ Herein we use the square root of mean squared error (RMSE) as loss function.
 %-------------------------------------------------------------------------
 \subsection{Ion intensity prediction}
 
-There are two types of fragment ion intensity values that have no contribution in the loss calculation and are removed in the prediction. One is that related to padding, like y20 for a 7-mer; the other is related to the phosphorylation site. For example, the phosphorylation site is located in the b5, then the b1,b2, b3, and b4 ions cannot lose phosphate so that the ion intensity with phosphate loss must be 0. This ignorance of impossible phosphorylation site potentially help model to learn the implicitly rule of phosphorylation, benefiting the prediction accuracy of intensity of ion with phosphate loss. Otherwise, the only way for model to learn this rule is from the ion intensity data which would be much more inefficient than the injecting the prior knowledge directly to the model learning.
 We implement one model for ion intensity prediction, which has two units of two layers bi-directional LSTM and 8 layers of Transformer encoder. Like the RT prediction task, we first embed the amino acids token, the charge to 192, 64 dimensions separately then concatenate those two vectors, forming the 256 dimension vectors to the neural network. The last layer is a linear layer, which projects the feature from high dimension to 8 dimensions with length unchanged as our prediction of ion intensity.
 
 We use mean squared
