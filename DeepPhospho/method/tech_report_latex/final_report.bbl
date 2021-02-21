@@ -43,6 +43,10 @@ Dacheng Guo, Colin~T Mant, Ashok~K Taneja, JM~Robert Parker, and Robert~S
   coefficients of amino acid residues of model synthetic peptides.
 \newblock {\em Journal of Chromatography A}, 359:499--518, 1986.
 
+\bibitem{he2015deep}
+Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+\newblock Deep residual learning for image recognition, 2015.
+
 \bibitem{hochreiter1997long}
 Sepp Hochreiter and J{\"u}rgen Schmidhuber.
 \newblock Long short-term memory.
