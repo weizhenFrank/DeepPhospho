@@ -47,4 +47,4 @@ To illustrate the efficacy of our model design, we compare our model architectur
 
 The CNN module is built like the ResNet34~\cite{he2015deep} except the kernel size of first convolution layer changed to be 9 and the kernel size in residual block changed to be 7 and it is composed of 3 residual blocks.
 The comparison experiments are trained on ion intensity data of Jeff~\cite{liu2018vivo} dataset. We split the Jeff dataset into training : validation = 9 : 1, reporting the best validation result for each model. The result is seen in Table~\ref{table:ablation study}. We could see that once removed any module or replace with CNN module, the performance would decrease. 
-\input{tables_figures.tex}
+\input{./body/tables_figures.tex}
