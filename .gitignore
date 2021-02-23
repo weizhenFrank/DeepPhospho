@@ -1,9 +1,18 @@
 
-result/
-Data/**/*.pkl
-PretrainParams
-DeepPhospho_raw
+# Demo
+demo/*
+!demo/RPE1_DIA_demo_data
+!demo/U2OS_DIA_demo_data
+!demo/ConfigDemo*
+!demo/IonInput.txt
+!demo/RTInput.txt
 
+
+# Pre-trained params
+PretrainParams/*
+!PretrainParams/README.md
+
+# Methods
 Method/latex/full_method.aux
 Method/latex/full_method.bbl
 Method/latex/full_method.blg
@@ -11,6 +20,11 @@ Method/latex/full_method.brf
 Method/latex/full_method.log
 Method/latex/full_method.pdf
 Method/latex/full_method.synctex.gz
+
+# Other local files
+DeepPhospho_raw
+result/
+Data/**/*.pkl
 
 # PyCharm
 .idea
