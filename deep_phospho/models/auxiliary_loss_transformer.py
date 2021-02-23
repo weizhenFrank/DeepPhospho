@@ -30,6 +30,7 @@ class TransformerEncoder(nn.Module):
 
     def __init__(self, encoder_layer, num_layers, norm=None):
         super(TransformerEncoder, self).__init__()
+        num_layers = int(num_layers)
         self.layers = get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
         self.norm = norm
