@@ -101,7 +101,10 @@ logger.info(f'Task information: {task_info}')
 logger.info(config_msg)
 
 # Choose device (Set GPU index or default one, or use CPU)
-if torch.cuda.is_available():
+if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX'].lower() == 'cpu':
+    device = torch.device('cpu')
+    logger.info(f'CPU is defined as the device in config')
+elif torch.cuda.is_available():
     if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX']:
         device = torch.device(f'cuda:{configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
         logger.info(f'Cuda available. Use config defined GPU {configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')
