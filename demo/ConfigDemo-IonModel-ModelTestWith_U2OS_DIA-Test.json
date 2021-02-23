@@ -1,58 +1,22 @@
 {
     "WorkFolder": "Here",
-    "ExpName": "RPE1_Finetune",
-    "TaskPurpose": "Train",
-    "PretrainParam": "./PretrainParams/IonModel/best_model.pth",
-    "Intensity_DATA_PREPROCESS_CFG": {
-        "MAX_SEQ_LEN": 52,
-        "repeat_factor": 4,
-        "mask_ratio": 1
-    },
+    "ExpName": "U2OS_DIA_Predict",
+    "TaskPurpose": "Predict",
+    "PretrainParam": "./demo/NameOfTaskInfo/ckpts/best_model.pth",
     "Intensity_DATA_CFG": {
-        "DataName": "RPE1_DIA",
-        "TrainPATH": "./demo/RPE1_DIA_demo_data/20201009-Inten-PhosDIA-DIA18_075In20200919-FullForFinetuning_train_no_holdout_666.csv",
-        "TestPATH": "./demo/RPE1_DIA_demo_data/20201009-Inten-PhosDIA-DIA18_075In20200919-FullForFinetuning_val_no_holdout_666.csv",
+        "DataName": "U2OS_DIA",
+        "TrainPATH": "",
+        "TestPATH": "",
         "HoldoutPATH": "",
-        "PredInputPATH": "",
-        "InputWithLabel": false,
+        "PredInputPATH": "./demo/U2OS_DIA_demo_data/20201010-Inten_Holdout-U2OS_DIA-seed0_811.json",
+        "InputWithLabel": true,
         "Intensity_FIELD_NAME": "normalized_intensity",
         "SEQUENCE_FIELD_NAME": "sequence",
         "PRECURSOR_CHARGE": "charge",
         "DATA_PROCESS_CFG": {
-            "MAX_SEQ_LEN": 52,
-            "repeat_factor": 4,
-            "mask_ratio": 1
+            "MAX_SEQ_LEN": 52
         },
         "refresh_cache": true
-    },
-    "MODEL_CFG": {
-        "model_name": "LSTMTransformer",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "num_encd_layer": 8,
-        "transformer_hidden_dim": 1024
-    },
-    "Ensemble_MODEL_CFG": {
-        "model_name": "LSTMTransformerEnsemble",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "transformer_hidden_dim": 1024
     },
     "UsedModelCFG": {
         "model_name": "LSTMTransformer",

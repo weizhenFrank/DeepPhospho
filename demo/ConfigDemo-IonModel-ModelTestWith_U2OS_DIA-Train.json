@@ -3,9 +3,6 @@
     "ExpName": "U2OS_DIA_Finetune",
     "TaskPurpose": "Train",
     "PretrainParam": "./PretrainParams/IonModel/best_model.pth",
-    "Intensity_DATA_PREPROCESS_CFG": {
-        "MAX_SEQ_LEN": 52
-    },
     "Intensity_DATA_CFG": {
         "DataName": "U2OS_DIA",
         "TrainPATH": "./demo/U2OS_DIA_demo_data/20201010-Inten_Train-U2OS-DIA-seed0_811.json",
@@ -20,35 +17,6 @@
             "MAX_SEQ_LEN": 52
         },
         "refresh_cache": true
-    },
-    "MODEL_CFG": {
-        "model_name": "LSTMTransformer",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "num_encd_layer": 8,
-        "transformer_hidden_dim": 1024
-    },
-    "Ensemble_MODEL_CFG": {
-        "model_name": "LSTMTransformerEnsemble",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "transformer_hidden_dim": 1024
     },
     "UsedModelCFG": {
         "model_name": "LSTMTransformer",

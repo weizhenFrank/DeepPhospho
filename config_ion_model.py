@@ -11,7 +11,7 @@ TaskPurpose = 'Predict'
 PretrainParam = './PretrainParams/IonModel/best_model.pth'
 
 Intensity_DATA_PREPROCESS_CFG = {
-    'MAX_SEQ_LEN': 74,
+    'MAX_SEQ_LEN': 52,
     'repeat_factor': 4,
     'mask_ratio': 1,
 }

@@ -3,11 +3,6 @@
     "ExpName": "",
     "TaskPurpose": "Predict",
     "PretrainParam": "./PretrainParams/IonModel/best_model.pth",
-    "Intensity_DATA_PREPROCESS_CFG": {
-        "MAX_SEQ_LEN": 74,
-        "repeat_factor": 4,
-        "mask_ratio": 1
-    },
     "Intensity_DATA_CFG": {
         "DataName": "",
         "TrainPATH": "./Data/IonModel_TestData/20201010-Inten_Train-RPE1_DIA-seed0_811.json",
@@ -24,35 +19,6 @@
             "mask_ratio": 1
         },
         "refresh_cache": false
-    },
-    "MODEL_CFG": {
-        "model_name": "LSTMTransformer",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "num_encd_layer": 2,
-        "transformer_hidden_dim": 1024
-    },
-    "Ensemble_MODEL_CFG": {
-        "model_name": "LSTMTransformerEnsemble",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "transformer_hidden_dim": 1024
     },
     "UsedModelCFG": {
         "model_name": "LSTMTransformer",

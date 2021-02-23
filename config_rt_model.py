@@ -23,7 +23,7 @@ ParamsForPred = {
 RT_DATA_PREPROCESS_CATALOG = {
     "MIN_RT": -100,
     "MAX_RT": 200,
-    "MAX_SEQ_LEN": 74,
+    "MAX_SEQ_LEN": 52,
 }
 
 RT_DATA_CFG = {

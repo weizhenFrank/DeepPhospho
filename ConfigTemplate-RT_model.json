@@ -10,11 +10,6 @@
         "7": "./PretrainParams/RTModel/7.pth",
         "8": "./PretrainParams/RTModel/8.pth"
     },
-    "RT_DATA_PREPROCESS_CATALOG": {
-        "MIN_RT": -100,
-        "MAX_RT": 200,
-        "MAX_SEQ_LEN": 74
-    },
     "RT_DATA_CFG": {
         "DataName": "",
         "TrainPATH": "./Data/RT_TestData/20201010-RT_Train-RPE1_DIA-seed0_811.txt",
@@ -28,39 +23,10 @@
         "DATA_PROCESS_CFG": {
             "MIN_RT": -100,
             "MAX_RT": 200,
-            "MAX_SEQ_LEN": 74
+            "MAX_SEQ_LEN": 52
         },
         "refresh_cache": false,
         "Use_cache": true
-    },
-    "MODEL_CFG": {
-        "model_name": "LSTMTransformer",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "num_encd_layer": 2,
-        "transformer_hidden_dim": 1024
-    },
-    "Ensemble_MODEL_CFG": {
-        "model_name": "LSTMTransformerEnsemble",
-        "embed_dim": 256,
-        "lstm_hidden_dim": 512,
-        "lstm_layers": 2,
-        "lstm_num": 2,
-        "bidirectional": true,
-        "max_len": 100,
-        "num_attention_head": 8,
-        "fix_lstm": false,
-        "pos_encode_dropout": 0.1,
-        "attention_dropout": 0.1,
-        "transformer_hidden_dim": 1024
     },
     "UsedModelCFG": {
         "model_name": "LSTMTransformerEnsemble",
