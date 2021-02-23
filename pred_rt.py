@@ -292,7 +292,7 @@ logger.info(
 )
 
 Output = pd.DataFrame({'sequence': peptides, 'pred': pred_ys, 'label': label_y})
-Output.to_csv(os.path.join(output_dir, 'Prediction.txt'), index_label=False, index=True, sep='\t')
+Output.to_csv(os.path.join(output_dir, 'Prediction.txt'), index_label=False, index=False, sep='\t')
 # Output.to_csv(os.path.join(output_dir,
 #                            f'Pred_{os.path.basename(load_model_path).split(".")[0]}.csv'), index=True, index_label=False)
 
