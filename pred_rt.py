@@ -260,7 +260,7 @@ def re_norm(arr):
 
 
 label_y = re_norm(label_y)
-pred_ys = re_norm(pred_ys)
+pred_ys = re_norm(pred_ys).reshape([len(peptides), -1])
 
 # ipdb.set_trace()
 
@@ -296,7 +296,6 @@ Output.to_csv(os.path.join(output_dir, 'Prediction.txt'), index_label=False, ind
 # Output.to_csv(os.path.join(output_dir,
 #                            f'Pred_{os.path.basename(load_model_path).split(".")[0]}.csv'), index=True, index_label=False)
 
-# TODO This var controls whether with label or not, be True or False in Config (has been deleted)
 WithLabel = configs['RT_DATA_CFG']['InputWithLabel']
 if WithLabel:
     fig, ax = plt.subplots(1, 1, figsize=(5, 5), dpi=300)
