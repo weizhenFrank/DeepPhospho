@@ -23,8 +23,9 @@ from deep_phospho.model_dataset.dataset import IonDataset, collate_fn, RandomMas
 from deep_phospho.model_utils.ion_eval import eval
 from deep_phospho.model_utils.logger import MetricLogger, setup_logger, TFBoardWriter
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
-from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status, get_parser
+from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status
 from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config_as_module, load_config_from_json
+from deep_phospho.model_utils.script_arg_parser import choose_config_file, overwrite_config_with_args
 
 
 # ---------------- User defined space Start --------------------
@@ -44,26 +45,26 @@ SEED = 666
 
 this_script_dir = os.path.dirname(os.path.abspath(__file__))
 
-if config_path != '':
-    config_msg = f'Use config file path defined in train script: {config_path}'
-elif len(sys.argv) == 2:
-    config_path = sys.argv[1]
-    config_msg = f'Use config file path defined in command line: {config_path}'
-if config_path:
+config_path, config_dir, config_msg, additional_args = choose_config_file(config_path)
+
+if config_path is not None:
     configs = load_config_from_json(config_path)
-    config_dir = os.path.dirname(config_path)
 else:
     try:
         import config_ion_model as config_module
         config_path = os.path.join(this_script_dir, 'config_ion_model.py')
-        config_msg = f'Use config_ion_model.py in DeepPhospho main folder as config file: {config_path}'
+        config_msg = ('Config file is not in arguments and not defined in script.\n'
+                      f'Use config_ion_model.py in DeepPhospho main folder as config file: {config_path}')
     except ModuleNotFoundError:
         from deep_phospho.configs import ion_inten_config as config_module
         config_path = os.path.join(this_script_dir, 'deep_phospho', 'configs', 'ion_inten_config.py')
-        config_msg = f'Use default config file ion_inten_config.py in DeepPhospho config module as config file'
+        config_msg = ('Config file is not in arguments and not defined in script.\n'
+                      f'Use default config file ion_inten_config.py in DeepPhospho config module as config file: {config_path}')
     finally:
         configs = load_config_as_module(config_module)
         config_dir = this_script_dir
+
+configs, arg_msg = overwrite_config_with_args(args=additional_args, config=configs)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -112,6 +113,7 @@ def main():
     logger.info(f'Work folder is set to {work_folder}')
     logger.info(f'Task start time: {init_time}')
     logger.info(f'Task information: {task_info}')
+    logger.info(arg_msg)
     logger.info(config_msg)
 
     # Choose device (Set GPU index or default one, or use CPU)

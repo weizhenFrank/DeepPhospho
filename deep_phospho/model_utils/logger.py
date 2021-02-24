@@ -80,9 +80,10 @@ class MetricLogger(object):
 
 
 def save_config(conf, save_dir):
-    conf_dict = conf_to_dict(conf)
-    with open(os.path.join(save_dir, "config.json"), 'w') as f:
-        conf_s = json.dumps(conf_dict, indent=4)
+    if not isinstance(conf, dict):
+        conf = conf_to_dict(conf)
+    with open(os.path.join(save_dir, "Final_config.json"), 'w') as f:
+        conf_s = json.dumps(conf, indent=4)
         f.write(conf_s)
     return conf_s
 
