@@ -40,6 +40,7 @@
         "fix_lstm": false,
         "pos_encode_dropout": 0.1,
         "attention_dropout": 0.1,
+        "num_encd_layer": null,
         "transformer_hidden_dim": 1024
     },
     "TRAINING_HYPER_PARAM": {

@@ -57,7 +57,7 @@ MODEL_CFG = dict(
     fix_lstm=False,
     pos_encode_dropout=0.1,
     attention_dropout=0.1,
-    num_encd_layer=2,
+    num_encd_layer=4,
     # change to 1, 2, 3, 4, 5, 6, 7, 8, 9 for model ensemble (original 8)
     transformer_hidden_dim=1024,
 )
@@ -74,6 +74,7 @@ Ensemble_MODEL_CFG = dict(
     fix_lstm=False,
     pos_encode_dropout=0.1,
     attention_dropout=0.1,
+    num_encd_layer=None,
     transformer_hidden_dim=1024,
 )
 
