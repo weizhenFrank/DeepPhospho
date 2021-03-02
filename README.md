@@ -105,23 +105,56 @@
 
 ## <span id="ion_config">Configs for ion intensity model</span>
 
-
+* Use config_ion_model.py as an example
+* WorkFolder can be set to 'Here' indicates the dir to run script, or other specific path
+* ExpName is the experiment name of this time, it will be an identifier and empty is also fine
+* TaskPurpose can be set to one of 'Train' or 'Predict' (case is ignored)
+* PretrainParam is used
+  * as pre-trained parameter for fine-tuning, and it can be empty in training mode
+  * as model parameter to load for predicting, and it must be pointed to an vailid path of parameter file
+* Intensity_DATA_CFG
+  * DataName is used as the identifier of this dataset
+  * The two setting groups below will have one to be ignored according to the TaskPurpose
+    1. for training
+       * TrainPATH, TestPATH, and HoldoutPATH are used to train model, and Holdout can be empty
+    2. for prediction
+       * PredInputPATH is defined as the prediction input
+       * InputWithLabel can be True or False. If True, the evaluation will be done if the label is provided in the prediction input
+  * MAX_SEQ_LEN will limit the max peptide length for either training and prediction. Though it is possible to predict any peptide longer than this setting, we recommended to train a new model for the specific length
+  * We use cache (pickle) to make the data loading more quickly, and refresh_cache will re-pickle the input data
+* MODEL_CFG
+  * For ion intensity model, only MODEL_CFG (LSTMTransformer) is available and please make sure the UsedModelCFG is set to this one
+  * In json format, only UsedModelCFG is used
+* TRAINING_HYPER_PARAM
+  * GPU_INDEX can be set to '0', '1', '2', ... or 'cpu', and corresponded GPU device or CPU will be used
+  * EPOCH can be set to positive integer, 30 is recommended for fine-tuning
+  * BATCH_SIZE is recommended to be set as $2^n$ according to the memory of your device
 
 ## <span id="rt_config">Configs for RT model</span>
 
-
-
-
-
-
+* Config for RT model is similar as ion model, and below is the different ones
+* PretrainParam is only used for fine-tuning if it is provided. Instead, ParamsForPred will be used as the params for prediction to be loaded
+* MIN_RT and MAX_RT are used to scale the input to 0-1 and unscale the output to this range
+* To train or fine-tune RT model, MODEL_CFG (LSTMTransformer) will be used, and Ensemble_MODEL_CFG (LSTMTransformerEnsemble) is used for prediction
+  * To train a RT model and in .py config mode, change num_encd_layer for MODEL_CFG and set UsedModelCFG to MODEL_CFG
+  * To predict RT in .py config mode, change UsedModelCFG to Ensemble_MODEL_CFG and num_encd_layer will be ignored
+  * To train a RT model in .json config mode, change num_encd_layer in UsedModelCFG and set model_name to 'LSTMTransformer'
+  * To predict RT in .json config mode, set model_name to 'LSTMTransformerEnsemble'
+* The ensembl is implemented by changing the num_encd_layer (number of transformer encoder layer) of each model, and we provided 4, 5, 6, 7, 8 five pre-trained parameters
 
 # <span id="predict">Predict spec and RT with DeepPhospho</span>
 
 ## <span id="create_input">Create your own prediction input</span>
 
+
+
 ## <span id="pred_spec">Predict spec ion intensity</span>
 
+
+
 ## <span id="pred_rt">Predict peptide iRT</span>
+
+
 
 # <span id="train">Training and fine-tuning model params</span>
 

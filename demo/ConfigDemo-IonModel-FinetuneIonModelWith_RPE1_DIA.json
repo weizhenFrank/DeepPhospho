@@ -36,6 +36,9 @@
         "transformer_hidden_dim": 1024
     },
     "TRAINING_HYPER_PARAM": {
+        "GPU_INDEX": "0",
+        "EPOCH": 30,
+        "BATCH_SIZE": 128,
         "resume": false,
         "Bert_pretrain": false,
         "accumulate_mask_only": false,
@@ -49,7 +52,6 @@
         "weight_decay": 1e-08,
         "warmup_iters": 0,
         "save_param_interval": 300,
-        "GPU_INDEX": "0",
         "module_namelist": null,
         "remove_ac_pep": false,
         "loss_func": "MSE",
@@ -57,8 +59,6 @@
             2000,
             6000
         ],
-        "BATCH_SIZE": 128,
-        "EPOCH": 3,
         "use_prosit_pretrain": false,
         "two_stage": true,
         "lambda_cls": 0.0,

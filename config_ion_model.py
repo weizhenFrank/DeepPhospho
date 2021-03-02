@@ -10,12 +10,6 @@ TaskPurpose = 'Predict'
 
 PretrainParam = './PretrainParams/IonModel/best_model.pth'
 
-Intensity_DATA_PREPROCESS_CFG = {
-    'MAX_SEQ_LEN': 52,
-    'repeat_factor': 4,
-    'mask_ratio': 1,
-}
-
 Intensity_DATA_CFG = {
     'DataName': '',
 
@@ -30,7 +24,11 @@ Intensity_DATA_CFG = {
     "SEQUENCE_FIELD_NAME": 'sequence',
     "PRECURSOR_CHARGE": 'charge',
 
-    "DATA_PROCESS_CFG": Intensity_DATA_PREPROCESS_CFG,
+    "DATA_PROCESS_CFG": {
+        'MAX_SEQ_LEN': 52,
+        'repeat_factor': 4,
+        'mask_ratio': 1,
+    },
     'refresh_cache': False,
 }
 
@@ -46,7 +44,7 @@ MODEL_CFG = dict(
     fix_lstm=False,
     pos_encode_dropout=0.1,
     attention_dropout=0.1,
-    num_encd_layer=2,
+    num_encd_layer=8,
     # change to 1, 2, 3, 4, 5, 6, 7, 8, 9 for model ensemble (original 8)
     transformer_hidden_dim=1024,
 )
@@ -69,6 +67,10 @@ Ensemble_MODEL_CFG = dict(
 UsedModelCFG = MODEL_CFG
 
 TRAINING_HYPER_PARAM = dict(
+    GPU_INDEX='0',
+    EPOCH=2,
+    BATCH_SIZE=128,
+
     resume=False,
     Bert_pretrain=False,  # mask language models training MLM
     accumulate_mask_only=False,  # loss agregation style for MLM
@@ -83,15 +85,12 @@ TRAINING_HYPER_PARAM = dict(
     warmup_iters=0,  # warm up_steps for other scheduler
     # interval(iteration) of saving the the parameters
     save_param_interval=300,
-    GPU_INDEX='0',
     module_namelist=None,
     remove_ac_pep=False,  # here to remove peptide of ac in N terminal
     # MSE L1 PearsonLoss SALoss SA_Pearson_Loss L1_SA_Pearson_Loss SALoss_MSE
     # RMSE
     loss_func="MSE",
     LR_STEPS=(2000, 6000),
-    BATCH_SIZE=128,
-    EPOCH=2,
 
     use_prosit_pretrain=False,
     # this means we first to predict whether it exists for each fragment under

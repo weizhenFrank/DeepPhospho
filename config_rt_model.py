@@ -20,12 +20,6 @@ ParamsForPred = {
     8: "./PretrainParams/RTModel/8.pth",
 }
 
-RT_DATA_PREPROCESS_CATALOG = {
-    "MIN_RT": -100,
-    "MAX_RT": 200,
-    "MAX_SEQ_LEN": 52,
-}
-
 RT_DATA_CFG = {
     'DataName': '',
 
@@ -40,7 +34,11 @@ RT_DATA_CFG = {
     "RT_FIELD_NAME": "iRT",
     "SCALE_BY_ZERO_ONE": True,
 
-    "DATA_PROCESS_CFG": RT_DATA_PREPROCESS_CATALOG,
+    "DATA_PROCESS_CFG": {
+        "MIN_RT": -100,
+        "MAX_RT": 200,
+        "MAX_SEQ_LEN": 52,
+    },
     'refresh_cache': False,
     'Use_cache': True,
 }
@@ -81,11 +79,13 @@ Ensemble_MODEL_CFG = dict(
 UsedModelCFG = Ensemble_MODEL_CFG
 
 TRAINING_HYPER_PARAM = dict(
+    GPU_INDEX='0',
+    EPOCH=2,
+    BATCH_SIZE=64,
+
     # MSE L1 PearsonLoss SALoss SA_Pearson_Loss L1_SA_Pearson_Loss SALoss_MSE
     # RMSE
     loss_func="RMSE",
-    BATCH_SIZE=64,
-    EPOCH=2,
     LR_STEPS=(10000, 20000),
     add_hydro=False,
     # this means we first to predict whether it exists for each fragment under
@@ -106,7 +106,6 @@ TRAINING_HYPER_PARAM = dict(
     warmup_iters=0,  # warm up_steps for other scheduler
     # interval(iteration) of saving the the parameters
     save_param_interval=300,
-    GPU_INDEX='0',
     module_namelist=None,
     remove_ac_pep=False,  # here to remove peptide of ac in N terminal
 )

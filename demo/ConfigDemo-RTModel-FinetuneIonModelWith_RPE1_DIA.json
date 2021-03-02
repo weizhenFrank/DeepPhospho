@@ -44,9 +44,10 @@
         "transformer_hidden_dim": 1024
     },
     "TRAINING_HYPER_PARAM": {
-        "loss_func": "RMSE",
-        "BATCH_SIZE": 64,
+        "GPU_INDEX": "0",
         "EPOCH": 3,
+        "BATCH_SIZE": 64,
+        "loss_func": "RMSE",
         "LR_STEPS": [
             10000,
             20000
@@ -66,7 +67,6 @@
         "weight_decay": 1e-08,
         "warmup_iters": 0,
         "save_param_interval": 300,
-        "GPU_INDEX": "0",
         "module_namelist": null,
         "remove_ac_pep": false
     },

@@ -152,16 +152,16 @@ def main():
             train_dataset = RandomMaskingDataset(ion_train_data,
                                                  de_mod=True,
                                                  mask_modifier=True,
-                                                 mask_ratio=configs['Intensity_DATA_PREPROCESS_CFG']['mask_ratio'])
+                                                 mask_ratio=configs['Intensity_DATA_CFG']['DATA_PROCESS_CFG']['mask_ratio'])
             test_dataset = RandomMaskingDataset(ion_test_data,
                                                 de_mod=True,
                                                 mask_modifier=True,
-                                                mask_ratio=configs['Intensity_DATA_PREPROCESS_CFG']['mask_ratio'])
+                                                mask_ratio=configs['Intensity_DATA_CFG']['DATA_PROCESS_CFG']['mask_ratio'])
             if use_holdout:
                 holdout_dataset = RandomMaskingDataset(ion_holdout_data,
                                                        de_mod=True,
                                                        mask_modifier=True,
-                                                       mask_ratio=configs['Intensity_DATA_PREPROCESS_CFG']['mask_ratio'])
+                                                       mask_ratio=configs['Intensity_DATA_CFG']['DATA_PROCESS_CFG']['mask_ratio'])
 
         else:
             train_dataset = IonDataset(ion_train_data, configs)
