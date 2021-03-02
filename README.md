@@ -59,25 +59,55 @@
 ## <span id="use_gpu">Use GPU (optional)</span>
 
 * DeepPhospho can be runned with GPU or with only CPU
-* To use GPU, please confirm the information of your device and install suitable drive (CUDA and cuDNN)
-
-
+* To use GPU, please confirm the information of your device and install suitable drive ([CUDA](https://developer.nvidia.com/cuda-downloads) (10.0 or 10.1 is recommended if you use the conda enviroment provided in this repository) and [cuDNN](https://developer.nvidia.com/cudnn))
 
 # <span id="start">Quick start</span>
 
 ## <span id="start_pred">Predict your data with default params</span>
 
-
+* Only an input file is needed if you would like to use the default settings and we provided model parameters
+* Here, we will use our demo input file as an example, and you can create your own input by your custom script or [using our script](#create_input) to convert files from MaxQuant (1.5- and 1.6+), Spectronaut (13+), and Comet
+* Below is a 3 step example for ion intensity prediction:
+  1. Change the directory to DeepPhospho main folder
+  2. Check config_ion_model.py
+     * check WorkFolder is 'Here' or set any other place you want
+     * check TaskPurpose is 'Predict'
+     * make sure you have downloaded the model parameter and unzipped them in the folder PretrainParams
+     * check PretrainParam is correctly pointed to one param file
+     * check PredInputPATH in Intensity_DATA_CFG is "./demo/IonInput.txt" or set to other input you want
+  3. Run `python pred_ion.py`(please also make sure the config_path in line 37 of pred_ion.py is an empty string)
+* RT prediction is same as ion prediction, but we use ensembl to make more accurate prediction. The parameters for prediction is not PretrainParam but ParamsForPred, and it is consisted of the key-value pairs of decoder layer: param path.
 
 # <span id="configs">DeepPhospho configs</span>
 
+* We provide a flexible config import method
 
+* For both ion intensity model and RT model, there are three ways to specify the config file:
+
+  1. directly change the config file 'config_ion_model.py' or 'config_rt_model.py' and run scripts with no further changes
+
+  2. fill in config template files in json format (stored in DeepPhospho main folder) and fill 'config_path' in train or pred script
+
+  3. fill in config template files in json format and pass it as an argument
+
+     ```shell
+     python train_ion.py path/to/your/config.json
+     ```
+
+* For convenient use, we also provided an argument parser
+
+  * `-c path/to/your/config.json` will force the config file to be set as the file you provided in command line
+  * `-g [int] or -g cpu` will overwrite the GPU_INDEX in config, this will be useful to start multi tasks on different device in one time
+  * `-l [int]` will overwrite the num_encd_layer in config, which indicates the encoder layer number of transformer
+  * -e and -d will overwrite experiment name and dataset name, respectively
+
+* For more information, run `python [any train or pred script] --help`
 
 ## <span id="ion_config">Configs for ion intensity model</span>
 
 
 
-## <span id="rt_config">Configs for RT mode</span>
+## <span id="rt_config">Configs for RT model</span>
 
 
 
@@ -86,6 +116,8 @@
 
 
 # <span id="predict">Predict spec and RT with DeepPhospho</span>
+
+## <span id="create_input">Create your own prediction input</span>
 
 ## <span id="pred_spec">Predict spec ion intensity</span>
 
