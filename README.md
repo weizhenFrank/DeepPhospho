@@ -14,8 +14,8 @@
 * [Predict spec and iRT with DeepPhospho](#predict)
     * [Predict spec ion intensity](#pred_spec)
     * [Predict peptide iRT](#pred_rt)
-* [Training and fine-tuning model params](#train)
-   * [Use the data used in DeepPhospho](#deepphospho_data)
+* [Train DeepPhospho](#train)
+   * [Start demo](#train_demo)
    * [Prepare your customized training data](#prepare_cust_data)
    * [Train ion intensity model with or without our pre-trained params](#train_ion)
    * [Train RT model with or without our pre-trained params](#train_rt)
@@ -55,6 +55,10 @@
   ```
   conda env create -f DeepPhospho_ENV.yaml -n deep_phospho
   ```
+
+## Download pre-trained model parameters
+
+
 
 ## <span id="use_gpu">Use GPU (optional)</span>
 
@@ -105,7 +109,7 @@
 
 ## <span id="ion_config">Configs for ion intensity model</span>
 
-* Use config_ion_model.py as an example
+* Here we use config_ion_model.py as an example
 * WorkFolder can be set to 'Here' indicates the dir to run script, or other specific path
 * ExpName is the experiment name of this time, it will be an identifier and empty is also fine
 * TaskPurpose can be set to one of 'Train' or 'Predict' (case is ignored)
@@ -124,7 +128,7 @@
   * We use cache (pickle) to make the data loading more quickly, and refresh_cache will re-pickle the input data
 * MODEL_CFG
   * For ion intensity model, only MODEL_CFG (LSTMTransformer) is available and please make sure the UsedModelCFG is set to this one
-  * In json format, only UsedModelCFG is used
+  * In json format, just change the values in UsedModelCFG
 * TRAINING_HYPER_PARAM
   * GPU_INDEX can be set to '0', '1', '2', ... or 'cpu', and corresponded GPU device or CPU will be used
   * EPOCH can be set to positive integer, 30 is recommended for fine-tuning
@@ -132,7 +136,7 @@
 
 ## <span id="rt_config">Configs for RT model</span>
 
-* Config for RT model is similar as ion model, and below is the different ones
+* Config for RT model is similar as ion model. Some ones different are listed below
 * PretrainParam is only used for fine-tuning if it is provided. Instead, ParamsForPred will be used as the params for prediction to be loaded
 * MIN_RT and MAX_RT are used to scale the input to 0-1 and unscale the output to this range
 * To train or fine-tune RT model, MODEL_CFG (LSTMTransformer) will be used, and Ensemble_MODEL_CFG (LSTMTransformerEnsemble) is used for prediction
@@ -141,6 +145,35 @@
   * To train a RT model in .json config mode, change num_encd_layer in UsedModelCFG and set model_name to 'LSTMTransformer'
   * To predict RT in .json config mode, set model_name to 'LSTMTransformerEnsemble'
 * The ensembl is implemented by changing the num_encd_layer (number of transformer encoder layer) of each model, and we provided 4, 5, 6, 7, 8 five pre-trained parameters
+
+# <span id="train">Train DeepPhospho</span>
+
+## <span id="train_demo">Start demo</span>
+
+* We provided a demo for ion intensity model and RT model fine-tuning based on our pre-trained parameters. And the dataset RPE1 DIA used in this demo is also the data for EGF phospho-signaling analysis in our paper
+* Before start this, please make sure these files are existed and in correct format
+  * In folder demo/RPE1_DIA_demo_data, two files for ion model and two files for RT model are existed and please unzip the zipped ones
+  * In folder PretrainParams/IonModel, best_model.pth should exist
+* Below is the training steps
+  * Open command line (prompt in windows or any shell in linux) and change the conda enviroment to deep_phospho
+  * Change directory to DeepPhospho main folder
+  * run `python train_ion.py ./demo/ConfigDemo-IonModel-FinetuneIonModelWith_RPE1_DIA.json` to start fine-tuning ion intensity model
+    * [Notice] the GPU_IDX in this config file is set to "0", if you want to use cpu only or other device, please change it or run `python train_ion.py -c ./demo/ConfigDemo-IonModel-FinetuneIonModelWith_RPE1_DIA.json -g cpu`
+  * run `python train_rt.py ./demo/ConfigDemo-RTModel-FinetuneIonModelWith_RPE1_DIA.json`
+    * [Notice] the GPU_IDX in this config file is also set to "0"
+    * [Notice] we use ensembl model to improve the final performance of RT model, and we provided 5 pre-trained parameters with 4, 5, 6, 7, and 8 encoder layers. The num_encd_layer in this demo config is set to "4" and PretrainParam is "4.pth". To train the same models, please create five config files or add arguments like `python train_rt.py -c ./demo/ConfigDemo-RTModel-FinetuneIonModelWith_RPE1_DIA.json -l 8 - p /path/to/8.pth` to fine-tune the RT model param with 8 encoder layers
+
+## <span id="prepare_cust_data">Prepare your customized training data</span>
+
+
+
+## <span id="train_ion">Train ion intensity model with or without our pre-trained params</span>
+
+
+
+## <span id="train_rt">Train RT model with or without our pre-trained params</span>
+
+
 
 # <span id="predict">Predict spec and RT with DeepPhospho</span>
 
@@ -156,15 +189,7 @@
 
 
 
-# <span id="train">Training and fine-tuning model params</span>
-
-## <span id="deepphospho_data">Use the data used in DeepPhospho</span>
-
-## <span id="prepare_cust_data">Prepare your customized training data</span>
-
-## <span id="train_ion">Train ion intensity model with or without our pre-trained params</span>
-
-## <span id="train_rt">Train RT model with or without our pre-trained params</span>
+## 
 
 # <span id="lib">From initial DIA library to DeepPhospho improved library</span>
 
