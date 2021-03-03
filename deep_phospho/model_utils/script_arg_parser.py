@@ -21,6 +21,9 @@ def init_argparser():
     # encoder layer
     parser.add_argument('-l', '--layernum', metavar='int', type=int, default=None,
                         help='Number of the transformer encoder layers')
+    # pretrain param
+    parser.add_argument('-p', '--param', metavar='Path', type=str, default=None,
+                        help='Path of pre-trained model parameters')
     return parser
 
 
@@ -70,6 +73,8 @@ def overwrite_config_with_args(args: dict, config: dict, logger=None) -> (dict, 
         for k, v in args.items():
             if k == 'gpuidx':
                 config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = v
+            elif k == 'param':
+                config['PretrainParam'] = v
             elif k == 'expname':
                 config['ExpName'] = v
             elif k == 'dataname':
