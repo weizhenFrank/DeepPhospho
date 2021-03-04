@@ -32,26 +32,49 @@ At last, thank you for using DeepPhospho
 def init_arg_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description=HelpMSG)
 
-    # config file
-    parser.add_argument('-c', '--config', metavar='Path', type=str, default=None,
-                        help='''Config file with json format. The templete is avaliable in the main folder of DeepPhospho.''')
-    # gpu idx
-    parser.add_argument('-g', '--gpuidx', metavar='GPU idx or CPU', default=None,
-                        help='''Set the used GPU idx (0, 1, 2, ...) or "cpu" to use cpu only. Default: 0''')
-    # exp name
-    parser.add_argument('-e', '--expname', metavar='str', type=str, default='',
-                        help='Name of the task under execution')
-    # dataset name
-    parser.add_argument('-d', '--dataname', metavar='str', type=str, default='',
-                        help='Name of the used dataset')
-    # encoder layer
-    parser.add_argument('-l', '--layernum', metavar='int', type=int, default=None,
+    # train file
+    parser.add_argument('-tf', '--train_file', metavar='path', type=str, default=None,
+                        help='''Train file can be either a spectral library from Spectronaut or msms.txt from MaxQuant''')
+    # train file type
+    parser.add_argument('-tt', '--train_file_type', metavar='str', default=None,
+                        help='''To use Spectronaut library, set this to "SNLib"
+Use MaxQuant msms.txt file, set this to "MQ1.5" for MaxQuant version <= 1.5, and "MQ1.6" for version >= 1.6''')
+    # pred file
+    parser.add_argument('-pf', '--pred_file', metavar='path', type=str, default=None,
+                        help='''File contains peptide precursors under-prediction may has multi-source:
+    I. spectral library from Spectronaut
+    II. search result from Spectronaut
+    III. msms.txt or evidence.txt from MaxQuant
+    IV. any tab-separated file with two columns "sequence" and "charge"''')
+    # pred file type
+    parser.add_argument('-pt', '--pred_file_type', metavar='str', type=str, default=None,
+                        help='''The prediction file source or peptide format
+    I. "SNLib" for Spectronaut library
+    II. "SNResult" for Spectronaut result
+    III. "MQ1.5" or "MQ1.6" for msms.txt/evidence.txt from MaxQuant version <= 1.5 or >= 1.6
+    IV. for peptide list file, the modified peptides with different are valid
+        a. "PepSN13" is Spectronaut 13+ peptide format like _[Acetyl (Protein N-term)]M[Oxidation (M)]LSLS[Phospho (STY)]PLK_
+        b. "PepMQ1.5" is MaxQuant 1.5- peptide format like _(ac)GS(ph)QDM(ox)GS(ph)PLRET(ph)RK_
+        c. "PepMQ1.6" is MaxQuant 1.6+ peptide format like _(Acetyl (Protein N-term))TM(Oxidation (M))DKS(Phospho (STY))ELVQK_
+        d. "PepComet" is Comet peptide format like n#DFM*SPKFS@LT@DVEY@PAWCQDDEVPITM*QEIR
+        e. "PepDP" is DeepPhospho used peptide format like *1ED2MCLK''')
+    # device
+    parser.add_argument('-d', '--device', metavar='str', type=str, default=None,
                         help='Number of the transformer encoder layers')
-    # pretrain param
-    parser.add_argument('-p', '--param', metavar='Path', type=str, default=None,
+    # rt ensembl
+    parser.add_argument('-en', '--rt_ensembl', metavar='bool', type=bool, default=None,
                         help='Path of pre-trained model parameters')
-    # instance name
-    parser.add_argument('-i', '--instance', metavar='str', type=str, default=None,
+    # work folder
+    parser.add_argument('-w', '--work_folder', metavar='dir', type=str, default=None,
+                        help='Name of current instance')
+    # task name
+    parser.add_argument('-t', '--task_name', metavar='str', type=str, default=None,
+                        help='Name of current instance')
+    # also pred train data
+    parser.add_argument('-ptd', '--pred_train_data', metavar='bool', type=bool, default=None,
+                        help='Name of current instance')
+    # merge library
+    parser.add_argument('-m', '--merge', metavar='bool', type=bool, default=None,
                         help='Name of current instance')
     return parser
 
@@ -61,3 +84,5 @@ if __name__ == '__main__':
 
     arg_parser = init_arg_parser()
     args = arg_parser.parse_args().__dict__
+
+    train_data_path = args['']
