@@ -16,13 +16,15 @@ def sn_lib_to_trainset(lib_path, output_folder, split_ratio=(0.9, 0.1)):
     """
     Only SN 13+ is supported
     """
+    data_name = os.path.splitext(os.path.basename(lib_path))[0]
+
     snlib = SN.SpectronautLibrary(lib_path)
     snlib.add_intpep()
     snlib.add_intprec()
     snlib.add_frag_name(trans_dict=SN.sn_constant.LossType.SN_to_Readable)
     lib_intens = snlib.get_frag_inten(prec_col='IntPrec')
 
-    ion_train_prec = random.sample(list(lib_intens.keys()), len(lib_intens) * split_ratio[0])
+    ion_train_prec = random.sample(list(lib_intens.keys()), int(len(lib_intens) * split_ratio[0]))
     ion_train_intens = {}
     ion_val_intens = {}
     for p, i in lib_intens.items():
@@ -31,23 +33,52 @@ def sn_lib_to_trainset(lib_path, output_folder, split_ratio=(0.9, 0.1)):
         else:
             ion_val_intens[p] = i
 
-    with open(os.path.join(output_folder, 'Ion-TrainSet-FromSN.json'), 'w') as f:
+    with open(os.path.join(output_folder, f'{data_name}-Ion_Train.json'), 'w') as f:
         json.dump(ion_train_intens, f, indent=4)
 
-    with open(os.path.join(output_folder, 'Ion-ValSet-FromSN.json'), 'w') as f:
+    with open(os.path.join(output_folder, f'{data_name}-Ion_Val.json'), 'w') as f:
         json.dump(ion_val_intens, f, indent=4)
 
     rt_df = snlib.get_rt_df(pep_col='IntPep')
     train_rt_df = rt_df.sample(frac=split_ratio[0], random_state=SEED)
     val_rt_df = rt_df[~rt_df['IntPep'].isin(train_rt_df['IntPep'].tolist())]
-    train_rt_df.to_csv(os.path.join(output_folder, 'RT-TrainSet-FromSN.txt'), sep='\t', index=False)
-    val_rt_df.to_csv(os.path.join(output_folder, 'RT-ValSet-FromSN.txt'), sep='\t', index=False)
+    train_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Train.txt'), sep='\t', index=False)
+    val_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Val.txt'), sep='\t', index=False)
+
+
+# def sn_results_to_trainset(result_path, output_folder, split_ratio=(0.9, 0.1)):
+#     """
+#
+#     """
+#     data_name = os.path.splitext(os.path.basename(result_path))[0]
+#
+#     result = pd.read_csv(result_path, sep='\t')
+#
+#     result_cols = set(result.columns)
+#     modpep_col = list(result_cols & {'EG.ModifiedPeptide', 'EG.ModifiedSequence'})[0]
+#     result['IntPep'] = result[modpep_col].apply(SN.sn_modpep_to_intseq)
+#     result['IntPrec'] = result['IntPep'] + '.' + result['FG.Charge'].astype(str)
+#
+#     if 'EG.Cscore' in result_cols:
+#         one_prec_result = result.groupby('IntPrec').apply(lambda x: x.loc[x['EG.Cscore'].idxmax()]).copy()
+#     elif 'EG.Qvalue' in result_cols:
+#         one_prec_result = result.groupby('IntPrec').apply(lambda x: x.loc[x['EG.Qvalue'].idxmin()]).copy()
+#     else:
+#         one_prec_result = result.groupby('IntPrec').apply(lambda x: x.loc[x['EG.Qvalue'].idxmin()]).copy()
+#
+#     result['FragLossType'] = result['F.FrgLossType'].apply(lambda x: SN.sn_constant.LossType.SN_to_Readable[x])
+#     result['Fragments'] = result['']
+#
+#     for prec, df in self._lib_df.groupby(prec_col):
+#         lib_spec[prec] = dict(df[['FragName', 'RelativeIntensity']].values)
 
 
 def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version='1.5'):
     """
     mq_version can be 1.5 or 1.6
     """
+    data_name = os.path.splitext(os.path.basename(msms_path))[0]
+
     df = pd.read_csv(msms_path, sep='\t')
 
     df = df[pd.isna(df['Reverse'])].copy()
@@ -72,7 +103,7 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version=
 
     max_score_df = df.groupby('IntPrec').apply(lambda x: x.loc[x['Score'].idxmax()]).copy()
     intens = max_score_df.apply(MQ.inten_from_mq, axis=1).to_dict()
-    ion_train_prec = random.sample(list(intens.keys()), len(intens) * split_ratio[0])
+    ion_train_prec = random.sample(list(intens.keys()), int(len(intens) * split_ratio[0]))
     ion_train_intens = {}
     ion_val_intens = {}
     for p, i in intens.items():
@@ -81,15 +112,15 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version=
         else:
             ion_val_intens[p] = i
 
-    with open(os.path.join(output_folder, 'Ion-TrainSet-FromMQ.json'), 'w') as f:
+    with open(os.path.join(output_folder, f'{data_name}-Ion_Train.json'), 'w') as f:
         json.dump(ion_train_intens, f, indent=4)
 
-    with open(os.path.join(output_folder, 'Ion-ValSet-FromMQ.json'), 'w') as f:
+    with open(os.path.join(output_folder, f'{data_name}-Ion_Val.json'), 'w') as f:
         json.dump(ion_val_intens, f, indent=4)
 
     rt_df = df[['IntPep', 'Retention time']].groupby('IntPep').median().reset_index()
     rt_df.columns = ['IntPep', 'RT']
     train_rt_df = rt_df.sample(frac=split_ratio[0], random_state=SEED)
     val_rt_df = rt_df[~rt_df['IntPep'].isin(train_rt_df['IntPep'].tolist())]
-    train_rt_df.to_csv(os.path.join(output_folder, 'RT-TrainSet-FromMQ.txt'), sep='\t', index=False)
-    val_rt_df.to_csv(os.path.join(output_folder, 'RT-ValSet-FromMQ.txt'), sep='\t', index=False)
+    train_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Train.txt'), sep='\t', index=False)
+    val_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Val.txt'), sep='\t', index=False)
