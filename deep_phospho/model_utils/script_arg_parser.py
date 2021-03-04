@@ -24,6 +24,9 @@ def init_argparser():
     # pretrain param
     parser.add_argument('-p', '--param', metavar='Path', type=str, default=None,
                         help='Path of pre-trained model parameters')
+    # instance name
+    parser.add_argument('-i', '--instance', metavar='str', type=str, default=None,
+                        help='Name of current instance')
     return parser
 
 
@@ -82,6 +85,8 @@ def overwrite_config_with_args(args: dict, config: dict, logger=None) -> (dict, 
                 config[data_field_name]['DataName'] = v
             elif k == 'layernum':
                 config['UsedModelCFG']['num_encd_layer'] = v
+            elif k == 'instance':
+                config['InstanceName'] = v
             else:
                 pass
             joined_args += f'\t{k}: {v}'

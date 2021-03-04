@@ -93,9 +93,14 @@ def main():
         f'-{configs["ExpName"]}'
         f'-{resume}'
     )
-
     init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
-    instance_name = f'{init_time}-{task_info}'
+
+    if configs['InstanceName'] != '':
+        instance_name = configs['InstanceName']
+        instance_name_msg = f'Use manurally defined instance name {instance_name}'
+    else:
+        instance_name = f'{init_time}-{task_info}'
+        instance_name_msg = f'No instance name defined in config or passed from arguments. Use {instance_name}'
 
     # Get work folder and define output dir
     work_folder = configs['WorkFolder']
@@ -110,8 +115,10 @@ def main():
     logger.info(f'Work folder is set to {work_folder}')
     logger.info(f'Task start time: {init_time}')
     logger.info(f'Task information: {task_info}')
+    logger.info(f'Instance name: {instance_name_msg}')
     logger.info(arg_msg)
     logger.info(config_msg)
+    logger.info(save_config(configs, output_dir))
 
     # Choose device (Set GPU index or default one, or use CPU)
     if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX'].lower() == 'cpu':

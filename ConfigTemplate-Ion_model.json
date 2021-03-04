@@ -1,6 +1,7 @@
 {
     "WorkFolder": "Here",
     "ExpName": "",
+    "InstanceName": "",
     "TaskPurpose": "Predict",
     "PretrainParam": "./PretrainParams/IonModel/best_model.pth",
     "Intensity_DATA_CFG": {

@@ -3,7 +3,11 @@
 # Else define a specific folder
 WorkFolder = 'Here'
 
+# Experiment name will be used as the part of result folder name and plays as an identifier
 ExpName = ''
+
+# Instance name has higher priority than ExpName, and this will fully overwrite the name of result folder
+InstanceName = ''
 
 # TaskPurpose = 'Train'
 TaskPurpose = 'Predict'

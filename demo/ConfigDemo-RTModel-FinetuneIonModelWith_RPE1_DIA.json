@@ -1,6 +1,7 @@
 {
     "WorkFolder": "Here",
     "ExpName": "RPE1_Finetune",
+    "InstanceName": "",
     "TaskPurpose": "Train",
     "PretrainParam": "./PretrainParams/RTModel/4.pth",
     "ParamsForPred": {

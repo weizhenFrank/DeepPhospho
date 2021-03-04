@@ -1,6 +1,7 @@
 {
     "WorkFolder": "Here",
     "ExpName": "U2OS_DIA_Predict",
+    "InstanceName": "",
     "TaskPurpose": "Predict",
     "PretrainParam": "./demo/NameOfTaskInfo/ckpts/best_model.pth",
     "Intensity_DATA_CFG": {

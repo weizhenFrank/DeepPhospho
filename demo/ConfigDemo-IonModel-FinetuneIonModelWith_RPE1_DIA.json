@@ -1,6 +1,7 @@
 {
     "WorkFolder": "Here",
     "ExpName": "RPE1_Finetune",
+    "InstanceName": "",
     "TaskPurpose": "Train",
     "PretrainParam": "./PretrainParams/IonModel/best_model.pth",
     "Intensity_DATA_CFG": {

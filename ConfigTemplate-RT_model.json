@@ -1,6 +1,7 @@
 {
     "WorkFolder": "Here",
     "ExpName": "",
+    "InstanceName": "",
     "TaskPurpose": "Predict",
     "PretrainParam": "./PretrainParams/RTModel/4.pth",
     "ParamsForPred": {
