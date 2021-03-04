@@ -65,7 +65,11 @@
 * DeepPhospho can be runned with GPU or with only CPU
 * To use GPU, please confirm the information of your device and install suitable drive ([CUDA](https://developer.nvidia.com/cuda-downloads) (10.0 or 10.1 is recommended if you use the conda enviroment provided in this repository) and [cuDNN](https://developer.nvidia.com/cudnn))
 
-# <span id="start">Quick start</span>
+# <span id="start">Quick start (from library/result file to DeepPhospho generated library with one line command)</span>
+
+## 
+
+
 
 ## <span id="start_pred">Predict your data with default params</span>
 
