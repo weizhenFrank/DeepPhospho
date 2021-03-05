@@ -1,9 +1,12 @@
 import os
 import sys
+import datetime
+import copy
 import argparse
 
 
 from deep_phospho.model_utils.logger import setup_logger
+from deep_phospho.proteomics_utils import rapid_kit as rk
 
 
 HelpMSG = '''
@@ -33,22 +36,29 @@ At last, thank you for using DeepPhospho
 def init_arg_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description=HelpMSG)
 
+    # work folder
+    parser.add_argument('-w', '--work_dir', metavar='directory', type=str, default=None,
+                        help='The task will start in this directory')
+    # task name
+    parser.add_argument('-t', '--task_name', metavar='str', type=str, default=None,
+                        help='Task name will be used to name some folders')
+
     # train file
-    parser.add_argument('-tf', '--train_file', metavar='path', type=str, default=None,
+    parser.add_argument('-tf', '--train_file', metavar='path', type=str, required=True,
                         help='''Train file can be either a spectral library from Spectronaut or msms.txt from MaxQuant''')
     # train file type
-    parser.add_argument('-tt', '--train_file_type', metavar='str', default=None,
+    parser.add_argument('-tt', '--train_file_type', metavar='str', required=True,
                         help='''To use Spectronaut library, set this to "SNLib"
 Use MaxQuant msms.txt file, set this to "MQ1.5" for MaxQuant version <= 1.5, and "MQ1.6" for version >= 1.6''')
     # pred file
-    parser.add_argument('-pf', '--pred_file', metavar='path', type=str, default=None,
+    parser.add_argument('-pf', '--pred_file', metavar='path', type=str, required=True, nargs='*', action='append',
                         help='''File contains peptide precursors under-prediction may has multi-source:
 I. spectral library from Spectronaut
 II. search result from Spectronaut
 III. msms.txt or evidence.txt from MaxQuant
 IV. any tab-separated file with two columns "sequence" and "charge"''')
     # pred file type
-    parser.add_argument('-pt', '--pred_file_type', metavar='str', type=str, default=None,
+    parser.add_argument('-pt', '--pred_file_type', metavar='str', type=str, required=True, nargs='*', action='append',
                         help='''The prediction file source or peptide format
 I. "SNLib" for Spectronaut library
 II. "SNResult" for Spectronaut result
@@ -59,31 +69,111 @@ IV. for peptide list file, the modified peptides in the following format are val
     c. "PepMQ1.6" is MaxQuant 1.6+ peptide format like _(Acetyl (Protein N-term))TM(Oxidation (M))DKS(Phospho (STY))ELVQK_
     d. "PepComet" is Comet peptide format like n#DFM*SPKFS@LT@DVEY@PAWCQDDEVPITM*QEIR
     e. "PepDP" is DeepPhospho used peptide format like *1ED2MCLK''')
-    # work folder
-    parser.add_argument('-w', '--work_folder', metavar='dir', type=str, default=None,
-                        help='Name of current instance')
-    # task name
-    parser.add_argument('-t', '--task_name', metavar='str', type=str, default=None,
-                        help='Name of current instance')
+
     # device
-    parser.add_argument('-d', '--device', metavar='str', type=str, default=None,
-                        help='Number of the transformer encoder layers')
+    parser.add_argument('-d', '--device', metavar='str', type=str, default='cpu',
+                        help='Use which device. This can be [cpu] or any integer (0, 1, 2, ...) to use corresponded GPU')
     # rt ensembl
-    parser.add_argument('-en', '--rt_ensembl', metavar='bool', type=bool, default=None,
-                        help='Path of pre-trained model parameters')
+    parser.add_argument('-en', '--rt_ensembl', metavar='bool', type=bool, default=True,
+                        help='Use ensembl to improve RT prediction or not')
     # also pred train data
-    parser.add_argument('-ptd', '--pred_train_data', metavar='bool', type=bool, default=None,
-                        help='Name of current instance')
+    parser.add_argument('-ptd', '--pred_train_data', metavar='bool', type=bool, default=True,
+                        help='This will also predict the training data with fine-tuned models')
     # merge library
-    parser.add_argument('-m', '--merge', metavar='bool', type=bool, default=None,
-                        help='Name of current instance')
+    parser.add_argument('-m', '--merge', metavar='bool', type=bool, default=True,
+                        help='''To merge all predicted data to one library or not (the individual ones will also be kept)''')
     return parser
 
 
+def create_folder(d):
+    try:
+        os.makedirs(d)
+    except FileExistsError:
+        pass
+
+
+def parse_args(parser, time):
+    inputs = copy.deepcopy(parser.parse_args().__dict__)
+    arg_msgs = []
+
+    work_dir = inputs['work_dir']
+    if work_dir is None:
+        work_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), time)
+        arg_msgs.append(f'-w or -work_dir is not passed, use {work_dir} as work directory')
+    else:
+        arg_msgs.append(f'Set work directory to {work_dir}')
+    create_folder(work_dir)
+
+    task_name = inputs['task_name']
+    if task_name is None:
+        task_name = time
+        arg_msgs.append(f'-t or --task_name is not passed, use {task_name} as task name')
+    else:
+        task_name = f'{time}-{task_name}'
+        arg_msgs.append(f'Set task name to {task_name}')
+
+    train_file = os.path.abspath(inputs['train_file'])
+    train_file_type = inputs['train_file_type']
+    if not os.path.exists(train_file):
+        raise FileNotFoundError(f'Train file not found - {train_file}')
+    if train_file_type not in ['SNLib', 'MQ1.5', 'MQ1.6']:
+        raise ValueError(f'Train file type should be one of ["SNLib", "MQ1.5", "MQ1.6"], now {train_file_type}')
+    arg_msgs.append(f'Train file with {train_file_type} format: {train_file}')
+
+    pred_files = rk.sum_list(inputs['pred_file'])
+    for idx, file in enumerate(pred_files, 1):
+        if not os.path.exists(file):
+            raise FileNotFoundError(f'Prediction file {idx} not found - {file}')
+
+    pred_files_type = rk.sum_list(inputs['pred_file_type'])
+    pred_file_type_num = len(pred_files_type)
+    pred_file_num = len(pred_files)
+    if pred_file_type_num != 1 and pred_file_type_num != pred_file_num:
+        raise ValueError(f'Get {pred_file_num} prediction files but {pred_file_type_num} file type\n')
+    elif pred_file_num != 1 and pred_file_type_num == 1:
+        pred_files_type = pred_files_type * pred_file_num
+        msg = (f'Get {pred_file_num} prediction files and 1 file type. '
+               f'{pred_files_type[0]} will be assigned to all files\n')
+    else:
+        msg = f'Get {pred_file_num} prediction files and {pred_file_type_num} file type\n'
+    files_str = '\n'.join(f'\t{t}: {f}' for t, f in zip(pred_files_type, pred_files))
+    arg_msgs.append(f'{msg}{files_str}')
+
+    device = inputs['device']
+    arg_msgs.append(f'Set device to {device}')
+
+    rt_ensembl = inputs['rt_ensembl']
+    if rt_ensembl:
+        arg_msgs.append(f'Use ensembl RT model')
+
+    pred_train_data = inputs['pred_train_data']
+    if pred_train_data:
+        arg_msgs.append(f'Also predict training data')
+
+    merge = inputs['merge']
+    if merge:
+        arg_msgs.append(f'Merge all predicted spectral libraries to one after prediction done')
+
+    return arg_msgs, {
+        'WorkDir': work_dir,
+        'TaskName': task_name,
+        'TrainData': (train_file, train_file_type),
+        'PredData': list(zip(pred_files, pred_files_type)),
+        'Device': device,
+        'EnsemblRT': rt_ensembl,
+        'PredTrain': pred_train_data,
+        'Merge': merge
+    }
+
+
 if __name__ == '__main__':
-    # logger = setup_logger('DeepPhosphoRunner', save_dir, filename="log.txt")
+    start_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     arg_parser = init_arg_parser()
-    args = arg_parser.parse_args().__dict__
+    msgs, args = parse_args(arg_parser, start_time)
+
+    logger = setup_logger('DeepPhosphoRunner', args['WorkDir'], filename="RunnerLog.txt")
+    for m in msgs:
+        logger.info(m)
 
     # train_data_path = args['']
