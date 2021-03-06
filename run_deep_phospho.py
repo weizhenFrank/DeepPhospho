@@ -74,13 +74,13 @@ IV. for peptide list file, the modified peptides in the following format are val
     e. "PepDP" is DeepPhospho used peptide format like *1ED2MCLK''')
 
     # device
-    parser.add_argument('-d', '--device', metavar='str', type=str, default='cpu',
+    parser.add_argument('-d', '--device', metavar='cpu|0|1|...', type=str, default='cpu',
                         help='Use which device. This can be [cpu] or any integer (0, 1, 2, ...) to use corresponded GPU')
     # rt ensembl
-    parser.add_argument('-en', '--rt_ensembl', metavar='bool', type=bool, default=False,
+    parser.add_argument('-en', '--rt_ensembl', default=False, action='store_true',
                         help='Use ensembl to improve RT prediction or not')
     # merge library
-    parser.add_argument('-m', '--merge', metavar='bool', type=bool, default=True,
+    parser.add_argument('-m', '--merge', default=False, action='store_true',
                         help='''To merge all predicted data to one library or not (the individual ones will also be kept)''')
     return parser
 
@@ -121,9 +121,9 @@ def parse_args(parser, time):
     arg_msgs.append(f'Train file with {train_file_type} format: {train_file}')
 
     pred_files = rk.sum_list(inputs['pred_file'])
-    for idx, file in enumerate(pred_files, 1):
+    for file_idx, file in enumerate(pred_files, 1):
         if not os.path.exists(file):
-            raise FileNotFoundError(f'Prediction file {idx} not found - {file}')
+            raise FileNotFoundError(f'Prediction file {file_idx} not found - {file}')
 
     pred_files_type = rk.sum_list(inputs['pred_file_type'])
     pred_file_type_num = len(pred_files_type)
@@ -136,7 +136,7 @@ def parse_args(parser, time):
                f'{pred_files_type[0]} will be assigned to all files\n')
     else:
         msg = f'Get {pred_file_num} prediction files and {pred_file_type_num} file type\n'
-    files_str = '\n'.join(f'\t{t}: {f}' for t, f in zip(pred_files_type, pred_files))
+    files_str = '\n'.join(f'\t{t}: {file}' for t, file in zip(pred_files_type, pred_files))
     arg_msgs.append(f'{msg}{files_str}')
 
     device = inputs['device']
@@ -181,6 +181,8 @@ if __name__ == '__main__':
 
     with open(join_path(WorkDir, 'PassedArguments.txt'), 'w') as f:
         f.write(' '.join(sys.argv))
+    with open(join_path(WorkDir, 'ParsedArguments.json'), 'w') as f:
+        json.dump(args, f, indent=4)
 
     this_dir = os.path.dirname(os.path.abspath(__file__))
     if 'ConfigTemplate-Ion_model_train.json' in os.listdir(this_dir):
@@ -212,7 +214,7 @@ if __name__ == '__main__':
     ion_train_config['Intensity_DATA_CFG']['TestPATH'] = train_data_path['IonVal']
     ion_train_config['Intensity_DATA_CFG']['HoldoutPATH'] = ''
     ion_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
-    ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 40
+    ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 1
 
     logger.info(f'Loading RT model config')
     rt_train_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_train.json'))
@@ -220,7 +222,7 @@ if __name__ == '__main__':
     rt_train_config['RT_DATA_CFG']['TrainPATH'] = train_data_path['RTTrain']
     rt_train_config['RT_DATA_CFG']['TestPATH'] = train_data_path['RTVal']
     rt_train_config['RT_DATA_CFG']['HoldoutPATH'] = ''
-    rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 30
+    rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 1
     rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
 
     logger.info('-' * 20)
@@ -234,7 +236,9 @@ if __name__ == '__main__':
     logger.info(f'Start ion model instance {ion_train_config["InstanceName"]}')
     code = os.system(f'python train_ion.py {cfg_path}')
     if code != 0:
-        raise RuntimeError(f'Error when start ion model training instance')
+        error_msg = f'Error when running ion model training instance {ion_train_config["InstanceName"]}'
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
     logger.info('-' * 20)
     logger.info('Start training RT model')
@@ -257,7 +261,9 @@ if __name__ == '__main__':
         logger.info(f'Start rt model instance {cfg_cp["InstanceName"]}')
         code = os.system(f'python train_rt.py {cfg_path}')
         if code != 0:
-            raise RuntimeError(f'Error when start rt model training instance')
+            error_msg = f'Error when running rt model training instance {cfg_cp["InstanceName"]}'
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
     logger.info('Init prediction')
     logger.info(f'Loading ion model config')
@@ -280,12 +286,14 @@ if __name__ == '__main__':
         logger.info(f'Start ion model instance {cfg_cp["InstanceName"]}')
         code = os.system(f'python pred_ion.py {cfg_path}')
         if code != 0:
-            raise RuntimeError(f'Error when start ion model prediction instance')
+            error_msg = f'Error when running ion model prediction instance {cfg_cp["InstanceName"]}'
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
     logger.info(f'Loading RT model config')
     rt_pred_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_pred.json'))
     rt_pred_config['WorkFolder'] = WorkDir
-    rt_pred_config['ParamsForPred'] = {str(l): join_path(f, 'ckpts', 'best_model.pth') for l, f in rt_model_folders.items()}
+    rt_pred_config['ParamsForPred'] = {str(layer_num): join_path(f, 'ckpts', 'best_model.pth') for layer_num, f in rt_model_folders.items()}
     rt_pred_config['RT_DATA_CFG']['InputWithLabel'] = False
     rt_pred_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
     rt_pred_folders = {}
@@ -302,20 +310,31 @@ if __name__ == '__main__':
         logger.info(f'Start RT model instance {cfg_cp["InstanceName"]}')
         code = os.system(f'python pred_rt.py {cfg_path}')
         if code != 0:
-            raise RuntimeError(f'Error when start rt model prediction instance')
+            error_msg = f'Error when running rt model prediction instance {cfg_cp["InstanceName"]}'
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
     logger.info(f'Init library generation')
     lib_paths = {}
     for idx, (data_name, ion_result_folder) in enumerate(ion_pred_folders.items(), 1):
         logger.info(f'Generate library {data_name}')
         lib_path = prot_utils.gen_dp_lib.generate_spec_lib(
-            data_name, output_folder=WorkDir,
+            data_name=data_name,
+            output_folder=WorkDir,
             pred_ion_path=join_path(ion_result_folder, f'{os.path.basename(ion_result_folder)}-PredOutput.json'),
-            pred_rt_path=join_path(rt_pred_folders[data_name], 'Prediction.txt'))
+            pred_rt_path=join_path(rt_pred_folders[data_name], 'Prediction.txt'),
+            logger=logger
+        )
         lib_paths[data_name] = lib_path
 
     logger.info(f'Init library merging')
     main_key = list(lib_paths.keys())[0]
-    path = prot_utils.gen_dp_lib.merge_lib(lib_paths[main_key], {n: p for n, p in lib_paths.items() if n != main_key})
+    path = prot_utils.gen_dp_lib.merge_lib(
+        main_lib_path=lib_paths[main_key],
+        add_libs_path={n: p for n, p in lib_paths.items() if n != main_key},
+        output_folder=WorkDir,
+        task_name=TaskName,
+        logger=logger
+    )
 
     logger.info(f'All finished. Check directory {WorkDir} for results.')
