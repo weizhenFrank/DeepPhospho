@@ -13,7 +13,7 @@ def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, sav
         logger.info(f'Reading predicted results for {data_name}')
     with open(pred_ion_path, 'r') as f:
         pred_ion = json.load(f)
-    pred_rt = dict(pd.read_csv(pred_rt_path)[['sequence', 'pred']].values)
+    pred_rts = dict(pd.read_csv(pred_rt_path, sep='\t')[['sequence', 'pred']].values)
 
     pred_lib_rows = []
     loss_num = 0
@@ -26,8 +26,8 @@ def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, sav
         modpep = SN.sn_utils.intseq_to_sn_modpep(intpep)
         strip_pep = re.sub(r'\[.+?\]', '', modpep.replace('_', ''))
 
-        if intpep in pred_rt:
-            pred_rt = pred_rt[intpep]
+        if intpep in pred_rts:
+            pred_rt = pred_rts[intpep]
         else:
             loss_num += 1
             continue
