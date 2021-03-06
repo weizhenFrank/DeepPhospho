@@ -18,6 +18,11 @@ def sn_lib_to_trainset(lib_path, output_folder, split_ratio=(0.9, 0.1)):
     """
     data_name = os.path.splitext(os.path.basename(lib_path))[0]
 
+    ion_train_path = os.path.join(output_folder, f'{data_name}-Ion_Train.json')
+    ion_val_path = os.path.join(output_folder, f'{data_name}-Ion_Val.json')
+    rt_train_path = os.path.join(output_folder, f'{data_name}-RT_Train.json')
+    rt_val_path = os.path.join(output_folder, f'{data_name}-RT_Val.json')
+
     snlib = SN.SpectronautLibrary(lib_path)
     snlib.add_intpep()
     snlib.add_intprec()
@@ -33,17 +38,24 @@ def sn_lib_to_trainset(lib_path, output_folder, split_ratio=(0.9, 0.1)):
         else:
             ion_val_intens[p] = i
 
-    with open(os.path.join(output_folder, f'{data_name}-Ion_Train.json'), 'w') as f:
+    with open(ion_train_path, 'w') as f:
         json.dump(ion_train_intens, f, indent=4)
 
-    with open(os.path.join(output_folder, f'{data_name}-Ion_Val.json'), 'w') as f:
+    with open(ion_val_path, 'w') as f:
         json.dump(ion_val_intens, f, indent=4)
 
     rt_df = snlib.get_rt_df(pep_col='IntPep')
     train_rt_df = rt_df.sample(frac=split_ratio[0], random_state=SEED)
     val_rt_df = rt_df[~rt_df['IntPep'].isin(train_rt_df['IntPep'].tolist())]
-    train_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Train.txt'), sep='\t', index=False)
-    val_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Val.txt'), sep='\t', index=False)
+    train_rt_df.to_csv(rt_train_path, sep='\t', index=False)
+    val_rt_df.to_csv(rt_val_path, sep='\t', index=False)
+
+    return {
+        'IonTrain': ion_train_path,
+        'IonVal': ion_val_path,
+        'RTTrain': rt_train_path,
+        'RTVal': rt_val_path
+    }
 
 
 # def sn_results_to_trainset(result_path, output_folder, split_ratio=(0.9, 0.1)):
@@ -79,6 +91,11 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version=
     """
     data_name = os.path.splitext(os.path.basename(msms_path))[0]
 
+    ion_train_path = os.path.join(output_folder, f'{data_name}-Ion_Train.json')
+    ion_val_path = os.path.join(output_folder, f'{data_name}-Ion_Val.json')
+    rt_train_path = os.path.join(output_folder, f'{data_name}-RT_Train.json')
+    rt_val_path = os.path.join(output_folder, f'{data_name}-RT_Val.json')
+
     df = pd.read_csv(msms_path, sep='\t')
 
     df = df[pd.isna(df['Reverse'])].copy()
@@ -112,15 +129,33 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version=
         else:
             ion_val_intens[p] = i
 
-    with open(os.path.join(output_folder, f'{data_name}-Ion_Train.json'), 'w') as f:
+    with open(ion_train_path, 'w') as f:
         json.dump(ion_train_intens, f, indent=4)
 
-    with open(os.path.join(output_folder, f'{data_name}-Ion_Val.json'), 'w') as f:
+    with open(ion_val_path, 'w') as f:
         json.dump(ion_val_intens, f, indent=4)
 
     rt_df = df[['IntPep', 'Retention time']].groupby('IntPep').median().reset_index()
     rt_df.columns = ['IntPep', 'RT']
     train_rt_df = rt_df.sample(frac=split_ratio[0], random_state=SEED)
     val_rt_df = rt_df[~rt_df['IntPep'].isin(train_rt_df['IntPep'].tolist())]
-    train_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Train.txt'), sep='\t', index=False)
-    val_rt_df.to_csv(os.path.join(output_folder, f'{data_name}-RT_Val.txt'), sep='\t', index=False)
+    train_rt_df.to_csv(rt_train_path, sep='\t', index=False)
+    val_rt_df.to_csv(rt_val_path, sep='\t', index=False)
+
+    return {
+        'IonTrain': ion_train_path,
+        'IonVal': ion_val_path,
+        'RTTrain': rt_train_path,
+        'RTVal': rt_val_path
+    }
+
+
+def file_to_trainset(path, output_folder, file_type: str, split_ratio=(0.9, 0.1)) -> dict:
+    if file_type.lower() == 'snlib':
+        return sn_lib_to_trainset(path, output_folder, split_ratio)
+    elif file_type.lower() == 'mq1.5':
+        return mq_to_trainset(path, output_folder, split_ratio, '1.5')
+    elif file_type.lower() == 'mq1.6':
+        return mq_to_trainset(path, output_folder, split_ratio, '1.6')
+    else:
+        raise ValueError(f'Invalid train file type: {file_type}')
