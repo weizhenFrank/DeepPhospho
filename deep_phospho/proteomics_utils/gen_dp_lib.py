@@ -40,7 +40,7 @@ def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, sav
         pred_spec = prot_utils.calc.keep_top_n_inten(pred_spec, top_n=30)
 
         for frag, inten in pred_spec.items():
-            frag_type, frag_num, frag_charge, frag_losstype = re.findall('([abcxyz])(\d+)\+(\d)-(.+)', frag)[0]
+            frag_type, frag_num, frag_charge, frag_losstype = re.findall(r'([abcxyz])(\d+)\+(\d)-(.+)', frag)[0]
             if int(frag_num) in (1, 2):
                 continue
             if float(inten) <= 5:
@@ -50,14 +50,16 @@ def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, sav
             pred_lib_rows.append(prec_basic_data_list + [frag_losstype, frag_num, frag_type, frag_charge, frag_mz, inten])
 
     pred_lib_df = pd.DataFrame(pred_lib_rows, columns=SN.SpectronautLibrary.LibBasicCols)
+
+    pred_lib_df['Prec'] = pred_lib_df['ModifiedPeptide'] + '.' + pred_lib_df['PrecursorCharge'].astype(str)
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in initial {data_name} library')
-    pred_lib_df['Prec'] = pred_lib_df['ModifiedPeptide'] + '.' + pred_lib_df['PrecursorCharge'].astype(str)
-    pred_lib_df = pred_lib_df.groupby('Prec').filter(lambda x: len(x) >= 3)
-    pred_lib_df = pred_lib_df[SN.SpectronautLibrary.LibBasicCols]
 
+    pred_lib_df = pred_lib_df.groupby('Prec').filter(lambda x: len(x) >= 3)
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in final {data_name} library')
+
+    pred_lib_df = pred_lib_df[SN.SpectronautLibrary.LibBasicCols]
 
     if save_path is not None:
         lib_path = save_path
