@@ -176,6 +176,10 @@ else:
         models = []
         for arch, path in model_arch_path.items():
             cfg_to_load = copy.deepcopy(configs['UsedModelCFG'])
+            try:
+                del cfg_to_load['num_encd_layer']
+            except KeyError:
+                pass
 
             Model = LSTMTransformer(
                 RT_mode=True,
