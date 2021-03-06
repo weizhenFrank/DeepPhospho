@@ -23,11 +23,16 @@ def get_clones(module, N):
     return ModuleList([copy.deepcopy(module) for i in range(N)])
 
 
-def copy_files(path, dst):
+def copy_files(path, dst, anno: str = None):
+    if anno is None:
+        copied_file_path = os.path.join(dst, os.path.basename(path))
+    else:
+        split_base_name = os.path.splitext(os.path.basename(path))
+        copied_file_path = os.path.join(dst, '.'.join([f'{split_base_name[0]}{anno}', split_base_name[1]]))
     if os.path.isfile(path):
-        shutil.copyfile(path, os.path.join(dst, os.path.basename(path)))
+        shutil.copyfile(path, copied_file_path)
     elif os.path.isdir(path):
-        shutil.copytree(path, os.path.join(dst, os.path.basename(path)))
+        shutil.copytree(path, copied_file_path)
 
 
 def custom_sigmoid(tensor):

@@ -185,7 +185,7 @@ copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'ion_model.py
 copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'EnsembelModel.py'), output_dir)
 copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'auxiliary_loss_transformer.py'), output_dir)
 copy_files(os.path.join(this_script_dir, 'pred_ion.py'), output_dir)
-copy_files(config_path, output_dir)
+copy_files(config_path, output_dir, anno='-copy')
 
 pred_matrix = []
 y_matrix = []

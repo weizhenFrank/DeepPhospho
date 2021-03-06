@@ -207,7 +207,7 @@ def main():
     copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'EnsembelModel.py'), output_dir)
     copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'auxiliary_loss_transformer.py'), output_dir)
     copy_files(os.path.join(this_script_dir, 'train_rt.py'), output_dir)
-    copy_files(config_path, output_dir)
+    copy_files(config_path, output_dir, anno='-copy')
 
     pretrain_param = configs.get('PretrainParam')
     if pretrain_param is not None and pretrain_param != '':
