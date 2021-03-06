@@ -1,15 +1,15 @@
 import os
 from os.path import join as join_path
 import sys
-import datetime
 import copy
+import datetime
 import argparse
 import json
 
 from deep_phospho.model_utils.logger import setup_logger
 from deep_phospho.model_utils.param_config_load import load_config_from_json
-from deep_phospho.proteomics_utils import rapid_kit as rk
 from deep_phospho import proteomics_utils as prot_utils
+from deep_phospho.proteomics_utils import rapid_kit as rk
 
 
 HelpMSG = '''
@@ -309,9 +309,9 @@ if __name__ == '__main__':
     for idx, (data_name, ion_result_folder) in enumerate(ion_pred_folders.items(), 1):
         logger.info(f'Generate library {data_name}')
         lib_path = prot_utils.gen_dp_lib.generate_spec_lib(
-            data_name, WorkDir,
-            join_path(ion_result_folder, f'{os.path.basename(ion_result_folder)}-PredOutput.json'),
-            join_path(rt_pred_folders[data_name], 'Prediction.txt'))
+            data_name, output_folder=WorkDir,
+            pred_ion_path=join_path(ion_result_folder, f'{os.path.basename(ion_result_folder)}-PredOutput.json'),
+            pred_rt_path=join_path(rt_pred_folders[data_name], 'Prediction.txt'))
         lib_paths[data_name] = lib_path
 
     logger.info(f'Init library merging')

@@ -8,7 +8,7 @@ from deep_phospho import proteomics_utils as prot_utils
 from deep_phospho.proteomics_utils.post_analysis import spectronaut as SN
 
 
-def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, logger=None):
+def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, save_path=None, logger=None):
     if logger is not None:
         logger.info(f'Reading predicted results for {data_name}')
     with open(pred_ion_path, 'r') as f:
@@ -59,14 +59,17 @@ def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, log
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in final {data_name} library')
 
-    lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I5_n30.xls')
+    if save_path is not None:
+        lib_path = save_path
+    else:
+        lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I5_n30.xls')
     if logger is not None:
         logger.info(f'Saving generated library to {lib_path}')
     pred_lib_df.to_csv(lib_path, sep='\t', index=False)
     return lib_path
 
 
-def merge_lib(main_lib_path, add_libs_path, output_folder, task_name, logger=None):
+def merge_lib(main_lib_path, add_libs_path, output_folder, task_name, save_path=None, logger=None):
     if logger is not None:
         logger.info(f'Loading main library {main_lib_path}')
     main_lib = SN.SpectronautLibrary(main_lib_path)
@@ -92,7 +95,8 @@ def merge_lib(main_lib_path, add_libs_path, output_folder, task_name, logger=Non
 
     main_lib = main_lib[SN.SpectronautLibrary.LibBasicCols]
 
-    save_path = os.path.join(output_folder, f'HybridLibrary-{task_name}-DP_I5_n30.xls')
+    if save_path is None:
+        save_path = os.path.join(output_folder, f'HybridLibrary-{task_name}-DP_I5_n30.xls')
     if logger is not None:
         logger.info(f'Saving hybrid library {save_path}')
     main_lib.to_csv(save_path, sep='\t', index=False)

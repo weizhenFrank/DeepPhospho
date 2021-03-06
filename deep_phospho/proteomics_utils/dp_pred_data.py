@@ -2,9 +2,9 @@ import os
 
 import pandas as pd
 
+from deep_phospho.proteomics_utils import modpep_format_trans
 from deep_phospho.proteomics_utils.post_analysis import spectronaut as SN
 from deep_phospho.proteomics_utils.post_analysis import maxquant as MQ
-from deep_phospho.proteomics_utils import modpep_format_trans
 
 
 def sn_lib_to_pred_input(lib_path, output_folder):
