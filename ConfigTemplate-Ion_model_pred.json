@@ -6,16 +6,16 @@
     "PretrainParam": "./PretrainParams/IonModel/best_model.pth",
     "Intensity_DATA_CFG": {
         "DataName": "",
-        "TrainPATH": "./Data/IonModel_TestData/20201010-Inten_Train-RPE1_DIA-seed0_811.json",
-        "TestPATH": "./Data/IonModel_TestData/20201010-Inten_Test-RPE1_DIA-seed0_811.json",
-        "HoldoutPATH": "./Data/IonModel_TestData/20201010-Inten_Holdout-RPE1_DIA-seed0_811.json",
-        "PredInputPATH": "./demo/IonInput.txt",
-        "InputWithLabel": false,
+        "TrainPATH": "",
+        "TestPATH": "",
+        "HoldoutPATH": "",
+        "PredInputPATH": "./Data/IonModel_TestData/20201010-Inten_Holdout-RPE1_DIA-seed0_811.json",
+        "InputWithLabel": true,
         "Intensity_FIELD_NAME": "normalized_intensity",
         "SEQUENCE_FIELD_NAME": "sequence",
         "PRECURSOR_CHARGE": "charge",
         "DATA_PROCESS_CFG": {
-            "MAX_SEQ_LEN": 74,
+            "MAX_SEQ_LEN": 52,
             "repeat_factor": 4,
             "mask_ratio": 1
         },
@@ -33,7 +33,7 @@
         "fix_lstm": false,
         "pos_encode_dropout": 0.1,
         "attention_dropout": 0.1,
-        "num_encd_layer": 2,
+        "num_encd_layer": 8,
         "transformer_hidden_dim": 1024
     },
     "TRAINING_HYPER_PARAM": {

@@ -2,21 +2,14 @@
     "WorkFolder": "Here",
     "ExpName": "",
     "InstanceName": "",
-    "TaskPurpose": "Predict",
-    "PretrainParam": "./PretrainParams/RTModel/4.pth",
-    "ParamsForPred": {
-        "4": "./PretrainParams/RTModel/4.pth",
-        "5": "./PretrainParams/RTModel/5.pth",
-        "6": "./PretrainParams/RTModel/6.pth",
-        "7": "./PretrainParams/RTModel/7.pth",
-        "8": "./PretrainParams/RTModel/8.pth"
-    },
+    "TaskPurpose": "Train",
+    "PretrainParam": "./PretrainParams/RTModel/8.pth",
     "RT_DATA_CFG": {
-        "DataName": "",
+        "DataName": "RPE1_DIA",
         "TrainPATH": "./Data/RT_TestData/20201010-RT_Train-RPE1_DIA-seed0_811.txt",
         "TestPATH": "./Data/RT_TestData/20201010-RT_Test-RPE1_DIA-seed0_811.txt",
         "HoldoutPATH": "./Data/RT_TestData/20201010-RT_Holdout-RPE1_DIA-seed0_811.txt",
-        "PredInputPATH": "./demo/RTInput.txt",
+        "PredInputPATH": "",
         "InputWithLabel": false,
         "SEQUENCE_FIELD_NAME": "IntPep",
         "RT_FIELD_NAME": "iRT",
@@ -30,7 +23,7 @@
         "Use_cache": true
     },
     "UsedModelCFG": {
-        "model_name": "LSTMTransformerEnsemble",
+        "model_name": "LSTMTransformer",
         "embed_dim": 256,
         "lstm_hidden_dim": 512,
         "lstm_layers": 2,
@@ -41,7 +34,7 @@
         "fix_lstm": false,
         "pos_encode_dropout": 0.1,
         "attention_dropout": 0.1,
-        "num_encd_layer": null,
+        "num_encd_layer": 8,
         "transformer_hidden_dim": 1024
     },
     "TRAINING_HYPER_PARAM": {
