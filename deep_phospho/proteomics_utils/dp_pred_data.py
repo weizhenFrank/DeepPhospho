@@ -67,7 +67,7 @@ def mq_to_pred_input(result_path, output_folder, mq_version='1.5'):
     df = df[pd.isna(df['Reverse'])].copy()
     df = df[df['Proteins'].apply(lambda x: False if pd.notna(x) and x.startswith('CON__') else True)].copy()
     if 'Potential contaminant' in df.columns:
-        df = df[pd.notna(df['Potential contaminant'])].copy()
+        df = df[pd.isna(df['Potential contaminant'])].copy()
 
     if mq_version == '1.5':
         df['IntPep'] = df['Modified sequence'].apply(MQ.mq_modpep_to_intseq_1_5)
