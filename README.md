@@ -74,7 +74,7 @@
   4. Predict the ion intensity and retention time of expected data
   5. Generate a spectral library
 * To make DeepPhospho easier to use, we provide a all-in-one script to automatically transform initial data, train and select the best model parameter, predict, and generate the final library
-* The cost time depends on the size of data and whether enables rt model ensembl. If you run this script with CPU only and have a large dataset to train models, we recommand to set `-m false`
+* The cost time depends on the size of data and whether enables rt model ensembl. If you run this script with CPU only and have a large dataset to train models, we recommand to not use `-en`
 
 ## Command template
 
@@ -88,7 +88,7 @@
 * Below is a command template, and each argument will be introduced after it
 
   ```shell
-  python run_deep_phospho.py -w ./WorkFolder -t task_name -tf ./msms.txt -tt MQ1.6 -pf ./evidence.txt Lib.xls -pt MQ1.6 SNLib -d 0 -en true -m true
+  python run_deep_phospho.py -w ./WorkFolder -t task_name -tf ./msms.txt -tt MQ1.6 -pf ./evidence.txt Lib.xls -pt MQ1.6 SNLib -d 0 -en -m
   ```
 
 ## Argument introduction
@@ -123,10 +123,10 @@
 * -d is "used device", which can also be passed as --device
   * For training and prediction, this argument can be cpu to use CPU only, or 0 to use GPU0, 1 to use GPU1, ...
 * -en is "use ensembl RT model", which can also be passed as --rt_ensembl
-  * If true, ensembl RT model will be used to improve the predicted RT accuracy
+  * If passed, ensembl RT model will be used to improve the predicted RT accuracy
   * This will increase the RT model training time by 5 times accordingly
 * -m is "merge all library to one", which can also be passed as --merge
-  * If true, a final library consist of all predicted data will be generated (the individual ones will also be kept)
+  * If passed, a final library consist of all predicted data will be generated (the individual ones will also be kept)
 
 # <span id="configs">DeepPhospho configs</span>
 
@@ -172,13 +172,9 @@
   * To predict RT in .json config mode, set model_name to 'LSTMTransformerEnsemble'
 * The ensembl is implemented by changing the num_encd_layer (number of transformer encoder layer) of each model, and we provided 4, 5, 6, 7, 8 five pre-trained parameters
 
-# <span id="train">Train DeepPhospho</span>
+## Use config file and overwrite values with command line arguments
 
-
-
-
-
-* We provide a flexible config import method
+* We provide flexible ways to import configs
 
 * For both ion intensity model and RT model, there are three ways to specify the config file:
 
@@ -200,6 +196,8 @@
   * -e and -d will overwrite experiment name and dataset name, respectively
 
 * For more information, run `python [any train or pred script] --help`
+
+# <span id="train">Train DeepPhospho</span>
 
 ## <span id="train_demo">Start demo</span>
 
