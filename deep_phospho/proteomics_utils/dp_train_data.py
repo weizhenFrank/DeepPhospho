@@ -20,8 +20,8 @@ def sn_lib_to_trainset(lib_path, output_folder, split_ratio=(0.9, 0.1)):
 
     ion_train_path = os.path.join(output_folder, f'{data_name}-Ion_Train.json')
     ion_val_path = os.path.join(output_folder, f'{data_name}-Ion_Val.json')
-    rt_train_path = os.path.join(output_folder, f'{data_name}-RT_Train.json')
-    rt_val_path = os.path.join(output_folder, f'{data_name}-RT_Val.json')
+    rt_train_path = os.path.join(output_folder, f'{data_name}-RT_Train.txt')
+    rt_val_path = os.path.join(output_folder, f'{data_name}-RT_Val.txt')
 
     snlib = SN.SpectronautLibrary(lib_path)
     snlib.add_intpep()
@@ -93,8 +93,8 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version=
 
     ion_train_path = os.path.join(output_folder, f'{data_name}-Ion_Train.json')
     ion_val_path = os.path.join(output_folder, f'{data_name}-Ion_Val.json')
-    rt_train_path = os.path.join(output_folder, f'{data_name}-RT_Train.json')
-    rt_val_path = os.path.join(output_folder, f'{data_name}-RT_Val.json')
+    rt_train_path = os.path.join(output_folder, f'{data_name}-RT_Train.txt')
+    rt_val_path = os.path.join(output_folder, f'{data_name}-RT_Val.txt')
 
     df = pd.read_csv(msms_path, sep='\t')
 
