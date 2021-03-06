@@ -1,12 +1,15 @@
 import os
+from os.path import join as join_path
 import sys
 import datetime
 import copy
 import argparse
-
+import json
 
 from deep_phospho.model_utils.logger import setup_logger
+from deep_phospho.model_utils.param_config_load import load_config_from_json
 from deep_phospho.proteomics_utils import rapid_kit as rk
+from deep_phospho import proteomics_utils as prot_utils
 
 
 HelpMSG = '''
@@ -74,11 +77,8 @@ IV. for peptide list file, the modified peptides in the following format are val
     parser.add_argument('-d', '--device', metavar='str', type=str, default='cpu',
                         help='Use which device. This can be [cpu] or any integer (0, 1, 2, ...) to use corresponded GPU')
     # rt ensembl
-    parser.add_argument('-en', '--rt_ensembl', metavar='bool', type=bool, default=True,
+    parser.add_argument('-en', '--rt_ensembl', metavar='bool', type=bool, default=False,
                         help='Use ensembl to improve RT prediction or not')
-    # also pred train data
-    parser.add_argument('-ptd', '--pred_train_data', metavar='bool', type=bool, default=True,
-                        help='This will also predict the training data with fine-tuned models')
     # merge library
     parser.add_argument('-m', '--merge', metavar='bool', type=bool, default=True,
                         help='''To merge all predicted data to one library or not (the individual ones will also be kept)''')
@@ -98,7 +98,7 @@ def parse_args(parser, time):
 
     work_dir = inputs['work_dir']
     if work_dir is None:
-        work_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), time)
+        work_dir = join_path(os.path.dirname(os.path.abspath(__file__)), time)
         arg_msgs.append(f'-w or -work_dir is not passed, use {work_dir} as work directory')
     else:
         arg_msgs.append(f'Set work directory to {work_dir}')
@@ -106,17 +106,17 @@ def parse_args(parser, time):
 
     task_name = inputs['task_name']
     if task_name is None:
-        task_name = time
+        task_name = f'Task_{time}'
         arg_msgs.append(f'-t or --task_name is not passed, use {task_name} as task name')
     else:
-        task_name = f'{time}-{task_name}'
+        task_name = f'{task_name}_{time}'
         arg_msgs.append(f'Set task name to {task_name}')
 
     train_file = os.path.abspath(inputs['train_file'])
     train_file_type = inputs['train_file_type']
     if not os.path.exists(train_file):
         raise FileNotFoundError(f'Train file not found - {train_file}')
-    if train_file_type not in ['SNLib', 'MQ1.5', 'MQ1.6']:
+    if train_file_type.lower() not in ['snlib', 'mq1.5', 'mq1.6']:
         raise ValueError(f'Train file type should be one of ["SNLib", "MQ1.5", "MQ1.6"], now {train_file_type}')
     arg_msgs.append(f'Train file with {train_file_type} format: {train_file}')
 
@@ -146,10 +146,6 @@ def parse_args(parser, time):
     if rt_ensembl:
         arg_msgs.append(f'Use ensembl RT model')
 
-    pred_train_data = inputs['pred_train_data']
-    if pred_train_data:
-        arg_msgs.append(f'Also predict training data')
-
     merge = inputs['merge']
     if merge:
         arg_msgs.append(f'Merge all predicted spectral libraries to one after prediction done')
@@ -161,7 +157,6 @@ def parse_args(parser, time):
         'PredData': list(zip(pred_files, pred_files_type)),
         'Device': device,
         'EnsemblRT': rt_ensembl,
-        'PredTrain': pred_train_data,
         'Merge': merge
     }
 
@@ -172,8 +167,155 @@ if __name__ == '__main__':
     arg_parser = init_arg_parser()
     msgs, args = parse_args(arg_parser, start_time)
 
-    logger = setup_logger('DeepPhosphoRunner', args['WorkDir'], filename="RunnerLog.txt")
+    WorkDir = args['WorkDir']
+    TaskName = args['TaskName']
+    TrainData = args['TrainData']
+    PredData = args['PredData']
+    Device = args['Device']
+    EnsemblRT = args['EnsemblRT']
+    Merge = args['Merge']
+
+    logger = setup_logger('DeepPhosphoRunner', WorkDir, filename="RunnerLog.txt")
     for m in msgs:
         logger.info(m)
 
-    # train_data_path = args['']
+    with open(join_path(WorkDir, 'PassedArguments.txt'), 'w') as f:
+        f.write(' '.join(sys.argv))
+
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    if 'ConfigTemplate-Ion_model_train.json' in os.listdir(this_dir):
+        config_dir = this_dir
+    else:
+        config_dir = join_path(this_dir, 'Data', 'ConfigBackup')
+    logger.info(f'Use config template stored in {config_dir}')
+
+    data_folder = join_path(WorkDir, 'Data')
+    create_folder(data_folder)
+    logger.info(f'Transforming training data')
+    train_data_path = prot_utils.dp_train_data.file_to_trainset(path=TrainData[0], output_folder=data_folder, file_type=TrainData[1])
+    logger.info(f'Training data transformation done')
+
+    pred_data_path = dict(IonPred=[], RTPred=[])
+    PredData.insert(0, (TrainData[0], TrainData[1]))
+    for idx, (pred_path, pred_type) in enumerate(PredData, 1):
+        logger.info(f'Transforming prediction data {idx}: {pred_type} - {pred_path}')
+        _ = prot_utils.dp_pred_data.file_to_pred_input(path=pred_path, output_folder=data_folder, file_type=pred_type)
+        pred_data_path['IonPred'].append(_['IonPred'])
+        pred_data_path['RTPred'].append(_['RTPred'])
+        logger.info(f'Prediction data {idx} transformation done')
+
+    logger.info('Init training')
+    logger.info(f'Loading ion model config')
+    ion_train_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-Ion_model_train.json'))
+    ion_train_config['WorkFolder'] = WorkDir
+    ion_train_config['Intensity_DATA_CFG']['TrainPATH'] = train_data_path['IonTrain']
+    ion_train_config['Intensity_DATA_CFG']['TestPATH'] = train_data_path['IonVal']
+    ion_train_config['Intensity_DATA_CFG']['HoldoutPATH'] = ''
+    ion_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
+    ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 40
+
+    logger.info(f'Loading RT model config')
+    rt_train_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_train.json'))
+    rt_train_config['WorkFolder'] = WorkDir
+    rt_train_config['RT_DATA_CFG']['TrainPATH'] = train_data_path['RTTrain']
+    rt_train_config['RT_DATA_CFG']['TestPATH'] = train_data_path['RTVal']
+    rt_train_config['RT_DATA_CFG']['HoldoutPATH'] = ''
+    rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 30
+    rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
+
+    logger.info('-' * 20)
+    logger.info('Start training ion intensity model')
+    ion_train_config['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-IonModel'
+    ion_model_folder = join_path(ion_train_config['WorkFolder'], ion_train_config['InstanceName'])
+    create_folder(ion_model_folder)
+    cfg_path = join_path(ion_model_folder, f'Config-IonTrain-{TaskName}.json')
+    with open(cfg_path, 'w') as f:
+        json.dump(ion_train_config, f, indent=4)
+    logger.info(f'Start ion model instance {ion_train_config["InstanceName"]}')
+    code = os.system(f'python train_ion.py {cfg_path}')
+    if code != 0:
+        raise RuntimeError(f'Error when start ion model training instance')
+
+    logger.info('-' * 20)
+    logger.info('Start training RT model')
+    if EnsemblRT:
+        layer_nums = [4, 5, 6, 7, 8]
+    else:
+        layer_nums = [8]
+    rt_model_folders = {}
+    for idx, layer_num in enumerate(layer_nums, 1):
+        logger.info(f'Training RT model {idx}')
+        cfg_cp = copy.deepcopy(rt_train_config)
+        cfg_cp['PretrainParam'] = f"./PretrainParams/RTModel/{layer_num}.pth"
+        cfg_cp['UsedModelCFG']['num_encd_layer'] = layer_num
+        cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-RTModel-{layer_num}'
+        rt_model_folders[layer_num] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
+        create_folder(rt_model_folders[layer_num])
+        cfg_path = join_path(rt_model_folders[layer_num], f'Config-RTTrain-{TaskName}-{layer_num}.json')
+        with open(cfg_path, 'w') as f:
+            json.dump(cfg_cp, f, indent=4)
+        logger.info(f'Start rt model instance {cfg_cp["InstanceName"]}')
+        code = os.system(f'python train_rt.py {cfg_path}')
+        if code != 0:
+            raise RuntimeError(f'Error when start rt model training instance')
+
+    logger.info('Init prediction')
+    logger.info(f'Loading ion model config')
+    ion_pred_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-Ion_model_pred.json'))
+    ion_pred_config['WorkFolder'] = WorkDir
+    ion_pred_config['PretrainParam'] = join_path(ion_model_folder, 'ckpts', 'best_model.pth')
+    ion_pred_config['Intensity_DATA_CFG']['InputWithLabel'] = False
+    ion_pred_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
+    ion_pred_folders = {}
+    for idx, path in enumerate(pred_data_path['IonPred'], 1):
+        data_name = os.path.basename(path).replace('-Ion_PredInput.txt', '')
+        cfg_cp = copy.deepcopy(ion_pred_config)
+        cfg_cp['Intensity_DATA_CFG']['PredInputPATH'] = path
+        cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-IonPred-{data_name}'
+        ion_pred_folders[data_name] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
+        create_folder(ion_pred_folders[data_name])
+        cfg_path = join_path(ion_pred_folders[data_name], f'Config-IonPred-{TaskName}-{data_name}.json')
+        with open(cfg_path, 'w') as f:
+            json.dump(cfg_cp, f, indent=4)
+        logger.info(f'Start ion model instance {cfg_cp["InstanceName"]}')
+        code = os.system(f'python pred_ion.py {cfg_path}')
+        if code != 0:
+            raise RuntimeError(f'Error when start ion model prediction instance')
+
+    logger.info(f'Loading RT model config')
+    rt_pred_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_pred.json'))
+    rt_pred_config['WorkFolder'] = WorkDir
+    rt_pred_config['ParamsForPred'] = {str(l): join_path(f, 'ckpts', 'best_model.pth') for l, f in rt_model_folders.items()}
+    rt_pred_config['RT_DATA_CFG']['InputWithLabel'] = False
+    rt_pred_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
+    rt_pred_folders = {}
+    for idx, path in enumerate(pred_data_path['RTPred'], 1):
+        data_name = os.path.basename(path).replace('-RT_PredInput.txt', '')
+        cfg_cp = copy.deepcopy(rt_pred_config)
+        cfg_cp['RT_DATA_CFG']['PredInputPATH'] = path
+        cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-RTPred-{data_name}'
+        rt_pred_folders[data_name] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
+        create_folder(rt_pred_folders[data_name])
+        cfg_path = join_path(rt_pred_folders[data_name], f'Config-RTPred-{TaskName}-{data_name}.json')
+        with open(cfg_path, 'w') as f:
+            json.dump(cfg_cp, f, indent=4)
+        logger.info(f'Start RT model instance {cfg_cp["InstanceName"]}')
+        code = os.system(f'python pred_rt.py {cfg_path}')
+        if code != 0:
+            raise RuntimeError(f'Error when start rt model prediction instance')
+
+    logger.info(f'Init library generation')
+    lib_paths = {}
+    for idx, (data_name, ion_result_folder) in enumerate(ion_pred_folders.items(), 1):
+        logger.info(f'Generate library {data_name}')
+        lib_path = prot_utils.gen_dp_lib.generate_spec_lib(
+            data_name, WorkDir,
+            join_path(ion_result_folder, f'{os.path.basename(ion_result_folder)}-PredOutput.json'),
+            join_path(rt_pred_folders[data_name], 'Prediction.txt'))
+        lib_paths[data_name] = lib_path
+
+    logger.info(f'Init library merging')
+    main_key = list(lib_paths.keys())[0]
+    path = prot_utils.gen_dp_lib.merge_lib(lib_paths[main_key], {n: p for n, p in lib_paths.items() if n != main_key})
+
+    logger.info(f'All finished. Check directory {WorkDir} for results.')

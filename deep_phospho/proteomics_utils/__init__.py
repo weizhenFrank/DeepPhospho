@@ -15,3 +15,8 @@ from . import drawing_area
 from . import figures
 from . import plots
 from .plots import *
+
+# new funcs
+from . import dp_train_data
+from . import dp_pred_data
+from . import gen_dp_lib
