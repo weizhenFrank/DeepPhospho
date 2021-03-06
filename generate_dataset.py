@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description=HelpMSG)
     sub_parser = parser.add_subparsers()
 
-    parser_train = sub_parser.add_parser('train')
+    parser_train = sub_parser.add_parser('train', formatter_class=argparse.RawTextHelpFormatter)
     parser_train.set_defaults(action='train')
     # file
     parser_train.add_argument('-f', '--file', metavar='path', type=str, required=True,
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     parser_train.add_argument('-o', '--output', metavar='dir', type=str, required=True,
                               help='Directory to store the generated data')
 
-    parser_pred = sub_parser.add_parser('pred')
+    parser_pred = sub_parser.add_parser('pred', formatter_class=argparse.RawTextHelpFormatter)
     parser_pred.set_defaults(action='pred')
     # file
     parser_pred.add_argument('-f', '--file', metavar='path', type=str, required=True,

@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser_merge.add_argument('-l', '--lib', metavar='path', type=str, nargs='*', required=True,
                               help='Path of one or more library files')
     # output
-    parser_merge.add_argument('-o', '--output', metavar='path', type=str, required=False,
+    parser_merge.add_argument('-o', '--output', metavar='path', type=str, required=True,
                               help='Output path of merged library')
 
     args = parser.parse_args()
