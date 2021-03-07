@@ -98,7 +98,7 @@ def parse_args(parser, time):
 
     work_dir = inputs['work_dir']
     if work_dir is None:
-        work_dir = join_path(os.path.dirname(os.path.abspath(__file__)), time)
+        work_dir = join_path(os.path.dirname(os.path.abspath(__file__)), f'{time}-DeepPhospho-WorkFolder')
         arg_msgs.append(f'-w or -work_dir is not passed, use {work_dir} as work directory')
     else:
         arg_msgs.append(f'Set work directory to {work_dir}')
