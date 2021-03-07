@@ -5,26 +5,21 @@
 * [Setup DeepPhospho](#setup)
    * [Get DeepPhospho](#get)
    * [Setup conda environment](#conda_env)
+   * [Download pre-trained model parameters](#down_pretain)
    * [Use GPU (optional)](#use_gpu)
-* [Quick start](#start)
-    * [Predict your data with default params](#start_pred)
+* [Quick start (from library/result file to DeepPhospho generated library in one command)](#start)
+    * [Command template](#command)
+    * [Introduction to arguments](#argu_intro)
 * [DeepPhospho configs](#configs)
     * [Configs for ion intensity model](#ion_config)
     * [Configs for RT model](#rt_config)
-* [Predict spec and iRT with DeepPhospho](#predict)
-    * [Predict spec ion intensity](#pred_spec)
-    * [Predict peptide iRT](#pred_rt)
-* [Train DeepPhospho](#train)
-   * [Start demo](#train_demo)
-   * [Prepare your customized training data](#prepare_cust_data)
-   * [Train ion intensity model with or without our pre-trained params](#train_ion)
-   * [Train RT model with or without our pre-trained params](#train_rt)
-* [From initial DIA library to DeepPhospho improved library](#lib)
-   * [Recommendations for initial library preparation](#lib_recommend)
-   * [Check the library and convert it to DeepPhospho specific input formats](#convert_lib_format)
-   * [Fine-tuning the models with the customized data](#finetune_with_cust_data)
-   * [Generate a DeepPhospho improved library](#gen_lib)
-   * [Other details](#other_details)
+    * [Use config file and overwrite values with command line arguments](#import_config)
+* [Train and predict manurally](#manu)
+   * [Start demo for model training](#train_demo)
+   * [Prepare customized training data](#prepare_train_data)
+   * [Start  demo for prediction](#pred_demo)
+   * [Prepare customized prediction input](#prepare_pred_data)
+   * [Generate ready to use spectral library](#gen_lib)
 * [License](#license)
 * [Publication](#pub)
 
@@ -56,7 +51,7 @@
   conda env create -f DeepPhospho_ENV.yaml -n deep_phospho
   ```
 
-## Download pre-trained model parameters
+## <span id="down_pretain">Download pre-trained model parameters</span>
 
 
 
@@ -76,7 +71,7 @@
 * To make DeepPhospho easier to use, we provide a all-in-one script to automatically transform initial data, train and select the best model parameter, predict, and generate the final library
 * The cost time depends on the size of data and whether enables rt model ensembl. If you run this script with CPU only and have a large dataset to train models, we recommand to not use `-en`
 
-## Command template
+## <span id="command">Command template</span>
 
 * Before run this script, please activate the conda enviroment and set directory to DeepPhospho
 
@@ -91,12 +86,14 @@
   python run_deep_phospho.py -w ./WorkFolder -t task_name -tf ./msms.txt -tt MQ1.6 -pf ./evidence.txt Lib.xls -pt MQ1.6 SNLib -d 0 -en -m
   ```
 
-## Argument introduction
+## <span id="argu_intro">Introduction to arguments</span>
 
 * -w is "work directory", which can also be passed as --work_dir
   * All operations will be performed in this directory, so-called work directory
+  * If not passed, this will be {start_time}-DeepPhospho-WorkFolder
 * -t is "task name", which can also be passed as --task_name
   * This will be added to all generated files or folders as an identifier
+  * If not passed, this will be Task_{start_time}
 * -tf is "train file", which can also be passed as --train_file
   * This should point to the path of expected data for model fine-tuning
   * The supported file is Spectronaut library (exported as .xls file) and search result from MaxQuant (msms.txt stored in txt folder)
@@ -140,7 +137,7 @@
 * InstanceName will fully overwrite the instance name which was defined as the combination of ExpName, DataName and some other information as default
 * TaskPurpose can be set to one of 'Train' or 'Predict' (case is ignored)
 * PretrainParam is used
-  * as pre-trained parameter for fine-tuning, and it can be empty in training mode
+  * as pre-trained parameter for fine-tuning, and it can be empty in training mode to train the parameters ab initio
   * as model parameter to load for predicting, and it must be pointed to an vailid path of parameter file
 * Intensity_DATA_CFG
   * DataName is used as the identifier of this dataset
@@ -172,7 +169,7 @@
   * To predict RT in .json config mode, set model_name to 'LSTMTransformerEnsemble'
 * The ensembl is implemented by changing the num_encd_layer (number of transformer encoder layer) of each model, and we provided 4, 5, 6, 7, 8 five pre-trained parameters
 
-## Use config file and overwrite values with command line arguments
+## <span id="import_config">Use config file and overwrite values with command line arguments</span>
 
 * We provide flexible ways to import configs
 
@@ -197,191 +194,115 @@
 
 * For more information, run `python [any train or pred script] --help`
 
-# <span id="train">Train DeepPhospho</span>
+# <span id="manu">Train and predict manurally</span>
 
-## <span id="train_demo">Start demo</span>
+## <span id="train_demo">Start demo for model training</span>
 
 * We provided a demo for ion intensity model and RT model fine-tuning based on our pre-trained parameters. And the dataset RPE1 DIA used in this demo is also the data for EGF phospho-signaling analysis in our paper
 * Before start this, please make sure these files are existed and in correct format
   * In folder demo/RPE1_DIA_demo_data, two files for ion model and two files for RT model are existed and please unzip the zipped ones
-  * In folder PretrainParams/IonModel, best_model.pth should exist
+  * For demo of ion intensity model, best_model.pth should exist in folder PretrainParams/IonModel
+  * For demo of RT model, 4.pth should exist in folder PretrainParams/RTModel
 * Below is the training steps
   * Open command line (prompt in windows or any shell in linux) and change the conda enviroment to deep_phospho
   * Change directory to DeepPhospho main folder
-  * run `python train_ion.py ./demo/ConfigDemo-IonModel-FinetuneIonModelWith_RPE1_DIA.json` to start fine-tuning ion intensity model
-    * [Notice] the GPU_IDX in this config file is set to "0", if you want to use cpu only or other device, please change it or run `python train_ion.py -c ./demo/ConfigDemo-IonModel-FinetuneIonModelWith_RPE1_DIA.json -g cpu`
-  * run `python train_rt.py ./demo/ConfigDemo-RTModel-FinetuneIonModelWith_RPE1_DIA.json`
+  * run `python train_ion.py ./demo/ConfigDemo-IonModel-RPE1_DIA-Finetune_ion_model.json` to start ion intensity model fine-tuning
+    * [Notice] the GPU_IDX in this config file is set to "0", if you want to use cpu only or other device, please change it in the config file or run the following command instead `python train_ion.py -c ./demo/ConfigDemo-IonModel-RPE1_DIA-Finetune_ion_model.json -g cpu`
+  * run `python train_rt.py ./demo/ConfigDemo-RTModel-RPE1_DIA-Finetune_rt_model.json` to start RT model fine-tuning based on pre-trained parameters with 4 encoder layer
     * [Notice] the GPU_IDX in this config file is also set to "0"
-    * [Notice] we use ensembl model to improve the final performance of RT model, and we provided 5 pre-trained parameters with 4, 5, 6, 7, and 8 encoder layers. The num_encd_layer in this demo config is set to "4" and PretrainParam is "4.pth". To train the same models, please create five config files or add arguments like `python train_rt.py -c ./demo/ConfigDemo-RTModel-FinetuneIonModelWith_RPE1_DIA.json -l 8 - p /path/to/8.pth` to fine-tune the RT model param with 8 encoder layers
+    * [Notice] we use ensembl model to improve the final performance of RT model, and we provided 5 pre-trained parameters with 4, 5, 6, 7, and 8 encoder layers. The num_encd_layer in this demo config is set to "4" and PretrainParam is "4.pth". To train the same five models, please create five config files and run them substantially, or use one config file and add arguments like `python train_rt.py -c ./demo/ConfigDemo-RTModel-RPE1_DIA-Finetune_rt_model.json -l 5 - p /path/to/5.pth` to fine-tune the RT model param with 5 encoder layers
 
-## <span id="prepare_cust_data">Prepare your customized training data</span>
+## <span id="prepare_train_data">Prepare customized training data</span>
 
+* The most obvious obstacles to run released deep learning models are usually the setup of enviroment and the preparation of data with compatible format for each specific model
 
+* Here, we provided some functions to convert formats more easily
 
-## <span id="train_ion">Train ion intensity model with or without our pre-trained params</span>
+* For training data, we now support two formats
 
+  * Spectronaut library (exported as plain text format)
+  * MaxQuant search result msms.txt
 
+* After preparation of one training data, run the following script
 
-## <span id="train_rt">Train RT model with or without our pre-trained params</span>
-
-
-
-# <span id="predict">Predict spec and RT with DeepPhospho</span>
-
-
-
-## <span id="start_pred">Predict your data with default params</span>
-
-* Only an input file is needed if you would like to use the default settings and we provided model parameters
-* Here, we will use our demo input file as an example, and you can create your own input by your custom script or [using our script](#create_input) to convert files from MaxQuant (1.5- and 1.6+), Spectronaut (13+), and Comet
-* Below is a 3 step example for ion intensity prediction:
-  1. Change the directory to DeepPhospho main folder
-  2. Check config_ion_model.py
-     * check WorkFolder is 'Here' or set any other place you want
-     * check TaskPurpose is 'Predict'
-     * make sure you have downloaded the model parameter and unzipped them in the folder PretrainParams
-     * check PretrainParam is correctly pointed to one param file
-     * check PredInputPATH in Intensity_DATA_CFG is "./demo/IonInput.txt" or set to other input you want
-  3. Run `python pred_ion.py`(please also make sure the config_path in line 37 of pred_ion.py is an empty string)
-* RT prediction is same as ion prediction, but we use ensembl to make more accurate prediction. The parameters for prediction is not PretrainParam but ParamsForPred, and it is consisted of the key-value pairs of decoder layer: param path.
-
-## <span id="create_input">Create your own prediction input</span>
-
-
-
-## <span id="pred_spec">Predict spec ion intensity</span>
-
-
-
-## <span id="pred_rt">Predict peptide iRT</span>
-
-
-
-# Convert existed files to DeepPhospho compatible files
-
-
-
-
-
-# <span id="lib">From initial DIA library to DeepPhospho improved library</span>
-
-## <span id="lib_recommend">Recommendations for initial library preparation</span>
-
-* Though the initial data is called library here, it doesn't indicates the spectral library only. Instead, DeepPhospho workflow makes the spectral library generation much freer.
-
-* All data source that includes the fragment intensity and peptide RT/iRT is satisfied, including but not limited to the spectral library from Spectranaut, OpenSwath and others, and raw data search results from MaxQuant, Comet and others.
-
-* Here we provided [the scripts]() to convert Spectranaut library (exported as .xls) and MaxQuant search result (msms.txt in result folder) to DeepPhospho input formats.
-
-  ```python
-  
+  ```shell
+  python generate_dataset.py train -f library.xls -t SNLib -o ./output_folder
   ```
 
-* In previous study, the input data is always under some filtration to get much higher quality, but in this work, we didn't see obvious increase on evaluation metrics with different filtration conditions. So we didn't provide the data filtration in scripts for format converting.
+* As shown above, four arguments should passed to the script
 
-## <span id="convert_lib_format">Check the library and convert it to DeepPhospho specific input formats</span>
+  1. the first is train (the other one is pred and will be introduced in next part)
+  2. -f is the expected training data
+  3. -t is type or source of the given training data
+     * SNLib - library from Spectronaut
+     * MQ1.5 - msms.txt file from MaxQuant with version <= 1.5
+     * MQ1.6 - msms.txt file from MaxQuant with version >= 1.6 (these two versions have different modified peptide format)
+  4. -o is the output folder, here is not a path to output file because four files will be generated, including train and val datasets for both ion and RT models
 
-## <span id="finetune_with_cust_data">Fine-tuning the models with the customized data</span>
+* If you have data from other sources, you can contact us to add the support of your data format
 
-## <span id="gen_lib">Generate a DeepPhospho improved library</span>
+* You can also generate datasets following these rules
 
+* The dataset for ion model is a json file which will be loaded as a dict to use and modify easily
 
+  * Each key of the dict is a peptide precursor, which as the format like @HEDGHESMVP2TYR.4, * or @ at first position means Acetyl modified or not, and 1, 2, 3, 4 indicate M(ox), S(ph), T(ph), Y(ph) respectively
+  * Each value is also a dict to store the fragment-intensity pairs
+  * The fragments have format like b5+1-Noloss, b5+1-1,NH3, b5+1-1,H2O, b5+1-1,H3PO4 for 5th b ion with 1 charge state and has no loss, loss 1 NH3, loss 1 H2O, loss 1 H3PO4
+  * And the intensity can be any values without normalization (like relative intensity with 100 as max value)
 
-## <span id="other_details">Other details</span>
+## <span id="pred_demo">Start  demo for prediction</span>
 
-* In this document, we described the DeepPhospho usages as detailed as possible, and this document only contains model and library generation information as a supplement for our paper.
-* We also discussed many details in the method part in our paper, please have a look at [here](). The methods in paper involves:
-  * 
+* After running the above two training demos, there will be two folders created in the demo folder, which contain multi files including the trained parameters
+* [Notice] In the training demos, we defined the "InstanceName" in config files to make the name of output folders consistent. In general, we recommand to fill in "ExpName" and "DataName" to auto create work folder, which will have start time and some information in the generated name
+* run `python pred_ion.py ./demo/ConfigDemo-IonModel-RPE1_DIA-Pred_with_finetuned_parameteres.json` to predict spectra of some peptide precursors with the model parameters fine-tuned just now
+* run `python pred_rt.py ./demo/ConfigDemo-RTModel-RPE1_DIA-Pred_with_finetuned_parameteres.json` to predict iRT of some peptides with the model parameters fine-tuned just now
+* If you want to use CPU or other GPU device but not "0", add -c before config path and add '-g cpu' or '-g 1', '-g 2', ...
 
+## <span id="prepare_pred_data">Prepare customized prediction input</span>
 
+* We also provided the convertion funcstion for prediction input
+
+* The usage is like training data but change train to pred
+
+  ```shell
+  python generate_dataset.py pred -f library.xls -t SNLib -o ./output_folder
+  ```
+
+* Here we support the following file formats
+
+  1. SNLib - library from Spectronaut
+  2. SNResult - search results from Spectronaut
+  3. MQ1.5 - evidence.txt or msms.txt file from MaxQuant with version <= 1.5
+  4. MQ1.6 - evidence.txt or msms.txt file from MaxQuant with version >= 1.6
+  5. PepSN13 - Spectronaut 13+ peptide format like \_[Acetyl (Protein N-term)]M[Oxidation (M)]LSLS[Phospho (STY)]PLK\_
+  6. PepMQ1.5 - MaxQuant 1.5- peptide format like \_(ac)GS(ph)QDM(ox)GS(ph)PLRET(ph)RK\_
+  7. PepMQ1.6 - MaxQuant 1.6+ peptide format like \_(Acetyl (Protein N-term))TM(Oxidation (M))DKS(Phospho (STY))ELVQK\_
+  8. PepComet - Comet peptide format like n#DFM\*SPKFS@LT@DVEY@PAWCQDDEVPITM\*QEIR
+  9. PepDP - DeepPhospho used peptide format like *1ED2MCLK
+
+* 1 - 4 is the file from Spectronaut or MaxQuant
+
+* 5 - 9 is tab-separated file with two columns "sequence" and "charge", and total five peptide formats can be assigned for this file. This will be convenient if there is only a peptide list collected from any other data
+
+* If you want to generate prediction input yourself, please following these rules
+
+* For ion model, a single column file with title "IntPrec" and rows with precursor like *1ED2MCLK.2
+
+* For RT model, a single column file with title "IntPep" and rows with peptide lieke *1ED2MCLK
+
+## <span id="gen_lib">Generate ready to use spectral library</span>
+
+* We provided a script to build library from DeepPhospho predicted results with ion intensity and RT
+* run `python build_spec_lib.py build -i ion_result.json -r rt_result.txt -o output_library.xls`
+* To merge multi (at least two) libraries to one
+* run `python build_spec_lib.py merge -l libA libB libC -o output_library.xls`
+* [notice] different with dataset generation with generate_dataset.py, the -o output here should be a file path since only one file will be generated
 
 # <span id="license">License</span>
 
+* DeepPhospho is under a general MIT license
+
 # <span id="pub">Publication</span>
-
-
-
-
-
-
-
-
-
-
-
-* [2. Train model](#2-train-model)
-  * [2.1 Train model on RT task](#21-train-model-on-rt-task)
-  * [2.2 Train model on Ion intensity task](#22-train-model-on-ion-intensity-task)
-* [3. Predict ](#3-predict)
-  * [3.1 predict the RT](#31-predict-the-rt)
-  * [3.2 predict the Ion intensity](#32-predict-the-ion-intensity)
-
-
-
-## 3.1 predict the RT
-
-* Go to the file
-
-> PutOnGitHub/IonInten/configs/config_main.py 
-
-* change the 
-  `"model_name": "LSTMTransformerEnsemble",`
-* Go to the file
-
-> visualization.py
-
-* use the checkpoint in checkpoints folder, and change `model_arch_path={}`. The key of the dict is the number of encoder layer, the corresponding value is the path of the model's checkpoint.
-* run visualization.py
-  `python visualization.py`
-* the prediction will be saved in the `result/RT/Analysis`
-
-## 3.2 predict the Ion intensity
-
-* Go to the file
-
-> PutOnGitHub/IonInten/configs/config_main.py 
-
-* change the 
-  `"model_name": "LSTMTransformer",`
-* Go to the file
-
-> visualization_Ion.py
-
-* use the checkpoint in checkpoints folder, and change `load_model_path='<checkpoint path>'`. 
-* run visualization_Ion.py
-  `python visualization_Ion.py`
-* the prediction will be saved in the `result/IonInten/Analysis`
-
-
-
-
-
-## 2.1 Train model on RT task
-* Go to the file 
-> PutOnGitHub/IonInten/configs/config_main.py 
-* change the 
-`mode = 'RT'`
-* chaneg the `GPU_INDEX` according to your machine in `TRAINING_HYPER_PARAM`
-* change the  `data_name = "U2OS_DIA"` (one of  `"U2OS_DIA_RT"` `"PhosDIA_DIA18_finetune_RT"` `"PhosDIA_DDA_RT"`)
-* (optional) use the checkpoint in checkpoints folder, and change  `pretrain_param='<checkpoint path>'` in `RT_TRAINING_HYPER_PARAM`
-* run the main.py
-`python main.py`
-* the output will be saved in the `result/RT`
-
-## 2.2 Train model on Ion intensity task
-* Go to the file 
-> PutOnGitHub/IonInten/configs/config_main.py 
-* change the 
-`mode = 'IonIntensity'`
-* chaneg the `GPU_INDEX` according to your machine in  `TRAINING_HYPER_PARAM`
-* change the `data_name = "U2OS_DIA"` (one of  `"U2OS_DIA"` `"PhosDIA_DIA18"`  `"PhosDIA_DDA"`)
-* (optional) use the checkpoint in checkpoints folder, and change `pretrain_param='<checkpoint path>'` in `Intensity_TRAINING_HYPER_PARAM`
-* run the main_ion.py
-`python main_ion.py`
-* the output will be saved in the `result/IonInten/`
-
-* 
-
 
 
 
