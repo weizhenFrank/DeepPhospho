@@ -1,22 +1,17 @@
 {
     "WorkFolder": "Here",
-    "ExpName": "RPE1_Finetune",
-    "InstanceName": "",
-    "TaskPurpose": "Train",
-    "PretrainParam": "./PretrainParams/RTModel/4.pth",
+    "ExpName": "",
+    "InstanceName": "RTModelDemo-Pred_with_RPE1_DIA_finetuned_param",
+    "TaskPurpose": "Predict",
     "ParamsForPred": {
-        "4": "./PretrainParams/RTModel/4.pth",
-        "5": "./PretrainParams/RTModel/5.pth",
-        "6": "./PretrainParams/RTModel/6.pth",
-        "7": "./PretrainParams/RTModel/7.pth",
-        "8": "./PretrainParams/RTModel/8.pth"
+        "4": "./demo/RTModelDemo-Finetune_with_RPE1_DIA/ckpts/best_model.pth"
     },
     "RT_DATA_CFG": {
-        "DataName": "RPE1_DIA_RT",
-        "TrainPATH": "./demo/RPE1_DIA_demo_data/20201009-RT-PhosDIA-DIA18_075In20200919-FullForFinetuning_train_no_holdout_666.csv",
-        "TestPATH": "./demo/RPE1_DIA_demo_data/20201009-RT-PhosDIA-DIA18_075In20200919-FullForFinetuning_val_no_holdout_666.csv",
+        "DataName": "",
+        "TrainPATH": "",
+        "TestPATH": "",
         "HoldoutPATH": "",
-        "PredInputPATH": "",
+        "PredInputPATH": "./demo/RTInput.txt",
         "InputWithLabel": false,
         "SEQUENCE_FIELD_NAME": "IntPep",
         "RT_FIELD_NAME": "iRT",
@@ -26,11 +21,11 @@
             "MAX_RT": 200,
             "MAX_SEQ_LEN": 52
         },
-        "refresh_cache": true,
+        "refresh_cache": false,
         "Use_cache": true
     },
     "UsedModelCFG": {
-        "model_name": "LSTMTransformer",
+        "model_name": "LSTMTransformerEnsemble",
         "embed_dim": 256,
         "lstm_hidden_dim": 512,
         "lstm_layers": 2,
@@ -41,12 +36,12 @@
         "fix_lstm": false,
         "pos_encode_dropout": 0.1,
         "attention_dropout": 0.1,
-        "num_encd_layer": 4,
+        "num_encd_layer": null,
         "transformer_hidden_dim": 1024
     },
     "TRAINING_HYPER_PARAM": {
         "GPU_INDEX": "0",
-        "EPOCH": 3,
+        "EPOCH": 2,
         "BATCH_SIZE": 64,
         "loss_func": "RMSE",
         "LR_STEPS": [

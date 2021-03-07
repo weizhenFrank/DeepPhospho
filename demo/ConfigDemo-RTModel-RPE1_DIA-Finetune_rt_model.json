@@ -1,0 +1,70 @@
+{
+    "WorkFolder": "Here",
+    "ExpName": "RPE1_Finetune",
+    "InstanceName": "RTModelDemo-Finetune_with_RPE1_DIA",
+    "TaskPurpose": "Train",
+    "PretrainParam": "./PretrainParams/RTModel/4.pth",
+    "RT_DATA_CFG": {
+        "DataName": "RPE1_DIA_RT",
+        "TrainPATH": "./demo/RPE1_DIA_demo_data/20201009-RT-PhosDIA-DIA18_075In20200919-FullForFinetuning_train_no_holdout_666.csv",
+        "TestPATH": "./demo/RPE1_DIA_demo_data/20201009-RT-PhosDIA-DIA18_075In20200919-FullForFinetuning_val_no_holdout_666.csv",
+        "HoldoutPATH": "",
+        "PredInputPATH": "",
+        "InputWithLabel": false,
+        "SEQUENCE_FIELD_NAME": "IntPep",
+        "RT_FIELD_NAME": "iRT",
+        "SCALE_BY_ZERO_ONE": true,
+        "DATA_PROCESS_CFG": {
+            "MIN_RT": -100,
+            "MAX_RT": 200,
+            "MAX_SEQ_LEN": 52
+        },
+        "refresh_cache": true,
+        "Use_cache": true
+    },
+    "UsedModelCFG": {
+        "model_name": "LSTMTransformer",
+        "embed_dim": 256,
+        "lstm_hidden_dim": 512,
+        "lstm_layers": 2,
+        "lstm_num": 2,
+        "bidirectional": true,
+        "max_len": 100,
+        "num_attention_head": 8,
+        "fix_lstm": false,
+        "pos_encode_dropout": 0.1,
+        "attention_dropout": 0.1,
+        "num_encd_layer": 4,
+        "transformer_hidden_dim": 1024
+    },
+    "TRAINING_HYPER_PARAM": {
+        "GPU_INDEX": "0",
+        "EPOCH": 1,
+        "BATCH_SIZE": 64,
+        "loss_func": "RMSE",
+        "LR_STEPS": [
+            10000,
+            20000
+        ],
+        "add_hydro": false,
+        "add_rc": false,
+        "resume": false,
+        "Bert_pretrain": false,
+        "accumulate_mask_only": false,
+        "DEBUG": false,
+        "lr_scheduler_type": "WarmupMultiStepLR",
+        "LR": 0.0001,
+        "transformer_on_epoch": -1,
+        "factor": 0.2,
+        "warmup_factor": 0.3333333333333333,
+        "warmup_steps": 5000,
+        "weight_decay": 1e-08,
+        "warmup_iters": 0,
+        "save_param_interval": 300,
+        "module_namelist": null,
+        "remove_ac_pep": false
+    },
+    "TEST_HYPER_PARAM": {
+        "Use multiple iteration": false
+    }
+}

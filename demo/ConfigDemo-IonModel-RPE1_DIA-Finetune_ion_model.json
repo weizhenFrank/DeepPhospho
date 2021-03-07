@@ -1,7 +1,7 @@
 {
     "WorkFolder": "Here",
     "ExpName": "RPE1_Finetune",
-    "InstanceName": "",
+    "InstanceName": "IonModelDemo-Finetune_with_RPE1_DIA",
     "TaskPurpose": "Train",
     "PretrainParam": "./PretrainParams/IonModel/best_model.pth",
     "Intensity_DATA_CFG": {
@@ -38,7 +38,7 @@
     },
     "TRAINING_HYPER_PARAM": {
         "GPU_INDEX": "0",
-        "EPOCH": 30,
+        "EPOCH": 1,
         "BATCH_SIZE": 128,
         "resume": false,
         "Bert_pretrain": false,
