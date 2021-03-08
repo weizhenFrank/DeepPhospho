@@ -76,9 +76,9 @@ IV. for peptide list file, the modified peptides in the following format are val
     # device
     parser.add_argument('-d', '--device', metavar='cpu|0|1|...', type=str, default='cpu',
                         help='Use which device. This can be [cpu] or any integer (0, 1, 2, ...) to use corresponded GPU')
-    # rt ensembl
-    parser.add_argument('-en', '--rt_ensembl', default=False, action='store_true',
-                        help='Use ensembl to improve RT prediction or not')
+    # rt ensemble
+    parser.add_argument('-en', '--rt_ensemble', default=False, action='store_true',
+                        help='Use ensemble to improve RT prediction or not')
     # merge library
     parser.add_argument('-m', '--merge', default=False, action='store_true',
                         help='''To merge all predicted data to one library or not (the individual ones will also be kept)''')
@@ -142,9 +142,9 @@ def parse_args(parser, time):
     device = inputs['device']
     arg_msgs.append(f'Set device to {device}')
 
-    rt_ensembl = inputs['rt_ensembl']
-    if rt_ensembl:
-        arg_msgs.append(f'Use ensembl RT model')
+    rt_ensemble = inputs['rt_ensemble']
+    if rt_ensemble:
+        arg_msgs.append(f'Use ensemble RT model')
 
     merge = inputs['merge']
     if merge:
@@ -156,7 +156,7 @@ def parse_args(parser, time):
         'TrainData': (train_file, train_file_type),
         'PredData': list(zip(pred_files, pred_files_type)),
         'Device': device,
-        'EnsemblRT': rt_ensembl,
+        'EnsembleRT': rt_ensemble,
         'Merge': merge
     }
 
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     TrainData = args['TrainData']
     PredData = args['PredData']
     Device = args['Device']
-    EnsemblRT = args['EnsemblRT']
+    EnsembleRT = args['EnsembleRT']
     Merge = args['Merge']
 
     logger = setup_logger('DeepPhosphoRunner', WorkDir, filename="RunnerLog.txt")
@@ -242,7 +242,7 @@ if __name__ == '__main__':
 
     logger.info('-' * 20)
     logger.info('Start training RT model')
-    if EnsemblRT:
+    if EnsembleRT:
         layer_nums = [4, 5, 6, 7, 8]
     else:
         layer_nums = [8]
