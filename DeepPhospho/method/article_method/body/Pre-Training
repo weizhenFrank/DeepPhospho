@@ -1,4 +1,0 @@
-
-To train a better model, we sequentially pre-train the models in four datasets called 
-HumanPhosDB~\cite{lawrence2016plug}, Jeff~\cite{liu2018vivo}, VeroE6~\cite{bouhaddou2020global}
-and R2P2~\cite{leutert2019r2}. We split those pre-training datasets into training and validation set, selecting the best model on the validation set. The model is initialized by 8the selected model before training on the next pre-training dataset until those four datasets are all trained on. There are three downstream datasets called U2OS-DIA~\cite{wang2020naguider}, RPE1-DIA~\cite{bekker2020rapid} and RPE1-DDA~\cite{bekker2020rapid}. For the three downstream datasets, we manually set the $min(RT)$ and $max(RT)$ equals -100 and 200, respectively. -100 and 200 cold cover all the RTs in the three datasets, and the following researcher could directly use our well-trained model and the fixed $min(RT)$ and $max(RT)$ to predict the unknown RTs of their interested peptides.

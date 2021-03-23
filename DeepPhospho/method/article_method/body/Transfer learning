@@ -7,4 +7,4 @@ Herein we use the square root of mean squared error (RMSE) as loss function.
 
 Similarly to the RT task, we also use those ion intensity in three of four pre-training dataset Jeff~\cite{liu2018vivo}, VeroE6~\cite{bouhaddou2020global} and R2P2~\cite{leutert2019r2}, and fine-tune the pre-trained model on the downstream dataset U2OS-DIA~\cite{wang2020naguider}, RPE1-DIA~\cite{bekker2020rapid} and RPE1-DDA~\cite{bekker2020rapid}. The summary of the datasets used in this work is shown in Table~\ref{table:Datasets}.
 We use mean squared
-error (MSE) as our loss function. For both RT and Ion intensity tasks, we use Adam optimizer~\cite{kingma2017adam}, and the learning rate is 1e-4, the learning rate decay at the milestone epochs during the training. We implement our models by the Python and Pytorch, and train the model on multiple GPUs. 
+error (MSE) as our loss function. For both RT and Ion intensity tasks, we use Adam optimizer~\cite{kingma2017adam}, and the learning rate is 1e-4, the learning rate decay at the milestone epochs during the training. We implement our models by the Python and Pytorch, and train the model on multiple GPUs.
