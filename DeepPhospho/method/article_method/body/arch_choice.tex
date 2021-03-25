@@ -1,9 +1,0 @@
-To illustrate our model design's efficacy, we compare our model architecture with removed LSTM module and removed transformer module. In further, we compare our model with the replacement of LSTM module with convolutional neural network (CNN) module.
-
-The CNN module is built like the ResNet34~\cite{he2015deep} except the kernel size of the first convolution layer changed to be 9, and the kernel size in residual block changed to be 7, and it is composed of 3 residual blocks.
-
-So that there are four models in the ablation study, that is DeepPhospho, LSTM, Transformer and CNN$+$Transformer. 
-
-We do the experiments both on ion intensity dataset and RT dataset. For ion intensity dataset, we use Jeff and R2P2\_DDA~\cite{leutert2019r2} dataset. For RT, we use HumanPhosDB~\cite{lawrence2016plug} dataset. We split the dataset into training : validation : test = 8 : 1 : 1, and we tune the hyper-parameter and select the best model in the validation set, reporting the results on the test set.
-The results are shown in supplementary materials. From the result, we could conclude that our model which is composed of LSTM module and Transformer module is better than any single component, and if we replace the LSTM module with CNN module, we could not obtain the better result.
-
