@@ -86,12 +86,13 @@ def main():
         use_holdout = False
 
     # Define task name as the specific identifier
-    resume = 'RESUME' if configs['TRAINING_HYPER_PARAM']['resume'] else ''
+    resume = '-RESUME' if configs['TRAINING_HYPER_PARAM']['resume'] else ''
     task_info = (
         f'{configs["RT_DATA_CFG"]["DataName"]}'
         f'-{configs["UsedModelCFG"]["model_name"]}'
         f'-{configs["ExpName"]}'
-        f'-{resume}'
+        f'-EncdNum{configs["UsedModelCFG"]["num_encd_layer"]}'
+        f'{resume}'
     )
     init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
 

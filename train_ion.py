@@ -88,13 +88,13 @@ def main():
 
     # Define task name as the specific identifier
     task_info = (
-        f'ion_inten-{configs["Intensity_DATA_CFG"]["DataName"]}'
+        f'IonInten-{configs["Intensity_DATA_CFG"]["DataName"]}'
         f'-{configs["UsedModelCFG"]["model_name"]}'
         f'-{configs["ExpName"]}'
-        f'-remove_ac_pep{configs["TRAINING_HYPER_PARAM"]["remove_ac_pep"]}'
-        f'-add_phos_principle{configs["TRAINING_HYPER_PARAM"]["add_phos_principle"]}'
-        f'-LossType{configs["TRAINING_HYPER_PARAM"]["loss_func"]}'
-        f'-use_holdout{use_holdout}'
+        f'-RemoveAcMod_{configs["TRAINING_HYPER_PARAM"]["remove_ac_pep"]}'
+        f'-AddPhosPrinciple_{configs["TRAINING_HYPER_PARAM"]["add_phos_principle"]}'
+        f'-LossType_{configs["TRAINING_HYPER_PARAM"]["loss_func"]}'
+        f'-UseHoldout_{use_holdout}'
     )
     init_time = datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S")
 
