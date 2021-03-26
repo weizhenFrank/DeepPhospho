@@ -407,7 +407,7 @@ def evaluation(model, device, logger, tf_writer_train, tf_writer_test,
             iteration = 0
             logger.info(termcolor.colored("performance on holdout set:", "yellow"))
             holdout_loss, pearson, \
-            delta_t95, hidden_norm = eval(model, loss_func_eval, holdout_dataloader, device=device, iteration=iteration)
+            delta_t95, hidden_norm = eval(model, loss_func_eval, holdout_dataloader, logger, device=device, iteration=iteration)
             tf_writer_holdout.write_data(iteration, pearson, 'eval_metric/pearson')
             tf_writer_holdout.write_data(iteration, delta_t95, 'eval_metric/delta_t95')
             tf_writer_holdout.write_data(iteration, holdout_loss, "loss")
