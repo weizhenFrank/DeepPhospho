@@ -5,7 +5,7 @@ For ion intensity prediction, to train a better model, we sequentially pre-train
 We split those pre-training datasets into training : validation set = 9 : 1, respectively. We tune the hyper-parameters and select the best model on the validation set. The model is initialized by the selected model before training on the next pre-training dataset until those three datasets are all trained on.
 We select the best model in the pre-traning phase, and fine-tune the model on the downstream datasets.
 
-We use mean squared error (MSE) as our loss function and Adam algorithm to optimize loss with learning rate 1e-3 for the first HumanPhosDB dataset, and 1e-4 for the other datasets. We decay the learning rate by 0.1 once the number of epoch reaches one of the milestones. And the milestones is manually selected by the learning curve during the training. 
+We use mean squared error (MSE) as our loss function and Adam~\cite{kingma2017adam} algorithm to optimize loss with learning rate 1e-3 for the first HumanPhosDB dataset, and 1e-4 for the other datasets. We decay the learning rate by 0.1 once the number of epoch reaches one of the milestones. And the milestones is manually selected by the learning curve during the training. 
 
 
 \subsection{RT}
