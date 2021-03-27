@@ -316,5 +316,5 @@ if WithLabel:
     fig, ax = plt.subplots(1, 1, figsize=(5, 5), dpi=300)
     # ipdb.set_trace()
     proteomics_utils.plots.rt_reg(Output['label'].tolist(), Output['pred'].tolist(), ax=ax,
-                     title=f'RT-{configs["data_name"]}-{configs["UsedModelCFG"]["model_name"]}',
+                     title=f'RT-{configs["RT_DATA_CFG"]["DataName"]}-{configs["UsedModelCFG"]["model_name"]}',
                      save=f'{output_dir}/Plot')
