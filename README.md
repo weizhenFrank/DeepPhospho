@@ -52,8 +52,7 @@
   ```
 
 ## <span id="down_pretain">Download pre-trained model parameters</span>
-
-
+* To perform fine-tuning on pre-trained model parameters, please download them [here](https://drive.google.com/drive/folders/1ETJEG-8lobVJWaYOBMnqUL1G5dUHRI2B) and stored in the folder PretrainParams
 
 ## <span id="use_gpu">Use GPU (optional)</span>
 

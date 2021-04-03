@@ -6,7 +6,7 @@
   * These two folders contain the files used for pre-trained param fine-tuning
   * The fine-tuned params were used to predict spectra and RT for different usages in the paper
   * Notice the files were the whole dataset here, and in practice, we first used 90% and the remained 10% were also used after they worked as the test data to avoid overfitting
-* For pre-training data, please [download here]().
+* For pre-training data, please [download here](https://drive.google.com/drive/folders/1ETJEG-8lobVJWaYOBMnqUL1G5dUHRI2B).
 * In the paper, we used three datasets to test the DeepPhospho
   * RPE1 DDA
   * RPE1 DIA
