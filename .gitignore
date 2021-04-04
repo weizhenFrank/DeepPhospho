@@ -12,21 +12,12 @@ demo/**/*.pkl
 PretrainParams/*
 !PretrainParams/README.md
 
-# Methods
-Method/latex/full_method.aux
-Method/latex/full_method.bbl
-Method/latex/full_method.blg
-Method/latex/full_method.brf
-Method/latex/full_method.log
-Method/latex/full_method.pdf
-Method/latex/full_method.synctex.gz
-
 # Other local files
-DeepPhospho_raw
+DeepPhospho_Raw
 result/
 Data/**/*.pkl
 
-# PyCharm
+# IDEA
 .idea
 
 # Byte-compiled / optimized / DLL files
@@ -85,19 +76,6 @@ ipython_config.py
 
 # pyenv
 .python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
 
 # Environments
 .env
