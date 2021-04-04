@@ -1,15 +1,13 @@
+import logging
+import operator
 import os
 import pickle
-import operator
-import logging
-
 from tqdm import tqdm
 
 import numpy as np
 import pandas as pd
 
 from deep_phospho.model_utils.utils_functions import match_frag, ion_types, get_index, get_pkl_path, intensity_load_check
-
 
 PADDING_CHAR = '#'
 ENDING_CHAR = '$'
@@ -84,6 +82,8 @@ GBSC = {
 }
 
 Scaled_GBSC = {k: v / 1000 for k, v in GBSC.items()}
+
+
 # "*" represents the Acetyl modification, "@" represents no
 
 
@@ -91,6 +91,7 @@ class Dictionary(object):
     """
     from the characters to the integer idx
     """
+
     def __init__(self):
         logger = logging.getLogger("IonIntensity")
 
@@ -152,9 +153,9 @@ class IonData(object):
                     pep_index_without_ac = self.X1[:, 0] != ac_token
                     total_sample = self.X1.shape[0]
                     no_ac_sample = np.sum(pep_index_without_ac)
-                    self.X1 = self.X1[pep_index_without_ac, ]
-                    self.X2 = self.X2[pep_index_without_ac, ]
-                    self.y = self.y[pep_index_without_ac, ]
+                    self.X1 = self.X1[pep_index_without_ac,]
+                    self.X2 = self.X2[pep_index_without_ac,]
+                    self.y = self.y[pep_index_without_ac,]
 
                     logger.info(f'Remove {total_sample - no_ac_sample} ac_pep from total {total_sample} peps ')
                 return
@@ -172,7 +173,7 @@ class IonData(object):
         else:
             pep_info = seq_data.columns.values
         if data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] is None:
-            count_max = lambda pep_list: max([len(aas.split(".")[0])-1 for aas in pep_list])
+            count_max = lambda pep_list: max([len(aas.split(".")[0]) - 1 for aas in pep_list])
             # here get the len of each peptide in input and minus one is as a result of ac modification
             self.MAX_SEQ_LEN = count_max(pep_info)
         else:
@@ -284,16 +285,15 @@ class IonData(object):
             pep_index_without_ac = self.X1[:, 0] != ac_token
             total_sample = self.X1.shape[0]
             no_ac_sample = np.sum(pep_index_without_ac)
-            self.X1 = self.X1[pep_index_without_ac, ]
-            self.X2 = self.X2[pep_index_without_ac, ]
-            self.y = self.y[pep_index_without_ac, ]
+            self.X1 = self.X1[pep_index_without_ac,]
+            self.X2 = self.X2[pep_index_without_ac,]
+            self.y = self.y[pep_index_without_ac,]
             logger.info(f'Remove {total_sample - no_ac_sample} ac_pep from total {total_sample} peps ')
 
         logger.info(f"Reading Files...Done! {path}")
 
 
 class RTdata(object):
-
     """
     Tokenize the sequences
     """
@@ -319,7 +319,7 @@ class RTdata(object):
 
         if data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] is None:
             # here get the len of each peptide in input and minus one is as a result of ac modification
-            self.MAX_SEQ_LEN = max([len(aas)-1 for aas in seq_data[SEQUENCE_FIELD_NAME]])
+            self.MAX_SEQ_LEN = max([len(aas) - 1 for aas in seq_data[SEQUENCE_FIELD_NAME]])
         else:
             self.MAX_SEQ_LEN = data_cfg['DATA_PROCESS_CFG']['MAX_SEQ_LEN']
         if RT_FIELD_NAME not in seq_data.columns.values:
@@ -389,4 +389,3 @@ class RTdata(object):
             with open(path + '.pkl', 'wb') as f:
                 pickle.dump({'X1': self.X1, 'y': self.y}, f)
         logger.info(f"Reading Files...Done! {path}")
-

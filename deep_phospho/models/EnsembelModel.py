@@ -1,12 +1,11 @@
 import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import LayerNorm
 
-from .ion_model import PositionalEncoding
 from .auxiliary_loss_transformer import TransformerEncoderLayer, TransformerEncoder
+from .ion_model import PositionalEncoding
 
 
 class LSTMTransformer(nn.Module):
@@ -83,7 +82,7 @@ class LSTMTransformer(nn.Module):
             self.output_linear = nn.Sequential(
                 nn.LeakyReLU(),
                 nn.Linear(self.outdim, ion_len),
-                )
+            )
             self.weight_layer = nn.Linear(self.outdim, 1)
             self.softmax = nn.Softmax(dim=1)
         else:
@@ -267,7 +266,7 @@ class Residual(nn.Module):
                           kernel_size=block_kernel_size,
                           dilation=dilation,  # add dilation
                           stride=1,
-                          padding=dilation * int(block_kernel_size/2)),
+                          padding=dilation * int(block_kernel_size / 2)),
                 nn.BatchNorm1d(hidden_dim),
                 nn.LeakyReLU(),
                 # nn.Dropout(),  # add dropout trying to prevent overfitting
@@ -282,7 +281,6 @@ class Residual(nn.Module):
                           padding=dilation * int(block_kernel_size / 2)),
                 nn.BatchNorm1d(hidden_dim),
 
-
             )
         self.conv3 = nn.Conv1d(in_channels=input_dim,
                                out_channels=hidden_dim,
@@ -292,7 +290,6 @@ class Residual(nn.Module):
         self.add_dropout = add_dropout
 
     def forward(self, x):
-
         y = F.dropout(self.conv1(x), p=self.add_dropout, training=self.training) if self.add_dropout else self.conv1(x)
         # add dropout trying to prevent overfit
         y = self.conv2(y)
@@ -305,9 +302,9 @@ class Residual(nn.Module):
 
 class CNNTransformer(nn.Module):
 
-    def __init__(self, ntoken, RT_mode, pdeep2mode=False, two_stage=False,  model_name="CNNTransformer",
+    def __init__(self, ntoken, RT_mode, pdeep2mode=False, two_stage=False, model_name="CNNTransformer",
                  embed_dim=256, num_block=1, conv1_kernel_size=7, conv2_kernel_size=3, residual_dropout=0.5, dilation=1,
-                 transformer_hidden_dim=512, num_attention_head=1, attention_dropout=0.1, num_encd_layer=2,  dropout=0.1):
+                 transformer_hidden_dim=512, num_attention_head=1, attention_dropout=0.1, num_encd_layer=2, dropout=0.1):
 
         super(CNNTransformer, self).__init__()
         self.RT_mode = RT_mode
@@ -363,7 +360,7 @@ class CNNTransformer(nn.Module):
             self.output_linear = nn.Sequential(
                 nn.LeakyReLU(),
                 nn.Linear(self.outdim, ion_len),
-                )
+            )
             self.weight_layer = nn.Linear(self.outdim, 1)
             self.softmax = nn.Softmax(dim=1)
         else:
@@ -413,7 +410,6 @@ class CNNTransformer(nn.Module):
                 return output, cls_out
             else:
                 if self.RT_mode:
-
                     raw_weight = self.weight_layer(layernormed_output)
                     weight = self.softmax(raw_weight)
                     trans = layernormed_output.transpose(1, 2)
@@ -593,7 +589,7 @@ class CNN_LSTM_Transformer(nn.Module):
 
 
 class LSTMTransformerEnsemble(nn.Module):
-    def __init__(self, models: list, RT_mode: bool = False,  two_stage: bool = False, model_name="LSTMTransformerEnsemble"):
+    def __init__(self, models: list, RT_mode: bool = False, two_stage: bool = False, model_name="LSTMTransformerEnsemble"):
         super(LSTMTransformerEnsemble, self).__init__()
         self.models = nn.ModuleList(models)
         self.RT_mode = RT_mode
@@ -627,4 +623,3 @@ class LSTMTransformerEnsemble(nn.Module):
             out = torch.cat(out, dim=-1).mean(dim=-1)
             out_cls = torch.cat(out_cls, dim=-1).mean(dim=-1)
             return out, out_cls
-

@@ -157,11 +157,10 @@ def collate_fn(batch, configs):
             X2 = np.stack(batch[1])
             Y = np.stack(batch[2])
 
-        # Y = torch.from_numpy(Y).float()
-        # ipdb.set_trace()
+            # Y = torch.from_numpy(Y).float()
+            # ipdb.set_trace()
             return (torch.from_numpy(X1).long(), torch.from_numpy(X2).float()), torch.from_numpy(Y).float()
         else:
             X1 = np.stack(batch[0])
             Y = np.stack(batch[1])
             return torch.from_numpy(X1).long(), torch.from_numpy(Y).float()
-

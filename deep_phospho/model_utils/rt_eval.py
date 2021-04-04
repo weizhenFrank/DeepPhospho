@@ -2,7 +2,6 @@ from tqdm import tqdm
 import termcolor
 
 import numpy as np
-
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -177,6 +176,7 @@ def eval(model, loss_func, test_dataloader: DataLoader, logger, device, iteratio
     def re_norm(arr):
         arr = arr * (rt_data.MAX_RT - rt_data.MIN_RT) + rt_data.MIN_RT
         return arr
+
     # ipdb.set_trace()
     delta_t95_eval_unnormed = Delta_t95(re_norm(label_y), re_norm(pred_ys))
 

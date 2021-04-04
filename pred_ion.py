@@ -1,31 +1,26 @@
-import os
-import sys
-import random
-import datetime
 import copy
+import datetime
 import json
+import os
+import random
 from functools import partial
-from tqdm import tqdm
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 import torch
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
-from deep_phospho.models.ion_model import StackedLSTM  # Use the LSTMTransformer in EnsembleModel.py
-from deep_phospho.models.EnsembelModel import LSTMTransformer
-
-from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
 from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
-
+from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
+from deep_phospho.model_utils.ion_eval import SA, Pearson
 from deep_phospho.model_utils.logger import setup_logger, save_config
 from deep_phospho.model_utils.param_config_load import load_param_from_file, load_config_as_module, load_config_from_json
-from deep_phospho.model_utils.ion_eval import SA, Pearson
-from deep_phospho.model_utils.utils_functions import show_params_status, give_name_ion, copy_files
 from deep_phospho.model_utils.script_arg_parser import choose_config_file, overwrite_config_with_args
-
+from deep_phospho.model_utils.utils_functions import show_params_status, give_name_ion, copy_files
+from deep_phospho.models.EnsembelModel import LSTMTransformer
+from deep_phospho.models.ion_model import StackedLSTM  # Use the LSTMTransformer in EnsembleModel.py
 
 # ---------------- User defined space Start --------------------
 
@@ -49,11 +44,13 @@ if config_path is not None:
 else:
     try:
         import config_ion_model as config_module
+
         config_path = os.path.join(this_script_dir, 'config_ion_model.py')
         config_msg = ('Config file is not in arguments and not defined in script.\n'
                       f'Use config_ion_model.py in DeepPhospho main folder as config file: {config_path}')
     except ModuleNotFoundError:
         from deep_phospho.configs import ion_inten_config as config_module
+
         config_path = os.path.join(this_script_dir, 'deep_phospho', 'configs', 'ion_inten_config.py')
         config_msg = ('Config file is not in arguments and not defined in script.\n'
                       f'Use default config file ion_inten_config.py in DeepPhospho config module as config file: {config_path}')
@@ -63,13 +60,11 @@ else:
 
 configs, arg_msg = overwrite_config_with_args(args=additional_args, config=configs)
 
-
 torch.manual_seed(SEED)
 random.seed(SEED)
 np.random.seed(SEED)
 torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
-
 
 # Get data path here for ease of use
 pred_input_file = configs['Intensity_DATA_CFG']['PredInputPATH']
@@ -126,7 +121,6 @@ else:
     device = torch.device('cpu')
     logger.info(f'Cuda not available. Use CPU')
     use_cuda = False
-
 
 # Init dictionary
 dictionary = Dictionary()
@@ -254,7 +248,6 @@ with torch.no_grad():
         charges.append(pep_charge.detach().cpu())
         pep_len.append(((seq_x != 0).sum(axis=-1) - 2).detach().cpu())
 
-
 pred_matrix_all = torch.cat(pred_matrix).numpy()
 y_matrix_all = torch.cat(y_matrix).numpy()
 
@@ -344,9 +337,9 @@ if WithLabel:
 
     quantiles_pcc = np.quantile(pearson_eval, [0.25, 0.5, 0.75])
     Statistics = [np.sum(pearson_eval > i) / len(pearson_eval) for i in [0.7, 0.8, 0.9]]
-    ax1.text(0, 0.7,  f'>PCC Percentage\n>0.70 {Statistics[0]:.2%}\n>0.80 {Statistics[1]:.2%} \n>0.90 {Statistics[2]:.2%}\n'
-                      f'PCC Quantile\n25% : {quantiles_pcc[0]:.3}\n50% : {quantiles_pcc[1]:.3}\n'
-                      f'75% : {quantiles_pcc[2]:.3}\nN={len(pearson_eval)}\nAll Non-Ac Peptide={y_matrix_all.shape[0]}', fontdict=font, transform=ax1.transAxes)
+    ax1.text(0, 0.7, f'>PCC Percentage\n>0.70 {Statistics[0]:.2%}\n>0.80 {Statistics[1]:.2%} \n>0.90 {Statistics[2]:.2%}\n'
+                     f'PCC Quantile\n25% : {quantiles_pcc[0]:.3}\n50% : {quantiles_pcc[1]:.3}\n'
+                     f'75% : {quantiles_pcc[2]:.3}\nN={len(pearson_eval)}\nAll Non-Ac Peptide={y_matrix_all.shape[0]}', fontdict=font, transform=ax1.transAxes)
 
     ax1.grid()
     fig.set_facecolor((1, 1, 1))
@@ -361,9 +354,9 @@ if WithLabel:
 
     quantiles_sa = np.quantile(short_angle, [0.25, 0.5, 0.75])
     Statistics = [np.sum(short_angle > i) / len(short_angle) for i in [0.7, 0.8, 0.9]]
-    ax2.text(0, 0.7,  f'>SA Percentage\n>0.70 {Statistics[0]:.2%}\n>0.80 {Statistics[1]:.2%} \n>0.90 {Statistics[2]:.2%}\n'
-                      f'SA Quantile\n25% : {quantiles_sa[0]:.3}\n50% : {quantiles_sa[1]:.3}\n'
-                      f'75% : {quantiles_sa[2]:.3}\nN={len(short_angle)}', fontdict=font, transform=ax2.transAxes)
+    ax2.text(0, 0.7, f'>SA Percentage\n>0.70 {Statistics[0]:.2%}\n>0.80 {Statistics[1]:.2%} \n>0.90 {Statistics[2]:.2%}\n'
+                     f'SA Quantile\n25% : {quantiles_sa[0]:.3}\n50% : {quantiles_sa[1]:.3}\n'
+                     f'75% : {quantiles_sa[2]:.3}\nN={len(short_angle)}', fontdict=font, transform=ax2.transAxes)
     ax2.grid()
     ax2.set_title(f"SA distribution")
     fig.suptitle(f'{configs["Intensity_DATA_CFG"]["DataName"]} test result', fontsize=20)

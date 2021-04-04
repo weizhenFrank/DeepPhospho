@@ -1,31 +1,27 @@
-import os
-import sys
-import time
-import datetime
 import copy
+import datetime
 import logging
+import os
 import random
+import time
 from functools import partial
 
 import dill
-import numpy as np
 import termcolor
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
 from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
-
-from deep_phospho.models.EnsembelModel import LSTMTransformer
-
-from deep_phospho.model_utils.rt_eval import eval
+from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
 from deep_phospho.model_utils.logger import MetricLogger, setup_logger, save_config, TFBoardWriter
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
-from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status
 from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config_as_module, load_config_from_json
+from deep_phospho.model_utils.rt_eval import eval
 from deep_phospho.model_utils.script_arg_parser import choose_config_file, overwrite_config_with_args
-
+from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status
+from deep_phospho.models.EnsembelModel import LSTMTransformer
 
 # ---------------- User defined space Start --------------------
 

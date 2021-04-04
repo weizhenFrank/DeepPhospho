@@ -1,32 +1,27 @@
-import os
-import sys
-import time
-import datetime
 import copy
+import datetime
 import logging
+import os
 import random
+import time
 from functools import partial
 
 import ipdb
 import termcolor
 
 import numpy as np
-
 import torch
 from torch.utils.data import DataLoader
 
-from deep_phospho.models.EnsembelModel import LSTMTransformer
-
-from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
 from deep_phospho.model_dataset.dataset import IonDataset, collate_fn, RandomMaskingDataset
-
+from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
 from deep_phospho.model_utils.ion_eval import eval
 from deep_phospho.model_utils.logger import MetricLogger, setup_logger, TFBoardWriter, save_config
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
-from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status
 from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config_as_module, load_config_from_json
 from deep_phospho.model_utils.script_arg_parser import choose_config_file, overwrite_config_with_args
-
+from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status
+from deep_phospho.models.EnsembelModel import LSTMTransformer
 
 # ---------------- User defined space Start --------------------
 
@@ -38,7 +33,6 @@ Config file can be defined as
 """
 config_path = r''
 SEED = 666
-
 
 # ---------------- User defined space End --------------------
 
@@ -52,11 +46,13 @@ if config_path is not None:
 else:
     try:
         import config_ion_model as config_module
+
         config_path = os.path.join(this_script_dir, 'config_ion_model.py')
         config_msg = ('Config file is not in arguments and not defined in script.\n'
                       f'Use config_ion_model.py in DeepPhospho main folder as config file: {config_path}')
     except ModuleNotFoundError:
         from deep_phospho.configs import ion_inten_config as config_module
+
         config_path = os.path.join(this_script_dir, 'deep_phospho', 'configs', 'ion_inten_config.py')
         config_msg = ('Config file is not in arguments and not defined in script.\n'
                       f'Use default config file ion_inten_config.py in DeepPhospho config module as config file: {config_path}')
@@ -65,7 +61,6 @@ else:
         config_dir = this_script_dir
 
 configs, arg_msg = overwrite_config_with_args(args=additional_args, config=configs)
-
 
 logging.basicConfig(level=logging.INFO)
 torch.manual_seed(SEED)
@@ -76,7 +71,6 @@ torch.autograd.set_detect_anomaly(True)
 
 
 def main():
-
     # Get data path here for ease of use
     train_file = configs['Intensity_DATA_CFG']['TrainPATH']
     test_file = configs['Intensity_DATA_CFG']['TestPATH']

@@ -1,8 +1,8 @@
-import os
 import argparse
+import os
 
-from deep_phospho.model_utils.logger import setup_logger
 from deep_phospho import proteomics_utils as prot_utils
+from deep_phospho.model_utils.logger import setup_logger
 
 HelpMSG = '''
 This script have two usages and both of them build a ready to use spectral library with Spectronaut format

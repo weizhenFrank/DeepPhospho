@@ -1,14 +1,14 @@
-import os
-from os.path import join as join_path
-import sys
+import argparse
 import copy
 import datetime
-import argparse
 import json
+import os
+import sys
+from os.path import join as join_path
 
+from deep_phospho import proteomics_utils as prot_utils
 from deep_phospho.model_utils.logger import setup_logger
 from deep_phospho.model_utils.param_config_load import load_config_from_json
-from deep_phospho import proteomics_utils as prot_utils
 from deep_phospho.proteomics_utils import rapid_kit as rk
 
 

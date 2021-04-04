@@ -1,32 +1,27 @@
-import os
-import sys
-import datetime
-import random
 import copy
+import datetime
+import os
+import random
 from functools import partial
-from tqdm import tqdm
+
 import termcolor
+from tqdm import tqdm
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-
 import torch
+from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader
 
-from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
+from deep_phospho import proteomics_utils
 from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
-
-from deep_phospho.models.EnsembelModel import LSTMTransformer, LSTMTransformerEnsemble
-
-from deep_phospho.model_utils.param_config_load import load_param_from_file, load_average_model, load_config_as_module, load_config_from_json
+from deep_phospho.model_dataset.preprocess_input_data import RTdata, Dictionary
 from deep_phospho.model_utils.logger import setup_logger, save_config
 from deep_phospho.model_utils.loss_func import RMSELoss
-from deep_phospho.model_utils.utils_functions import Delta_t95, Pearson, copy_files
+from deep_phospho.model_utils.param_config_load import load_param_from_file, load_average_model, load_config_as_module, load_config_from_json
 from deep_phospho.model_utils.script_arg_parser import choose_config_file, overwrite_config_with_args
-
-from deep_phospho import proteomics_utils
-
+from deep_phospho.model_utils.utils_functions import Delta_t95, Pearson, copy_files
+from deep_phospho.models.EnsembelModel import LSTMTransformer, LSTMTransformerEnsemble
 
 # ---------------- User defined space Start --------------------
 
@@ -71,7 +66,6 @@ random.seed(SEED)
 np.random.seed(SEED)
 torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
-
 
 # Get data path here for ease of use
 pred_input_file = configs['RT_DATA_CFG']['PredInputPATH']
@@ -127,7 +121,6 @@ else:
     device = torch.device('cpu')
     logger.info(f'Cuda not available. Use CPU')
     use_cuda = False
-
 
 if configs['TRAINING_HYPER_PARAM']['loss_func'] == "MSE":
     loss_func = torch.nn.MSELoss()
@@ -213,7 +206,6 @@ copy_files(os.path.join(this_script_dir, 'deep_phospho', 'models', 'auxiliary_lo
 copy_files(os.path.join(this_script_dir, 'pred_rt.py'), output_dir)
 copy_files(config_path, output_dir, anno='-copy')
 
-
 model = model.to(device)
 
 model.eval()
@@ -255,6 +247,7 @@ with torch.no_grad():
     seq_xs = torch.cat(seq_xs).numpy()
 
 peptides = list(map(idxtoaa, seq_xs))
+
 
 # torch.onnx.export(model,  # model being run
 #                   inputs.to(device),  # model input (or a tuple for multiple inputs)
@@ -316,5 +309,5 @@ if WithLabel:
     fig, ax = plt.subplots(1, 1, figsize=(5, 5), dpi=300)
     # ipdb.set_trace()
     proteomics_utils.plots.rt_reg(Output['label'].tolist(), Output['pred'].tolist(), ax=ax,
-                     title=f'RT-{configs["RT_DATA_CFG"]["DataName"]}-{configs["UsedModelCFG"]["model_name"]}',
-                     save=f'{output_dir}/Plot')
+                                  title=f'RT-{configs["RT_DATA_CFG"]["DataName"]}-{configs["UsedModelCFG"]["model_name"]}',
+                                  save=f'{output_dir}/Plot')
