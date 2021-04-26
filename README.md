@@ -54,6 +54,16 @@
 
 ## <span id="down_pretain">Download pre-trained model parameters</span>
 * To perform fine-tuning on pre-trained model parameters, please download them [here](https://drive.google.com/drive/folders/1ETJEG-8lobVJWaYOBMnqUL1G5dUHRI2B) and stored in the folder PretrainParams
+* We recommand to arrange the downloaded pre-trained model parameters as following structure to use our pre-defined configs more conveniently
+* PretrainParams
+  * IonModel
+    * best_model.pth
+  * RTModel
+    * 4.pth
+    * 5.pth
+    * 6.pth
+    * 7.pth
+    * 8.pth
 
 ## <span id="use_gpu">Use GPU (optional)</span>
 
