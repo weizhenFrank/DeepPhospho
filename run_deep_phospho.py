@@ -214,7 +214,7 @@ if __name__ == '__main__':
     ion_train_config['Intensity_DATA_CFG']['TestPATH'] = train_data_path['IonVal']
     ion_train_config['Intensity_DATA_CFG']['HoldoutPATH'] = ''
     ion_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
-    ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 1
+    ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 30
 
     logger.info(f'Loading RT model config')
     rt_train_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_train.json'))
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     rt_train_config['RT_DATA_CFG']['TrainPATH'] = train_data_path['RTTrain']
     rt_train_config['RT_DATA_CFG']['TestPATH'] = train_data_path['RTVal']
     rt_train_config['RT_DATA_CFG']['HoldoutPATH'] = ''
-    rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 1
+    rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 30
     rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
 
     logger.info('-' * 20)
