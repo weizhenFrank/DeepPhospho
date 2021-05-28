@@ -6,6 +6,7 @@ demo/*
 !demo/ConfigDemo*
 !demo/IonInput.txt
 !demo/RTInput.txt
+!demo/DataDemo-DeepPhosphoRunner
 demo/**/*.pkl
 
 # Pre-trained params

@@ -109,6 +109,7 @@ logger.info(save_config(configs, output_dir))
 if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX'].lower() == 'cpu':
     device = torch.device('cpu')
     logger.info(f'CPU is defined as the device in config')
+    use_cuda = False
 elif torch.cuda.is_available():
     if configs["TRAINING_HYPER_PARAM"]['GPU_INDEX']:
         device = torch.device(f'cuda:{configs["TRAINING_HYPER_PARAM"]["GPU_INDEX"]}')

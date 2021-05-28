@@ -76,6 +76,9 @@ IV. for peptide list file, the modified peptides in the following format are val
     # device
     parser.add_argument('-d', '--device', metavar='cpu|0|1|...', type=str, default='cpu',
                         help='Use which device. This can be [cpu] or any integer (0, 1, 2, ...) to use corresponded GPU')
+    # epoch
+    parser.add_argument('-e', '--epoch', metavar='int', type=int, default=30,
+                        help='Train how much epochs. Default is 30')
     # rt ensemble
     parser.add_argument('-en', '--rt_ensemble', default=False, action='store_true',
                         help='Use ensemble to improve RT prediction or not')
@@ -142,6 +145,9 @@ def parse_args(parser, time):
     device = inputs['device']
     arg_msgs.append(f'Set device to {device}')
 
+    epoch = inputs['epoch']
+    arg_msgs.append(f'Set epoch to {epoch}')
+
     rt_ensemble = inputs['rt_ensemble']
     if rt_ensemble:
         arg_msgs.append(f'Use ensemble RT model')
@@ -156,6 +162,7 @@ def parse_args(parser, time):
         'TrainData': (train_file, train_file_type),
         'PredData': list(zip(pred_files, pred_files_type)),
         'Device': device,
+        'Epoch': epoch,
         'EnsembleRT': rt_ensemble,
         'Merge': merge
     }
@@ -172,6 +179,7 @@ if __name__ == '__main__':
     TrainData = args['TrainData']
     PredData = args['PredData']
     Device = args['Device']
+    Epoch = args['Epoch']
     EnsembleRT = args['EnsembleRT']
     Merge = args['Merge']
 
@@ -214,7 +222,7 @@ if __name__ == '__main__':
     ion_train_config['Intensity_DATA_CFG']['TestPATH'] = train_data_path['IonVal']
     ion_train_config['Intensity_DATA_CFG']['HoldoutPATH'] = ''
     ion_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
-    ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 1
+    ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = Epoch
 
     logger.info(f'Loading RT model config')
     rt_train_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_train.json'))
@@ -222,7 +230,7 @@ if __name__ == '__main__':
     rt_train_config['RT_DATA_CFG']['TrainPATH'] = train_data_path['RTTrain']
     rt_train_config['RT_DATA_CFG']['TestPATH'] = train_data_path['RTVal']
     rt_train_config['RT_DATA_CFG']['HoldoutPATH'] = ''
-    rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = 1
+    rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = Epoch
     rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
 
     logger.info('-' * 20)
