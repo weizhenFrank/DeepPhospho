@@ -16,7 +16,7 @@ from deep_phospho.model_dataset.dataset import IonDataset, collate_fn
 from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
 from deep_phospho.model_utils.ion_eval import SA, Pearson
 from deep_phospho.model_utils.logger import setup_logger, save_config
-from deep_phospho.model_utils.param_config_load import load_param_from_file, load_config_as_module, load_config_from_json
+from deep_phospho.model_utils.param_config_load import load_param_from_file, load_config_from_module, load_config_from_json
 from deep_phospho.model_utils.script_arg_parser import choose_config_file, overwrite_config_with_args
 from deep_phospho.model_utils.utils_functions import show_params_status, give_name_ion, copy_files
 from deep_phospho.models.EnsembelModel import LSTMTransformer
@@ -55,7 +55,7 @@ else:
         config_msg = ('Config file is not in arguments and not defined in script.\n'
                       f'Use default config file ion_inten_config.py in DeepPhospho config module as config file: {config_path}')
     finally:
-        configs = load_config_as_module(config_module)
+        configs = load_config_from_module(config_module)
         config_dir = this_script_dir
 
 configs, arg_msg = overwrite_config_with_args(args=additional_args, config=configs)
@@ -132,7 +132,7 @@ Iontest = IonData(configs, pred_input_file, dictionary=dictionary)
 test_dataset = IonDataset(Iontest, configs)
 test_dataloader = DataLoader(dataset=test_dataset,
                              shuffle=False,
-                             batch_size=64 * 8 * 3,
+                             batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
                              num_workers=0,
                              collate_fn=partial(collate_fn, configs=configs))
 

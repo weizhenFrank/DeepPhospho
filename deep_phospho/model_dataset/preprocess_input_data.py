@@ -166,7 +166,7 @@ class IonData(object):
             no_title = True
             # the expected data format: rows and columns are ion types and precursors, correspondingly
         else:
-            seq_data = pd.read_csv(path)
+            seq_data = pd.read_csv(path, sep='\t')
             no_title = False
         if configs['TaskPurpose'].lower() == 'predict' and not no_title:
             pep_info = seq_data[data_cfg['SEQUENCE_FIELD_NAME']]

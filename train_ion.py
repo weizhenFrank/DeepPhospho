@@ -18,7 +18,7 @@ from deep_phospho.model_dataset.preprocess_input_data import IonData, Dictionary
 from deep_phospho.model_utils.ion_eval import eval
 from deep_phospho.model_utils.logger import MetricLogger, setup_logger, TFBoardWriter, save_config
 from deep_phospho.model_utils.lr_scheduler import make_lr_scheduler
-from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config_as_module, load_config_from_json
+from deep_phospho.model_utils.param_config_load import save_checkpoint, load_param_from_file, load_config_from_module, load_config_from_json
 from deep_phospho.model_utils.script_arg_parser import choose_config_file, overwrite_config_with_args
 from deep_phospho.model_utils.utils_functions import copy_files, get_loss_func, show_params_status
 from deep_phospho.models.EnsembelModel import LSTMTransformer
@@ -57,7 +57,7 @@ else:
         config_msg = ('Config file is not in arguments and not defined in script.\n'
                       f'Use default config file ion_inten_config.py in DeepPhospho config module as config file: {config_path}')
     finally:
-        configs = load_config_as_module(config_module)
+        configs = load_config_from_module(config_module)
         config_dir = this_script_dir
 
 configs, arg_msg = overwrite_config_with_args(args=additional_args, config=configs)

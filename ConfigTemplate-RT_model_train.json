@@ -40,7 +40,7 @@
     "TRAINING_HYPER_PARAM": {
         "GPU_INDEX": "0",
         "EPOCH": 30,
-        "BATCH_SIZE": 64,
+        "BATCH_SIZE": 128,
         "loss_func": "RMSE",
         "LR_STEPS": [
             10000,

@@ -23,7 +23,7 @@ def load_config(config_path):
     return cfg['cfg']
 
 
-def load_config_as_module(config):
+def load_config_from_module(config):
     return {k: v for k, v in config.__dict__.items() if not k.startswith('__')}
 
 

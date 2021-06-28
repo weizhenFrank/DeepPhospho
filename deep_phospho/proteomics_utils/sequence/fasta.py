@@ -11,27 +11,6 @@ class FastaWriter(object):
     pass
 
 
-def ktx_to_dict(input_file, keystarter='<'):
-    """ parsing keyed text to a python dictionary. """
-    answer = dict()
-
-    with open(input_file, 'r+', encoding='utf-8') as f:
-        lines = f.readlines()
-
-    k, val = '', ''
-    for line in lines:
-        if line.startswith(keystarter):
-            k = line.replace(keystarter, '').strip()
-            val = ''
-        else:
-            val += line
-
-        if k:
-            answer.update({k: val.strip()})
-
-    return answer
-
-
 class FastaParser(object):
     """
     TODO 传入path，或content，或handle，增加skiprow和commend ident
