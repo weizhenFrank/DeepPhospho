@@ -9,6 +9,9 @@ demo/*
 !demo/DataDemo-DeepPhosphoRunner
 demo/**/*.pkl
 
+# Test data
+test/TestPipeline*
+
 # Pre-trained params
 PretrainParams/*
 !PretrainParams/README.md
@@ -19,8 +22,9 @@ DeepPhospho_Raw
 result/
 Data/**/*.pkl
 
-# IDEA
+# IDE
 .idea
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
