@@ -107,7 +107,11 @@ If the input files have different formats, the same number of -pt is needed''')
     # rt ensemble
     parser.add_argument('-en', '--rt_ensemble', default=False, action='store_true',
                         help='Use ensemble to improve RT prediction or not')
+    # pre-trained models
+    # TODO pre-train
+
     # pre-defined models
+    # TODO differetiate no fine-tuning with pre-train
     parser.add_argument('-ion_model', '--exist_ion_model', metavar='path', type=str, default=None,
                         help='Use existing ion model parameters instead of training a new one. '
                              'When this argument is passed, ion model fine-tuning step will be skipped')
