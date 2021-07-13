@@ -218,7 +218,7 @@ class DeepPhosphoUIFrame(wx.Frame):
 
         merge_lib_button = wx.Button(self._main_panel, -1, 'Merge library')
         merge_lib_button.SetFont(self._font_static_text)
-        # merge_lib_button.Bind(wx.EVT_BUTTON, search_func)  # TODO
+        merge_lib_button.Bind(wx.EVT_BUTTON, self._event_open_tool_merge_lib)  # TODO
         grid_sizer.Add(merge_lib_button, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
@@ -894,9 +894,10 @@ class MergeLibraryFrame(wx.Frame):
         add_row_button.Bind(wx.EVT_BUTTON, self._event_add_row)
         grid_sizer.Add(add_row_button, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        input_lib_row_boxsizer = self._init_one_input_row()
-        self._input_library_num += 1
-        grid_sizer.Add(input_lib_row_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        for _ in range(2):
+            input_lib_row_boxsizer = self._init_one_input_row()
+            self._input_library_num += 1
+            grid_sizer.Add(input_lib_row_boxsizer, pos=(self._input_library_num + 1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
         return static_box_sizer, grid_sizer
@@ -927,8 +928,8 @@ class MergeLibraryFrame(wx.Frame):
 
     def _event_add_row(self, event):
         pred_row_boxsizer = self._init_one_input_row()
-        self.input_library_gridsizer.Add(pred_row_boxsizer, pos=(2 + self._input_library_num, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         self._input_library_num += 1
+        self.input_library_gridsizer.Add(pred_row_boxsizer, pos=(self._input_library_num + 1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         self.SetClientSize(self._main_panel.GetBestSize())
         self.boxsizer_main.Layout()
 
