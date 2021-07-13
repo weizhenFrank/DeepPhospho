@@ -340,7 +340,7 @@ class RTdata(object):
         self.N_time_step = self.MAX_SEQ_LEN + 2  # ending and ac tokens
         self.N_aa = len(dictionary)
         if configs['TRAINING_HYPER_PARAM']['DEBUG']:
-            data_size = 50000
+            data_size = 50
         self.scale_by_zero_one_on = data_cfg['SCALE_BY_ZERO_ONE']
 
         # load from the cache

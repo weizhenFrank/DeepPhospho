@@ -1,16 +1,12 @@
 import argparse
 import copy
 import datetime
-import json
 import os
-import sys
+import time
 from os.path import join as join_path
-import torch
 
-from deep_phospho import proteomics_utils as prot_utils
-from deep_phospho.model_utils.logger import setup_logger
-from deep_phospho.model_utils.param_config_load import load_config_from_json
 from deep_phospho.proteomics_utils import rapid_kit as rk
+from deep_phospho.train_pred_utils.runner import DeepPhosphoRunner
 
 HelpMSG = '''
 This script integrates all functions of DeepPhospho in one.
@@ -185,15 +181,15 @@ def parse_args(parser, time):
     # Check passed ion and RT models are existed if train file is not provided
     if train_file is None:
         if existed_ion_model is None:
-            arg_msgs.append('No training data is passed and no existed ion model. '
+            arg_msgs.append('ERROR: No training data is passed and no existed ion model. '
                             'Use -tt and -tf to define training data and format or use -ion_model to define an existed ion model')
             exit_in_preprocess_step(arg_msgs)
         elif any([_ is None for _ in existed_rt_model.values()]) and rt_ensemble:
-            arg_msgs.append('No training data is passed and not all 5 rt models existed for rt ensemble. '
+            arg_msgs.append('ERROR: No training data is passed and not all 5 rt models existed for rt ensemble. '
                             'May not use -en if only one rt model is expected')
             exit_in_preprocess_step(arg_msgs)
         elif existed_rt_model[8] is None and (not rt_ensemble):
-            arg_msgs.append('No training data is passed and no existed rt model. '
+            arg_msgs.append('ERROR: No training data is passed and no existed rt model. '
                             'Use -tt and -tf to define training data and format or use -rt_model_[45678] to define an existed ion model')
             exit_in_preprocess_step(arg_msgs)
         else:
@@ -211,9 +207,9 @@ def parse_args(parser, time):
     # When train file is provided, the check of existed ion and RT models will be delayed to next check point
     else:
         if not os.path.exists(train_file):
-            raise FileNotFoundError(f'Train file not found - {train_file}')
+            raise FileNotFoundError(f'ERROR: Train file not found - {train_file}')
         if train_file_type is None or train_file_type.lower() not in ['snlib', 'mq1.5', 'mq1.6']:
-            raise ValueError(f'Train file type should be one of ["SNLib", "MQ1.5", "MQ1.6"], now {train_file_type}')
+            raise ValueError(f'ERROR: Train file type should be one of ["SNLib", "MQ1.5", "MQ1.6"], now {train_file_type}')
         arg_msgs.append(f'Train file with {train_file_type} format: {train_file}')
 
     # Check if existed ion model file is existed
@@ -222,7 +218,7 @@ def parse_args(parser, time):
             arg_msgs.append(f'Use existed ion model: {existed_ion_model}')
             skip_ion_finetune = True
         else:
-            arg_msgs.append(f'Existed ion model is passed but file not found: {existed_ion_model}')
+            arg_msgs.append(f'ERROR: Existed ion model is passed but file not found: {existed_ion_model}')
             exit_in_preprocess_step(arg_msgs)
 
     # Check if existed rt model file is existed for case of no rt ensemble
@@ -231,7 +227,7 @@ def parse_args(parser, time):
             arg_msgs.append(f'Use existed rt model with no rt ensemble: {existed_rt_model[8]}')
             skip_rt_finetune = True
         else:
-            arg_msgs.append(f'Existed rt model is passed but file not found: {existed_rt_model[8]}')
+            arg_msgs.append(f'ERROR: Existed rt model is passed but file not found: {existed_rt_model[8]}')
             exit_in_preprocess_step(arg_msgs)
 
     # Check if any existed rt model file is existed for case of rt ensemble
@@ -244,19 +240,19 @@ def parse_args(parser, time):
                 arg_msgs.append(f'Use existed rt model ({l}): {p}')
                 skip_rt_finetune.append(l)
             else:
-                arg_msgs.append(f'Existed rt model is passed but file not found: {p}')
+                arg_msgs.append(f'ERROR: Existed rt model is passed but file not found: {p}')
                 exit_in_preprocess_step(arg_msgs)
 
     pred_files = rk.sum_list(inputs['pred_file'])
     for file_idx, file in enumerate(pred_files, 1):
         if not os.path.exists(file):
-            raise FileNotFoundError(f'Prediction file {file_idx} not found - {file}')
+            raise FileNotFoundError(f'ERROR: Prediction file {file_idx} not found - {file}')
 
     pred_files_type = rk.sum_list(inputs['pred_file_type'])
     pred_file_type_num = len(pred_files_type)
     pred_file_num = len(pred_files)
     if pred_file_type_num != 1 and pred_file_type_num != pred_file_num:
-        raise ValueError(f'Get {pred_file_num} prediction files but {pred_file_type_num} file type\n')
+        raise ValueError(f'ERROR: Get {pred_file_num} prediction files but {pred_file_type_num} file type\n')
     elif pred_file_num != 1 and pred_file_type_num == 1:
         pred_files_type = pred_files_type * pred_file_num
         msg = (f'Get {pred_file_num} prediction files and 1 file type. '
@@ -322,257 +318,7 @@ def parse_args(parser, time):
 
 if __name__ == '__main__':
     start_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-
     arg_parser = init_arg_parser()
     msgs, args = parse_args(arg_parser, start_time)
 
-    WorkDir = args['WorkDir']
-    TaskName = args['TaskName']
-    TrainData = args['TrainData']
-    PredData = args['PredData']
-
-    ExistedIonModel = args['ExistedIonModel']
-    ExistedRTModel = args['ExistedRTModel']
-    SkipIonFinetune = args['SkipIonFinetune']
-    SkipRTFinetune = args['SkipRTFinetune']
-
-    Device = args['Device']
-    IonEpoch = args['IonEpoch']
-    RTEpoch = args['RTEpoch']
-    IonBatchSize = args['IonBatchSize']
-    RTBatchSize = args['RTBatchSize']
-    InitLR = args['InitLR']
-    MaxPepLen = args['MaxPepLen']
-    RTScale = args['RTScale']
-    EnsembleRT = args['EnsembleRT']
-    NoTime = args['NoTime']
-    Merge = args['Merge']
-
-    logger = setup_logger('DeepPhosphoRunner', WorkDir, filename="RunnerLog.txt")
-    for m in msgs:
-        logger.info(m)
-
-    with open(join_path(WorkDir, 'PassedArguments.txt'), 'w') as f:
-        f.write(' '.join(sys.argv))
-    with open(join_path(WorkDir, 'ParsedArguments.json'), 'w') as f:
-        json.dump(args, f, indent=4)
-
-    this_dir = os.path.dirname(os.path.abspath(__file__))
-    if 'ConfigTemplate-Ion_model_train.json' in os.listdir(this_dir):
-        config_dir = this_dir
-    else:
-        config_dir = join_path(this_dir, 'Data', 'ConfigBackup')
-    logger.info(f'Use config template stored in {config_dir}')
-
-    data_folder = join_path(WorkDir, 'Data')
-    create_folder(data_folder)
-    if TrainData[0] is not None:
-        logger.info(f'Transforming training data')
-        train_data_path = prot_utils.dp_train_data.file_to_trainset(path=TrainData[0], output_folder=data_folder, file_type=TrainData[1])
-        logger.info(f'Training data transformation done')
-
-    pred_data_path = dict(IonPred=[], RTPred=[])
-    if TrainData[0] is not None:
-        PredData.insert(0, (TrainData[0], TrainData[1]))
-    for idx, (pred_path, pred_type) in enumerate(PredData, 1):
-        logger.info(f'Transforming prediction data {idx}: {pred_type} - {pred_path}')
-        _ = prot_utils.dp_pred_data.file_to_pred_input(path=pred_path, output_folder=data_folder, file_type=pred_type)
-        pred_data_path['IonPred'].append(_['IonPred'])
-        pred_data_path['RTPred'].append(_['RTPred'])
-        logger.info(f'Prediction data {idx} transformation done')
-
-    if SkipIonFinetune and ((SkipRTFinetune is True) or (EnsembleRT and isinstance(SkipRTFinetune, list) and len(SkipRTFinetune) == 5)):
-        pass
-    else:
-        logger.info('Init training')
-
-    if SkipIonFinetune:
-        logger.info(f'Existed ion model is passed. Ion model fine-tuning is skipped. {ExistedIonModel}')
-    else:
-        logger.info(f'Loading ion model config')
-        ion_train_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-Ion_model_train.json'))
-        ion_train_config['WorkFolder'] = WorkDir
-        ion_train_config['Intensity_DATA_CFG']['TrainPATH'] = train_data_path['IonTrain']
-        ion_train_config['Intensity_DATA_CFG']['TestPATH'] = train_data_path['IonVal']
-        ion_train_config['Intensity_DATA_CFG']['HoldoutPATH'] = ''
-        ion_train_config['Intensity_DATA_CFG']['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] = MaxPepLen
-        ion_train_config['TRAINING_HYPER_PARAM']['BATCH_SIZE'] = IonBatchSize
-        ion_train_config['TRAINING_HYPER_PARAM']['TRAINING_HYPER_PARAM'] = InitLR
-        ion_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = IonEpoch
-        ion_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
-
-    if EnsembleRT and (SkipRTFinetune is True or (isinstance(SkipRTFinetune, list) and len(SkipRTFinetune) == 5)):
-        logger.info(f'Existed RT model is passed. RT model fine-tuning is skipped. {ExistedRTModel}')
-    elif not EnsembleRT and SkipRTFinetune is True:
-        logger.info(f'Existed RT model is passed. RT model fine-tuning is skipped. {ExistedRTModel[8]}')
-    else:
-        logger.info(f'Loading RT model config')
-        rt_train_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_train.json'))
-        rt_train_config['WorkFolder'] = WorkDir
-        rt_train_config['RT_DATA_CFG']['TrainPATH'] = train_data_path['RTTrain']
-        rt_train_config['RT_DATA_CFG']['TestPATH'] = train_data_path['RTVal']
-        rt_train_config['RT_DATA_CFG']['HoldoutPATH'] = ''
-        rt_train_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] = MaxPepLen
-        rt_train_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MIN_RT'] = RTScale[0]
-        rt_train_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MAX_RT'] = RTScale[1]
-        rt_train_config['TRAINING_HYPER_PARAM']['BATCH_SIZE'] = RTBatchSize
-        rt_train_config['TRAINING_HYPER_PARAM']['TRAINING_HYPER_PARAM'] = InitLR
-        rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = RTEpoch
-        rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
-
-    if not SkipIonFinetune:
-        logger.info('-' * 20)
-        logger.info('Start training ion intensity model')
-        if NoTime:
-            ion_train_config['InstanceName'] = f'{TaskName}-IonModel'
-        else:
-            ion_train_config['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-IonModel'
-        ion_model_folder = join_path(ion_train_config['WorkFolder'], ion_train_config['InstanceName'])
-        create_folder(ion_model_folder)
-        cfg_path = join_path(ion_model_folder, f'Config-IonTrain-{TaskName}.json')
-        with open(cfg_path, 'w') as f:
-            json.dump(ion_train_config, f, indent=4)
-        logger.info(f'Start ion model instance {ion_train_config["InstanceName"]}')
-        code = os.system(f'python train_ion.py {cfg_path}')
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-        if code != 0:
-            error_msg = f'Error when running ion model training instance {ion_train_config["InstanceName"]}'
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-
-    rt_model_folders = {}
-    if SkipRTFinetune is True:
-        if EnsembleRT:
-            used_predefined_rt_models = ExistedRTModel.copy()
-        else:
-            used_predefined_rt_models = {8: ExistedRTModel[8]}
-    else:
-        if isinstance(SkipRTFinetune, list):
-            used_predefined_rt_models = {l: ExistedRTModel[l] for l in SkipRTFinetune}
-            layer_nums = rk.subtract_list([4, 5, 6, 7, 8], list(used_predefined_rt_models.keys()))
-        else:
-            used_predefined_rt_models = {}
-            if EnsembleRT:
-                layer_nums = [4, 5, 6, 7, 8]
-            else:
-                layer_nums = [8]
-
-        logger.info('-' * 20)
-        logger.info('Start training RT model')
-        for idx, layer_num in enumerate(layer_nums, 1):
-            logger.info(f'Training RT model {idx}/{len(layer_nums)}')
-            cfg_cp = copy.deepcopy(rt_train_config)
-            cfg_cp['PretrainParam'] = f"./PretrainParams/RTModel/{layer_num}.pth"
-            cfg_cp['UsedModelCFG']['num_encd_layer'] = layer_num
-            if NoTime:
-                cfg_cp['InstanceName'] = f'{TaskName}-RTModel-{layer_num}'
-            else:
-                cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-RTModel-{layer_num}'
-            rt_model_folders[layer_num] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
-            create_folder(rt_model_folders[layer_num])
-            cfg_path = join_path(rt_model_folders[layer_num], f'Config-RTTrain-{TaskName}-{layer_num}.json')
-            with open(cfg_path, 'w') as f:
-                json.dump(cfg_cp, f, indent=4)
-            logger.info(f'Start rt model instance {cfg_cp["InstanceName"]}')
-            code = os.system(f'python train_rt.py {cfg_path}')
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            if code != 0:
-                error_msg = f'Error when running rt model training instance {cfg_cp["InstanceName"]}'
-                logger.error(error_msg)
-                raise RuntimeError(error_msg)
-
-    logger.info('Init prediction')
-    logger.info(f'Loading ion model config')
-    ion_pred_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-Ion_model_pred.json'))
-    ion_pred_config['WorkFolder'] = WorkDir
-    if SkipIonFinetune:
-        ion_pred_config['PretrainParam'] = ExistedIonModel
-    else:
-        ion_pred_config['PretrainParam'] = join_path(ion_model_folder, 'ckpts', 'best_model.pth')
-    ion_pred_config['Intensity_DATA_CFG']['InputWithLabel'] = False
-    ion_pred_config['Intensity_DATA_CFG']['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] = MaxPepLen
-    ion_pred_config['TRAINING_HYPER_PARAM']['BATCH_SIZE'] = IonBatchSize * 4
-    ion_pred_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
-    ion_pred_folders = {}
-    for idx, path in enumerate(pred_data_path['IonPred'], 1):
-        logger.info(f'Init ion pred for {path}')
-        logger.info(f'Use model parameters: {ion_pred_config["PretrainParam"]}')
-        data_name = os.path.basename(path).replace('-Ion_PredInput.txt', '')
-        cfg_cp = copy.deepcopy(ion_pred_config)
-        cfg_cp['Intensity_DATA_CFG']['PredInputPATH'] = path
-        if NoTime:
-            cfg_cp['InstanceName'] = f'{TaskName}-IonPred-{data_name}'
-        else:
-            cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-IonPred-{data_name}'
-        ion_pred_folders[data_name] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
-        create_folder(ion_pred_folders[data_name])
-        cfg_path = join_path(ion_pred_folders[data_name], f'Config-IonPred-{TaskName}-{data_name}.json')
-        with open(cfg_path, 'w') as f:
-            json.dump(cfg_cp, f, indent=4)
-        logger.info(f'Start ion model instance {cfg_cp["InstanceName"]}')
-        code = os.system(f'python pred_ion.py {cfg_path}')
-        if code != 0:
-            error_msg = f'Error when running ion model prediction instance {cfg_cp["InstanceName"]}'
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-
-    logger.info(f'Loading RT model config')
-    rt_pred_config = load_config_from_json(join_path(config_dir, 'ConfigTemplate-RT_model_pred.json'))
-    rt_pred_config['WorkFolder'] = WorkDir
-    rt_pred_config['ParamsForPred'] = {str(layer_num): join_path(f, 'ckpts', 'best_model.pth') for layer_num, f in rt_model_folders.items()}
-    rt_pred_config['ParamsForPred'].update(used_predefined_rt_models)
-    rt_pred_config['RT_DATA_CFG']['InputWithLabel'] = False
-    rt_pred_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] = MaxPepLen
-    rt_pred_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MIN_RT'] = RTScale[0]
-    rt_pred_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MAX_RT'] = RTScale[1]
-    rt_pred_config['TRAINING_HYPER_PARAM']['BATCH_SIZE'] = RTBatchSize * 4
-    rt_pred_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = Device
-    rt_pred_folders = {}
-    for idx, path in enumerate(pred_data_path['RTPred'], 1):
-        logger.info(f'Init RT pred for {path}')
-        logger.info(f'Use model parameters: {rt_pred_config["ParamsForPred"]}')
-        data_name = os.path.basename(path).replace('-RT_PredInput.txt', '')
-        cfg_cp = copy.deepcopy(rt_pred_config)
-        cfg_cp['RT_DATA_CFG']['PredInputPATH'] = path
-        if NoTime:
-            cfg_cp['InstanceName'] = f'{TaskName}-RTPred-{data_name}'
-        else:
-            cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{TaskName}-RTPred-{data_name}'
-        rt_pred_folders[data_name] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
-        create_folder(rt_pred_folders[data_name])
-        cfg_path = join_path(rt_pred_folders[data_name], f'Config-RTPred-{TaskName}-{data_name}.json')
-        with open(cfg_path, 'w') as f:
-            json.dump(cfg_cp, f, indent=4)
-        logger.info(f'Start RT model instance {cfg_cp["InstanceName"]}')
-        code = os.system(f'python pred_rt.py {cfg_path}')
-        if code != 0:
-            error_msg = f'Error when running rt model prediction instance {cfg_cp["InstanceName"]}'
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-
-    logger.info(f'Init library generation')
-    lib_paths = {}
-    for idx, (data_name, ion_result_folder) in enumerate(ion_pred_folders.items(), 1):
-        logger.info(f'Generate library {data_name}')
-        lib_path = prot_utils.gen_dp_lib.generate_spec_lib(
-            data_name=data_name,
-            output_folder=WorkDir,
-            pred_ion_path=join_path(ion_result_folder, f'{os.path.basename(ion_result_folder)}-PredOutput.json'),
-            pred_rt_path=join_path(rt_pred_folders[data_name], 'Prediction.txt'),
-            logger=logger
-        )
-        lib_paths[data_name] = lib_path
-
-    logger.info(f'Init library merging')
-    main_key = list(lib_paths.keys())[0]
-    path = prot_utils.gen_dp_lib.merge_lib(
-        main_lib_path=lib_paths[main_key],
-        add_libs_path={n: p for n, p in lib_paths.items() if n != main_key},
-        output_folder=WorkDir,
-        task_name=TaskName,
-        logger=logger
-    )
-
-    logger.info(f'All finished. Check directory {WorkDir} for results.')
+    DeepPhosphoRunner(args, start_time=start_time, msgs_for_arg_parsing=msgs)
