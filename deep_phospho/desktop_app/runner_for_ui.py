@@ -60,7 +60,6 @@ class RunnerThread(threading.Thread):
 
     def run(self):
         self._running.empty()
-        # DeepPhosphoRunner(self.runner_config, start_time=self.start_time, termin_flag=self._running)
         try:
             DeepPhosphoRunner(self.runner_config, start_time=self.start_time, termin_flag=self._running)
             wx.CallAfter(self.window.running_done, self.runner_config['WorkDir'])
@@ -68,7 +67,6 @@ class RunnerThread(threading.Thread):
             tb = traceback.format_exc()
             print(tb)
             wx.CallAfter(self.window.running_error, self.runner_config['WorkDir'])
-
 
 
 class BuildLibThread(threading.Thread):

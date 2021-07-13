@@ -3,6 +3,7 @@ import datetime
 import os
 
 import ipdb
+import torch.cuda
 import wx
 import wx.richtext
 
@@ -33,8 +34,8 @@ PipelineParams = {
     'InitLR': '0.0001',
     'PredInput': [],
     'PredInputFormat': [],
-    'train':False,
-    'pred':False,
+    'Train': True,
+    'Prediction': True,
 }
 
 
@@ -177,12 +178,6 @@ class DeepPhosphoUIFrame(wx.Frame):
         work_folder_text.SetFont(self._font_search_content)
         grid_sizer.Add(work_folder_text, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-
-        default_wf = os.path.join(os.path.abspath('.'), 'demo_work_folder')
-        if not os.path.exists(default_wf):
-            os.makedirs(default_wf)
-        work_folder_text.SetValue(default_wf)
-
         task_name_desc_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
         task_name_desc_text = wx.StaticText(self._main_panel, -1, 'Task name (the identifier of this task)')
         task_name_desc_text.SetFont(self._font_static_text)
@@ -202,41 +197,27 @@ class DeepPhosphoUIFrame(wx.Frame):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
+        train_checkbox = wx.CheckBox(self._main_panel, -1, 'Train', name='CheckBox-Train')
+        train_checkbox.SetValue(PipelineParams['Train'])
+        train_checkbox.SetFont(self._font_static_text)
+        grid_sizer.Add(train_checkbox, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        pred_checkbox = wx.CheckBox(self._main_panel, -1, 'Prediction')
+        pred_checkbox.SetValue(PipelineParams['Prediction'])
+        pred_checkbox.SetFont(self._font_static_text)
+        grid_sizer.Add(pred_checkbox, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
         run_button = wx.Button(self._main_panel, -1, 'Run', name='RunButton')
         run_button.SetFont(self._font_static_text)
         run_button.Bind(wx.EVT_BUTTON, self._event_run)
-        grid_sizer.Add(run_button, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        grid_sizer.Add(run_button, pos=(0, 2), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         stop_button = wx.Button(self._main_panel, -1, 'Stop', name='StopButton')
         stop_button.SetFont(self._font_static_text)
         stop_button.Bind(wx.EVT_BUTTON, self._event_stop)
-        grid_sizer.Add(stop_button, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        grid_sizer.Add(stop_button, pos=(0, 3), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-
-        def set_checkbox(e, param, key):
-            param[key] = e.GetEventObject().GetValue()
-
-        run_mode_checkbox_train = wx.CheckBox(self, -1, 'Train')
-        run_mode_checkbox_train.SetValue(PipelineParams['train'])
-        run_mode_checkbox_train.Bind(wx.EVT_CHECKBOX,
-                                     lambda e: set_checkbox(e, PipelineParams, 'train'))
-        run_mode_checkbox_train.SetFont(self._font_static_text)
-
-        run_mode_checkbox_pred = wx.CheckBox(self, -1, 'Prediction')
-        run_mode_checkbox_pred.SetValue(PipelineParams['pred'])
-        run_mode_checkbox_pred.Bind(wx.EVT_CHECKBOX,
-                                    lambda e: set_checkbox(e, PipelineParams, 'pred'))
-
-        run_mode_checkbox_pred.SetFont(self._font_static_text)
-
-        grid_sizer.Add(run_mode_checkbox_train, pos=(0, 2), span=(1, 1),
-                       flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
-        grid_sizer.Add(run_mode_checkbox_pred, pos=(1, 2), span=(1, 1),
-                       flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
-
-        static_box_sizer.Add(grid_sizer, proportion=0,
-                             flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
-
+        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
         return static_box_sizer
 
     def _init_tools_sizer(self):
@@ -286,7 +267,6 @@ class DeepPhosphoUIFrame(wx.Frame):
         widget = self.FindWindowByName('RunButton')
         widget.Enable()
 
-
     def running_error(self, work_dir):
         self.FindWindowByName('RunButton').Enable()
         self.FindWindowByName('RunButton').SetLabel('Run')
@@ -309,7 +289,6 @@ class DeepPhosphoUIFrame(wx.Frame):
         merge_lib_frame = MergeLibraryFrame(None, title=f'Merge spectral library', size=(1000, 700))
         merge_lib_frame.Centre()
         merge_lib_frame.Show()
-
 
     def collect_info_curr_panel(self):
         for name in ['WorkFolder', 'TaskName']:
@@ -384,7 +363,7 @@ class GeneralConfigPanel(wx.Panel):
         grid_sizer.Add(rt_pretrain_sub_sizer, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
 
         (device_boxsizer, rt_scale_boxsizer,
-         max_pep_len_boxsizer,mode_select_boxsizer) = self._init_widgets_below_rt_pretrain()
+         max_pep_len_boxsizer, mode_select_boxsizer) = self._init_widgets_below_rt_pretrain()
         grid_sizer.Add(device_boxsizer, pos=(4, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         grid_sizer.Add(rt_scale_boxsizer, pos=(5, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         grid_sizer.Add(max_pep_len_boxsizer, pos=(6, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
@@ -395,7 +374,7 @@ class GeneralConfigPanel(wx.Panel):
 
     def _init_widgets_below_rt_pretrain(self):
         device_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        device_desc_text = wx.StaticText(self, -1, 'Device (use which device to run pipeline,\nchoose one from cpu (use cpu only), 0 (use GPU0), 1 (use GPU1), ...')
+        device_desc_text = wx.StaticText(self, -1, DeviceDesc)
         device_desc_text.SetFont(self._font_static_text)
         device_boxsizer.Add(device_desc_text, 0, wx.ALL, 10)
 
@@ -405,7 +384,7 @@ class GeneralConfigPanel(wx.Panel):
 
         check_gpu_button = wx.Button(self, -1, 'Check GPUs')
         check_gpu_button.SetFont(self._font_static_text)
-        # check_gpu_button.Bind(wx.EVT_BUTTON, search_func)  # TODO
+        check_gpu_button.Bind(wx.EVT_BUTTON, self._event_check_gpus)  # TODO
         device_boxsizer.Add(check_gpu_button, 0, wx.ALL, 10)
 
         rt_scale_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -442,7 +421,27 @@ class GeneralConfigPanel(wx.Panel):
         mode_select_boxsizer.Add(max_pep_len_desc_text, 0, wx.ALL, 10)
         mode_select_boxsizer.Add(train_mode_listbox, 0, wx.ALL, 10)
 
-        return device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer,mode_select_boxsizer
+        return device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer, mode_select_boxsizer
+
+    def _event_check_gpus(self, event):
+        if torch.cuda.is_available():
+            gpu_num = torch.cuda.device_count()
+            gpu_names = []
+            for i in range(gpu_num):
+                try:
+                    gpu_names.append(torch.cuda.get_device_name(i))
+                except AssertionError:
+                    gpu_names = None
+                    break
+            msg = f'Total {gpu_num} GPU{" is" if gpu_num == 1 else "s are"} available'
+            if gpu_names is not None:
+                shown_gpu_names = '\n'.join([f'  GPU{i}: {name}' for i, name in enumerate(gpu_names)])
+                msg = f'{msg}:\n{shown_gpu_names}'
+            wx.MessageBox(msg)
+        else:
+            wx.MessageBox('No GPU device can be detected, or CUDA is not correctly set up')
+            PipelineParams['Device'] = 'cpu'
+            self.FindWindowByName('Device').SetValue('cpu')
 
     def _event_check_rt_ensemble(self, e):
         PipelineParams['RTEnsemble'] = e.GetEventObject().GetValue()
@@ -1030,7 +1029,6 @@ class MergeLibraryFrame(wx.Frame):
         output_lib = self.FindWindowByName('Output-Library').GetValue()
 
         shown_config = '\n'.join([f'Use following library files:', *[f'  {f}' for f in input_file_paths], '', f'Generate library to: {output_lib}'])
-        print(shown_config)
         ret = wx.MessageBox(shown_config, 'Confirm', wx.OK | wx.CANCEL)
         if ret == wx.OK:
             self.merge_lib_thread = MergeLibThread(self, input_file_paths, output_lib)
