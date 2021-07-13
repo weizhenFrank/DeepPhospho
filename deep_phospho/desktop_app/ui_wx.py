@@ -5,7 +5,7 @@ import os
 import wx
 import wx.richtext
 
-from .runner_for_ui import parse_args_from_ui_to_runner, RunnerThread, BuildLibThread
+from .runner_for_ui import parse_args_from_ui_to_runner, RunnerThread, BuildLibThread, MergeLibThread
 from .ui_configs import *
 
 # Defined params
@@ -213,7 +213,7 @@ class DeepPhosphoUIFrame(wx.Frame):
 
         build_lib_button = wx.Button(self._main_panel, -1, 'Build library from prediction output')
         build_lib_button.SetFont(self._font_static_text)
-        build_lib_button.Bind(wx.EVT_BUTTON, self._event_open_tool_build_lib)  # TODO
+        build_lib_button.Bind(wx.EVT_BUTTON, self._event_open_tool_build_lib)
         grid_sizer.Add(build_lib_button, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         merge_lib_button = wx.Button(self._main_panel, -1, 'Merge library')
@@ -242,7 +242,7 @@ class DeepPhosphoUIFrame(wx.Frame):
             self.runner_thread.setDaemon(True)
             self.runner_thread.start()
             event.GetEventObject().Disable()
-            event.GetEventObject().SetLabel('Running')
+            event.GetEventObject().SetLabel('Running ...')
         else:
             pass
 
@@ -267,6 +267,12 @@ class DeepPhosphoUIFrame(wx.Frame):
         build_lib_frame = BuildLibraryFrame(None, title=f'Build spectral library', size=(1000, 700))
         build_lib_frame.Centre()
         build_lib_frame.Show()
+
+    def _event_open_tool_merge_lib(self, event):
+        _ = event
+        merge_lib_frame = MergeLibraryFrame(None, title=f'Merge spectral library', size=(1000, 700))
+        merge_lib_frame.Centre()
+        merge_lib_frame.Show()
 
     def collect_info_curr_panel(self):
         for name in ['WorkFolder', 'TaskName']:
@@ -657,7 +663,7 @@ class PredStepPanel(wx.Panel):
             choice = PredictionFormatList[self.FindWindowByName(f'Choice-{idx}').GetSelection()]
             ctrl_text = self.FindWindowByName(f'CtrlText-{idx}').GetValue()
             if ctrl_text is not None and ctrl_text != '':
-                # TODO check data path
+                # TODO check data path (in runner step)
                 PipelineParams['PredInput'].append(ctrl_text)
                 PipelineParams['PredInputFormat'].append(choice)
 
@@ -792,7 +798,7 @@ class BuildLibraryFrame(wx.Frame):
         return static_box_sizer
 
     def _event_select_output_file(self, event):
-        dlg = wx.FileDialog(self, 'Choose a file', '.', '', '.xls', wx.FD_OPEN)
+        dlg = wx.FileDialog(self, 'Choose output library file path', '.', '', '.xls', wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             filename = dlg.GetFilename()
             dirname = dlg.GetDirectory()
@@ -823,4 +829,173 @@ class BuildLibraryFrame(wx.Frame):
     def build_error(self, err_msg):
         self.FindWindowByName('Button-BuildLib').Enable()
         self.FindWindowByName('Button-BuildLib').SetLabel('Build')
+        wx.MessageBox(err_msg, style=wx.ICON_ERROR)
+
+
+class MergeLibraryFrame(wx.Frame):
+    def __init__(self, *args, **kwargs):
+        super(MergeLibraryFrame, self).__init__(*args, **kwargs)
+
+        self._main_panel = wx.Panel(self, style=wx.TAB_TRAVERSAL | wx.CLIP_CHILDREN | wx.FULL_REPAINT_ON_RESIZE)
+
+        self._input_library_num = 0
+        self.proper_widget_width = self.GetSize()[0] * 0.95
+
+        # Font
+        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+
+        # Total sizer
+        self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)  # Contain common and external tool
+
+        """ Description text """
+        desc_text_staticboxsizer = self._init_desc_text()
+        self.boxsizer_main.Add(desc_text_staticboxsizer, 0, wx.ALL, 10)
+
+        """ Library merging inputs """
+        input_staticboxsizer, self.input_library_gridsizer = self._init_input_sizer()
+        self.boxsizer_main.Add(input_staticboxsizer, 0, wx.ALL, 10)
+
+        """ Library merging """
+        merge_staticboxsizer = self._init_merge_sizer()
+        self.boxsizer_main.Add(merge_staticboxsizer, 0, wx.ALL, 10)
+
+        # Register boxsizer
+        self._main_panel.SetSizerAndFit(self.boxsizer_main)
+        self.SetClientSize(self._main_panel.GetBestSize())
+        self.boxsizer_main.SetSizeHints(self._main_panel)
+        self.boxsizer_main.Layout()
+
+    def _init_desc_text(self):
+        static_box = wx.StaticBox(self._main_panel, -1, label='Merge library')
+        static_box.SetFont(self._font_boxname)
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
+
+        desc_text = wx.TextCtrl(self._main_panel, -1, MergeLibDesc, size=(self.proper_widget_width, 230),
+                                style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_BESTWRAP)
+        desc_text.SetSize(desc_text.GetBestSize())
+        desc_text.SetFont(self._font_static_text)
+        grid_sizer.Add(desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_CENTRE_HORIZONTAL | wx.ALIGN_CENTRE_VERTICAL)
+
+        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        return static_box_sizer
+
+    def _init_input_sizer(self):
+        static_box = wx.StaticBox(self._main_panel, -1, label='Input library files')
+        static_box.SetFont(self._font_boxname)
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
+
+        add_row_button = wx.Button(self._main_panel, -1, 'Add row')
+        add_row_button.SetFont(self._font_static_text)
+        add_row_button.Bind(wx.EVT_BUTTON, self._event_add_row)
+        grid_sizer.Add(add_row_button, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        input_lib_row_boxsizer = self._init_one_input_row()
+        self._input_library_num += 1
+        grid_sizer.Add(input_lib_row_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        return static_box_sizer, grid_sizer
+
+    def _init_one_input_row(self):
+        boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        input_lib_text = wx.TextCtrl(self._main_panel, -1, size=(700, 30), style=wx.TE_HT_ON_TEXT, name=f'CtrlText-{self._input_library_num}')
+        input_lib_text.SetFont(self._font_search_content)
+        boxsizer.Add(input_lib_text, 0, wx.ALL, 10)
+
+        input_lib_select_button = wx.Button(self._main_panel, -1, 'Select', name=f'Button-{self._input_library_num}')
+        input_lib_select_button.SetFont(self._font_static_text)
+        input_lib_select_button.Bind(wx.EVT_BUTTON, self._event_select_input_lib_file)
+        boxsizer.Add(input_lib_select_button, 0, wx.ALL, 10)
+
+        return boxsizer
+
+    def _event_select_input_lib_file(self, event):
+        dlg = wx.FileDialog(self, 'Choose a file', '.', '', '*', wx.FD_OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            filename = dlg.GetFilename()
+            dirname = dlg.GetDirectory()
+            button_name = event.GetEventObject().GetName()
+            idx = button_name.split('-')[-1]
+            self.FindWindowByName(f'CtrlText-{idx}').SetValue(os.path.join(dirname, filename))
+        dlg.Destroy()
+
+    def _event_add_row(self, event):
+        pred_row_boxsizer = self._init_one_input_row()
+        self.input_library_gridsizer.Add(pred_row_boxsizer, pos=(2 + self._input_library_num, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        self._input_library_num += 1
+        self.SetClientSize(self._main_panel.GetBestSize())
+        self.boxsizer_main.Layout()
+
+    def _init_merge_sizer(self):
+        static_box = wx.StaticBox(self._main_panel, -1, label='Merge library')
+        static_box.SetFont(self._font_boxname)
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
+
+        output_lib_desc_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        output_lib_desc_text = wx.StaticText(self._main_panel, -1, 'Output library')
+        output_lib_desc_text.SetFont(self._font_static_text)
+        output_lib_desc_sizer.Add(output_lib_desc_text, 0, wx.ALL, 5)
+        output_lib_select_button = wx.Button(self._main_panel, -1, 'Select', name=f'Button-Select-Output')
+        output_lib_select_button.SetFont(self._font_static_text)
+        output_lib_select_button.Bind(wx.EVT_BUTTON, self._event_select_output_file)
+        output_lib_desc_sizer.Add(output_lib_select_button, 0, wx.ALIGN_CENTRE, 5)
+        grid_sizer.Add(output_lib_desc_sizer, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        output_lib_text = wx.TextCtrl(self._main_panel, -1, size=(self.proper_widget_width, 50),
+                                      style=wx.TE_HT_ON_TEXT | wx.TE_MULTILINE, name=f'Output-Library')
+        output_lib_text.SetFont(self._font_search_content)
+        grid_sizer.Add(output_lib_text, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        merge_button = wx.Button(self._main_panel, -1, 'Merge', name=f'Button-MergeLib')
+        merge_button.SetFont(self._font_static_text)
+        merge_button.Bind(wx.EVT_BUTTON, self._event_merge_lib)
+        grid_sizer.Add(merge_button, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        return static_box_sizer
+
+    def _event_select_output_file(self, event):
+        dlg = wx.FileDialog(self, 'Choose output library file path', '.', '', '.xls', wx.FD_OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            filename = dlg.GetFilename()
+            dirname = dlg.GetDirectory()
+            self.FindWindowByName(f'Output-Library').SetValue(os.path.join(dirname, filename))
+        dlg.Destroy()
+
+    def _event_merge_lib(self, event):
+        input_file_paths = []
+        for idx in range(self._input_library_num):
+            ctrl_text = self.FindWindowByName(f'CtrlText-{idx}').GetValue()
+            if ctrl_text is not None and ctrl_text != '':
+                input_file_paths.append(ctrl_text)
+
+        output_lib = self.FindWindowByName('Output-Library').GetValue()
+
+        shown_config = '\n'.join([f'Use following library files:', *[f'  {f}' for f in input_file_paths], '', f'Generate library to: {output_lib}'])
+        print(shown_config)
+        ret = wx.MessageBox(shown_config, 'Confirm', wx.OK | wx.CANCEL)
+        if ret == wx.OK:
+            self.merge_lib_thread = MergeLibThread(self, input_file_paths, output_lib)
+            self.merge_lib_thread.setDaemon(True)
+            self.merge_lib_thread.start()
+            event.GetEventObject().Disable()
+            event.GetEventObject().SetLabel('Merging ...')
+        else:
+            pass
+
+    def merge_done(self):
+        self.FindWindowByName('Button-MergeLib').Enable()
+        self.FindWindowByName('Button-MergeLib').SetLabel('Merge')
+        wx.MessageBox(f'Merge library done.')
+
+    def merge_error(self, err_msg):
+        self.FindWindowByName('Button-MergeLib').Enable()
+        self.FindWindowByName('Button-MergeLib').SetLabel('Merge')
         wx.MessageBox(err_msg, style=wx.ICON_ERROR)

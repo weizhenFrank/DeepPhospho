@@ -20,3 +20,13 @@ BuildLibDesc = ('  Library building with DeepPhospho raw predictions.\n'
                 '    - Fragment ion intensity result: after prediction done, there will be a JSON file stored in work folder of the certain distance. '
                 'The file name is usually the combination of distance name and -PredOutput.json\n'
                 '    - Retention time result: after prediction done, a file named Prediction.txt will be created in the result folder.')
+
+MergeLibDesc = ('  Merge several libraries to one.\n'
+                '  This tool needs at least two library files as input and output a merged non-redundent spectral library.\n'
+                '  Different from the generally used consensus library generation method, '
+                'this tool will use the first library as the main library, '
+                'which means all precursors in this library will be retained, '
+                'and the same precursors in following libraries will be directly deleted.\n'
+                '  This method might not suitable for experimental libraries, '
+                'but it fits the need of current case, '
+                'since all input libraries are from DeepPhospho prediction (from the same source).')

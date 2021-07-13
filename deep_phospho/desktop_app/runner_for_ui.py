@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 
@@ -51,6 +52,7 @@ class BuildLibThread(threading.Thread):
     def __init__(self, window, ion_input, rt_input, output_lib, *args, **kwargs):
         super(BuildLibThread, self).__init__(*args, **kwargs)
         self.window = window
+        # TODO check input files and raise error to UI if has
         self.ion_input = ion_input
         self.rt_input = rt_input
         self.output_lib = output_lib
@@ -64,9 +66,33 @@ class BuildLibThread(threading.Thread):
                 pred_ion_path=self.ion_input,
                 pred_rt_path=self.rt_input,
                 save_path=self.output_lib,
-                logger=None
+                logger=logging.getLogger(name='Build library')
             )
             wx.CallAfter(self.window.build_done)
         except:
             err_msg = f''
             wx.CallAfter(self.window.build_error, err_msg)
+
+
+class MergeLibThread(threading.Thread):
+    def __init__(self, window, input_lib_paths, output_lib, *args, **kwargs):
+        super(MergeLibThread, self).__init__(*args, **kwargs)
+        self.window = window
+        self.input_lib_paths = input_lib_paths  # TODO check input lib files and raise error to UI if has
+        self.output_lib = output_lib
+        self._running = True
+
+    def run(self):
+        try:
+            prot_utils.gen_dp_lib.merge_lib(
+                main_lib_path=self.input_lib_paths[0],
+                add_libs_path={f'Addtional library {i}': p for i, p in enumerate(self.input_lib_paths[1:], 1)},
+                output_folder=None,
+                task_name=None,
+                save_path=self.output_lib,
+                logger=logging.getLogger(name='Merge library')
+            )
+            wx.CallAfter(self.window.merge_done)
+        except:
+            err_msg = f''
+            wx.CallAfter(self.window.merge_error, err_msg)

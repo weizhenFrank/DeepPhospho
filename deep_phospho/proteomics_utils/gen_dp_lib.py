@@ -78,6 +78,7 @@ def merge_lib(main_lib_path, add_libs_path, output_folder, task_name, save_path=
     main_lib.add_intpep()
     main_lib = main_lib.to_df()
 
+    # TODO add_libs_path can be either list or dict
     for add_lib_name, add_lib_path in add_libs_path.items():
         if logger is not None:
             logger.info(f'Loading additional library {add_lib_path}')
