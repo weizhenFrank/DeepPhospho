@@ -179,8 +179,8 @@ class DeepPhosphoRunner(object):
             rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = self.RTEpoch
             rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = self.Device
 
-        # rt_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
-        # ion_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
+        rt_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
+        ion_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
 
         return ion_train_config, rt_train_config
 
