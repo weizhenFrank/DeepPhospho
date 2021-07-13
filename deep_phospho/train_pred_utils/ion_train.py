@@ -260,7 +260,6 @@ def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=N
                     #                    model_size=configs['UsedModelCFG']['lstm_hidden_dim'],
                     #                    warmup_steps=configs.TRAINING_HYPER_PARAM['warmup_steps'],
                     #                    factor=configs.TRAINING_HYPER_PARAM['factor'])
-
         for idx, (inputs, y) in enumerate(train_dataloader):
             # ipdb.set_trace()
             iteration = epoch * len(train_dataloader) + idx
@@ -445,7 +444,8 @@ def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=N
                 model = model.to(device)
                 if use_cuda:
                     torch.cuda.empty_cache()
-
+    if best_model is None:
+        best_model = copy.deepcopy(model)
     save_checkpoint(model, optimizer, scheduler, output_dir, "last_epoch")
     save_checkpoint(best_model, optimizer, scheduler, output_dir, "best_model")
     tf_writer_test.write_data(iteration_best, best_test_res, 'eval_metric/Best_PCC_median')

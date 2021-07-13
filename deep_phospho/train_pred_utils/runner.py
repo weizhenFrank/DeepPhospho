@@ -3,8 +3,10 @@ import datetime
 import json
 import os
 import sys
+import traceback
 from os.path import join as join_path
 
+import ipdb
 import torch
 
 from deep_phospho import proteomics_utils as prot_utils
@@ -179,8 +181,8 @@ class DeepPhosphoRunner(object):
             rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = self.RTEpoch
             rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = self.Device
 
-        rt_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
-        ion_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
+        # rt_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
+        # ion_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
 
         return ion_train_config, rt_train_config
 
@@ -207,10 +209,10 @@ class DeepPhosphoRunner(object):
                     if stat == -1:
                         ion_model_folder = None
                         print('runner stop')
-            except:
+            except Exception as e:
                 error_msg = f'ERROR: Error when running ion model training instance {self.ion_train_config["InstanceName"]}'
-                self.logger.error(error_msg)
-                raise RuntimeError(error_msg)
+                tb = traceback.format_exc()
+                self.logger.error(error_msg + '\n' + tb)
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         else:
@@ -259,9 +261,10 @@ class DeepPhosphoRunner(object):
                             rt_model_folders = None
                             print('runner stop')
                             break
-                except:
+                except Exception as e:
                     error_msg = f'ERROR: Error when running rt model training instance {cfg_cp["InstanceName"]}'
-                    self.logger.error(error_msg)
+                    tb = traceback.format_exc()
+                    self.logger.error(error_msg + '\n' + tb)
                     raise RuntimeError(error_msg)
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
@@ -306,7 +309,8 @@ class DeepPhosphoRunner(object):
                         break
             except:
                 error_msg = f'ERROR: Error when running ion model prediction instance {cfg_cp["InstanceName"]}'
-                self.logger.error(error_msg)
+                tb = traceback.format_exc()
+                self.logger.error(error_msg + '\n' + tb)
                 raise RuntimeError(error_msg)
         return ion_pred_folders
 
@@ -348,7 +352,8 @@ class DeepPhosphoRunner(object):
                         break
             except:
                 error_msg = f'ERROR: Error when running rt model prediction instance {cfg_cp["InstanceName"]}'
-                self.logger.error(error_msg)
+                tb = traceback.format_exc()
+                self.logger.error(error_msg + '\n' + tb)
                 raise RuntimeError(error_msg)
         return rt_pred_folders
 

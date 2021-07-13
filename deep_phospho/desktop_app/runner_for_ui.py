@@ -3,6 +3,7 @@ import  queue
 import logging
 import os
 import threading
+import traceback
 
 import wx
 from deep_phospho import proteomics_utils as prot_utils
@@ -59,10 +60,13 @@ class RunnerThread(threading.Thread):
 
     def run(self):
         self._running.empty()
+        # DeepPhosphoRunner(self.runner_config, start_time=self.start_time, termin_flag=self._running)
         try:
             DeepPhosphoRunner(self.runner_config, start_time=self.start_time, termin_flag=self._running)
             wx.CallAfter(self.window.running_done, self.runner_config['WorkDir'])
-        except Exception e:
+        except Exception:
+            tb = traceback.format_exc()
+            print(tb)
             wx.CallAfter(self.window.running_error, self.runner_config['WorkDir'])
 
 

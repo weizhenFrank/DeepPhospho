@@ -197,7 +197,8 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
     end = time.time()
     iteration_best = -1
     best_test_res = 9999999999
-    best_model = copy.deepcopy(model)
+    best_model = None
+
 
     for epoch in range(EPOCH):
         if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
@@ -317,6 +318,9 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
 
     tf_writer_test.write_data(iteration_best, best_test_res, 'eval_metric/Best_delta_t95')
     logger.info("best_test_res: %s in iter %s" % (best_test_res, iteration_best))
+
+    if best_model is None:
+        best_model = copy.deepcopy(model)
     save_checkpoint(model, optimizer, scheduler, output_dir, "last_epochless")
     save_checkpoint(best_model, optimizer, scheduler, output_dir, "best_model")
 

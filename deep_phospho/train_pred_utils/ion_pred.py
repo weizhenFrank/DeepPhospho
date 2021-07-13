@@ -93,7 +93,9 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None, te
 
     # Init dictionary
     dictionary = Dictionary()
-    _ = dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
+    if dictionary.word2idx.get('X') is not None:
+        dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
+
     idx2aa = dictionary.idx2word
 
     Iontest = IonData(configs, pred_input_file, dictionary=dictionary)
@@ -101,7 +103,7 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None, te
     test_dataloader = DataLoader(dataset=test_dataset,
                                  shuffle=False,
                                  batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
-                                 num_workers=0,
+                                 num_workers=2,
                                  collate_fn=partial(collate_fn, configs=configs))
 
     def idxtoaa(arr):
