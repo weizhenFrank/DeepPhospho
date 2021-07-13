@@ -33,10 +33,10 @@ torch.backends.cudnn.deterministic = True  # To test dilated conv, the result sh
 torch.autograd.set_detect_anomaly(True)
 
 
-def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
+def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=None, termin_flag=None):
     # Get data path here for ease of use
-    train_file = configs['RT_DATA_CFG']['TrainPATH']
-    test_file = configs['RT_DATA_CFG']['TestPATH']
+    train_file_path = configs['RT_DATA_CFG']['TrainPATH']
+    test_file_path = configs['RT_DATA_CFG']['TestPATH']
     holdout_file = configs['RT_DATA_CFG']['HoldoutPATH']
     if holdout_file:
         use_holdout = True
@@ -107,8 +107,8 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
     print("Preparing dataset")
     dictionary = Dictionary()
 
-    rt_train_data = RTdata(configs, train_file, dictionary=dictionary)
-    rt_test_data = RTdata(configs, test_file, dictionary=dictionary)
+    rt_train_data = RTdata(configs, train_file_path, dictionary=dictionary)
+    rt_test_data = RTdata(configs, test_file_path, dictionary=dictionary)
 
     train_dataset = IonDataset(rt_train_data, configs)
     test_dataset = IonDataset(rt_test_data, configs)
@@ -197,7 +197,7 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
     end = time.time()
     iteration_best = -1
     best_test_res = 9999999999
-    best_model = None
+    best_model = copy.deepcopy(model)
 
     for epoch in range(EPOCH):
         if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":
@@ -213,8 +213,13 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
                         logger.info("set transformer on")
 
         for idx, (inputs, y) in enumerate(train_dataloader):
-            iteration = epoch * len(train_dataloader) + idx
 
+            if termin_flag is not None:
+                if termin_flag.qsize() > 0:
+                    # set fales stop loop
+                    return -1
+
+            iteration = epoch * len(train_dataloader) + idx
             if isinstance(inputs, tuple):
                 seq_x, x_hydro, x_rc = inputs
 

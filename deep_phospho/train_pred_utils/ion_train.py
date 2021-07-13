@@ -31,7 +31,7 @@ torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
 
 
-def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
+def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=None, termin_flag=None):
     # Get data path here for ease of use
     train_file = configs['Intensity_DATA_CFG']['TrainPATH']
     test_file = configs['Intensity_DATA_CFG']['TestPATH']
@@ -264,6 +264,11 @@ def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=N
         for idx, (inputs, y) in enumerate(train_dataloader):
             # ipdb.set_trace()
             iteration = epoch * len(train_dataloader) + idx
+
+            if termin_flag is not None:
+                if termin_flag.qsize() > 0:
+                    # set fales stop loop
+                    return -1
             if len(inputs) == 3:
                 # print("3 inputs")
                 seq_x = inputs[0]

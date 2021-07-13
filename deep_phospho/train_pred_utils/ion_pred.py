@@ -30,7 +30,7 @@ torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
 
 
-def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
+def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None, termin_flag=None):
     # Get data path here for ease of use
     pred_input_file = configs['Intensity_DATA_CFG']['PredInputPATH']
     if not os.path.exists(pred_input_file):
@@ -168,7 +168,10 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
                     model.set_transformer()
         logger.info("set transformer on")
         for idx, (inputs, y) in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
-
+            if termin_flag is not None:
+                if termin_flag.qsize() > 0:
+                    # set fales stop loop
+                    return -1
             # ipdb.set_trace()
             if len(inputs) == 3:
                 seq_x = inputs[0]

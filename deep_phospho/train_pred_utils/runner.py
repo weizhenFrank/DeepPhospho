@@ -18,7 +18,7 @@ from deep_phospho.train_pred_utils.rt_train import train_rt_model
 
 
 class DeepPhosphoRunner(object):
-    def __init__(self, args, start_time=None, msgs_for_arg_parsing=None):
+    def __init__(self, args, start_time=None, msgs_for_arg_parsing=None, termin_flag=None):
         if start_time is None:
             self.start_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         else:
@@ -48,14 +48,46 @@ class DeepPhosphoRunner(object):
         self.NoTime = args['NoTime']
         self.Merge = args['Merge']
 
+        self.termin_flag = termin_flag
+
         self.logger = self._init_logger(msgs_for_arg_parsing)
         self.config_dir = self._init_workfolder()
         self.train_data_path, self.pred_data_path = self._init_data_folder()
-        self.ion_train_config, self.rt_train_config = self._init_train_config_loading()
-        self.ion_model_folder = self.train_ion()
-        self.used_predefined_rt_models, self.rt_model_folders = self.train_rt()
-        self.ion_pred_folders = self.pred_ion()
-        self.rt_pred_folders = self.pred_rt()
+        if args['train']:
+            self.ion_train_config, self.rt_train_config = self._init_train_config_loading()
+
+        print(args['TrainMode'])
+        print(f"train {args['train']} prediction {args['pred']}")
+        if args['TrainMode'] == 'rt':
+            if args['train']:
+                self.used_predefined_rt_models, self.rt_model_folders = self.train_rt()
+                if self.rt_model_folders is not None and args['pred']:
+                    self.rt_pred_folders = self.pred_rt()
+            elif args['pred']:
+                self.rt_pred_folders = self.ExistedRTModel
+                if self.rt_pred_folders is not None:
+                    self.rt_pred_folders = self.pred_rt()
+                else:
+                    print('please give vaild model path.')
+            else:
+                print('do nothing')
+
+        elif args['TrainMode'] == 'ion':
+            if args['train']:
+                self.ion_model_folder = self.train_ion()
+                if args['pred'] and self.ion_model_folder is not None:
+                    self.ion_pred_folders = self.pred_ion()
+            elif args['pred']:
+                # todo give model folder
+                self.ion_model_folder = self.ExistedIonModel
+
+                if self.ion_model_folder is not None:
+                    self.ion_pred_folders = self.pred_ion()
+                else:
+                    print('please give vaild model path.')
+
+        else:
+            assert False
 
     def _init_logger(self, msgs_for_arg_parsing):
         os.makedirs(self.WorkDir, exist_ok=True)
@@ -82,22 +114,26 @@ class DeepPhosphoRunner(object):
     def _init_data_folder(self):
         data_folder = join_path(self.WorkDir, 'Data')
         os.makedirs(data_folder, exist_ok=True)
-        if self.TrainData[0] is not None:
-            self.logger.info(f'Transforming training data')
-            train_data_path = prot_utils.dp_train_data.file_to_trainset(path=self.TrainData[0], output_folder=data_folder, file_type=self.TrainData[1])
-            self.logger.info(f'Training data transformation done')
-        else:
-            train_data_path = None
+        train_data_path = None
+        if self.args['train']:
+            if self.TrainData[0] is not None:
+                self.logger.info(f'Transforming training data')
+                train_data_path = prot_utils.dp_train_data.file_to_trainset(path=self.TrainData[0], output_folder=data_folder, file_type=self.TrainData[1])
+                self.logger.info(f'Training data transformation done')
+            else:
+                train_data_path = None
 
         pred_data_path = dict(IonPred=[], RTPred=[])
-        if self.TrainData[0] is not None:
-            self.PredData.insert(0, (self.TrainData[0], self.TrainData[1]))
-        for idx, (pred_path, pred_type) in enumerate(self.PredData, 1):
-            self.logger.info(f'Transforming prediction data {idx}: {pred_type} - {pred_path}')
-            _ = prot_utils.dp_pred_data.file_to_pred_input(path=pred_path, output_folder=data_folder, file_type=pred_type)
-            pred_data_path['IonPred'].append(_['IonPred'])
-            pred_data_path['RTPred'].append(_['RTPred'])
-            self.logger.info(f'Prediction data {idx} transformation done')
+        if self.args['pred']:
+            # if self.TrainData[0] is not None:
+            #     self.PredData.insert(0, (self.TrainData[0], self.TrainData[1]))
+            assert len(self.PredData) > 0
+            for idx, (pred_path, pred_type) in enumerate(self.PredData, 1):
+                self.logger.info(f'Transforming prediction data {idx}: {pred_type} - {pred_path}')
+                _ = prot_utils.dp_pred_data.file_to_pred_input(path=pred_path, output_folder=data_folder, file_type=pred_type)
+                pred_data_path['IonPred'].append(_['IonPred'])
+                pred_data_path['RTPred'].append(_['RTPred'])
+                self.logger.info(f'Prediction data {idx} transformation done')
 
         return train_data_path, pred_data_path
 
@@ -142,6 +178,10 @@ class DeepPhosphoRunner(object):
             rt_train_config['TRAINING_HYPER_PARAM']['TRAINING_HYPER_PARAM'] = self.InitLR
             rt_train_config['TRAINING_HYPER_PARAM']['EPOCH'] = self.RTEpoch
             rt_train_config['TRAINING_HYPER_PARAM']['GPU_INDEX'] = self.Device
+
+        # rt_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
+        # ion_train_config['TRAINING_HYPER_PARAM']['DEBUG'] = True
+
         return ion_train_config, rt_train_config
 
     def train_ion(self):
@@ -155,12 +195,18 @@ class DeepPhosphoRunner(object):
             ion_model_folder = join_path(self.ion_train_config['WorkFolder'], self.ion_train_config['InstanceName'])
             os.makedirs(ion_model_folder, exist_ok=True)
 
+            self.ion_train_config['PretrainParam'] = self.args['Pretrain-Ion']
+
             cfg_path = join_path(ion_model_folder, f'Config-IonTrain-{self.TaskName}.json')
             with open(cfg_path, 'w') as f:
                 json.dump(self.ion_train_config, f, indent=4)
             self.logger.info(f'Start ion model instance {self.ion_train_config["InstanceName"]}')
             try:
-                train_ion_model(self.ion_train_config, )
+                stat = train_ion_model(self.ion_train_config, termin_flag=self.termin_flag)
+                if stat is not None:
+                    if stat == -1:
+                        ion_model_folder = None
+                        print('runner stop')
             except:
                 error_msg = f'ERROR: Error when running ion model training instance {self.ion_train_config["InstanceName"]}'
                 self.logger.error(error_msg)
@@ -191,23 +237,28 @@ class DeepPhosphoRunner(object):
 
             self.logger.info('-' * 20)
             self.logger.info('Start training RT model')
-            for idx, layer_num in enumerate(layer_nums, 1):
+            for idx, layer_idx in enumerate(layer_nums, 1):
                 self.logger.info(f'Training RT model {idx}/{len(layer_nums)}')
                 cfg_cp = copy.deepcopy(self.rt_train_config)
-                cfg_cp['PretrainParam'] = f"./PretrainParams/RTModel/{layer_num}.pth"
-                cfg_cp['UsedModelCFG']['num_encd_layer'] = layer_num
+                cfg_cp['PretrainParam'] = self.args[f'Pretrain-RT-{layer_idx}']
+                cfg_cp['UsedModelCFG']['num_encd_layer'] = layer_idx
                 if self.NoTime:
-                    cfg_cp['InstanceName'] = f'{self.TaskName}-RTModel-{layer_num}'
+                    cfg_cp['InstanceName'] = f'{self.TaskName}-RTModel-{layer_idx}'
                 else:
-                    cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{self.TaskName}-RTModel-{layer_num}'
-                rt_model_folders[layer_num] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
-                os.makedirs(rt_model_folders[layer_num], exist_ok=True)
-                cfg_path = join_path(rt_model_folders[layer_num], f'Config-RTTrain-{self.TaskName}-{layer_num}.json')
+                    cfg_cp['InstanceName'] = f'{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}-{self.TaskName}-RTModel-{layer_idx}'
+                rt_model_folders[layer_idx] = (join_path(cfg_cp['WorkFolder'], cfg_cp['InstanceName']))
+                os.makedirs(rt_model_folders[layer_idx], exist_ok=True)
+                cfg_path = join_path(rt_model_folders[layer_idx], f'Config-RTTrain-{self.TaskName}-{layer_idx}.json')
                 with open(cfg_path, 'w') as f:
                     json.dump(cfg_cp, f, indent=4)
                 self.logger.info(f'Start rt model instance {cfg_cp["InstanceName"]}')
                 try:
-                    train_rt_model(configs=cfg_cp)
+                    stat = train_rt_model(configs=cfg_cp, termin_flag=self.termin_flag)
+                    if stat is not None:
+                        if stat == -1:
+                            rt_model_folders = None
+                            print('runner stop')
+                            break
                 except:
                     error_msg = f'ERROR: Error when running rt model training instance {cfg_cp["InstanceName"]}'
                     self.logger.error(error_msg)
@@ -247,7 +298,12 @@ class DeepPhosphoRunner(object):
                 json.dump(cfg_cp, f, indent=4)
             self.logger.info(f'Start ion model instance {cfg_cp["InstanceName"]}')
             try:
-                pred_ion(configs=cfg_cp)
+                stat = pred_ion(configs=cfg_cp, termin_flag=self.termin_flag)
+                if stat is not None:
+                    if stat == -1:
+                        ion_pred_folders = None
+                        print('runner stop')
+                        break
             except:
                 error_msg = f'ERROR: Error when running ion model prediction instance {cfg_cp["InstanceName"]}'
                 self.logger.error(error_msg)
@@ -284,7 +340,12 @@ class DeepPhosphoRunner(object):
                 json.dump(cfg_cp, f, indent=4)
             self.logger.info(f'Start RT model instance {cfg_cp["InstanceName"]}')
             try:
-                pred_rt(configs=cfg_cp)
+                stat = pred_rt(configs=cfg_cp, termin_flag=self.termin_flag)
+                if stat is not None:
+                    if stat == -1:
+                        rt_pred_folders = None
+                        print('runner stop')
+                        break
             except:
                 error_msg = f'ERROR: Error when running rt model prediction instance {cfg_cp["InstanceName"]}'
                 self.logger.error(error_msg)

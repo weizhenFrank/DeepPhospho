@@ -2,6 +2,7 @@
 import datetime
 import os
 
+import ipdb
 import wx
 import wx.richtext
 
@@ -32,6 +33,8 @@ PipelineParams = {
     'InitLR': '0.0001',
     'PredInput': [],
     'PredInputFormat': [],
+    'train':False,
+    'pred':False,
 }
 
 
@@ -160,7 +163,8 @@ class DeepPhosphoUIFrame(wx.Frame):
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
         work_folder_horizon_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        work_folder_desc_text = wx.StaticText(self._main_panel, -1, 'Work folder (define where to perform DeepPhospho pipeline)')
+        work_folder_desc_text = wx.StaticText(self._main_panel, -1,
+                                              'Work folder (define where to perform DeepPhospho pipeline)',)
         work_folder_desc_text.SetFont(self._font_static_text)
         work_folder_horizon_boxsizer.Add(work_folder_desc_text, 0, wx.ALL, 10)
         select_button = wx.Button(self._main_panel, -1, 'Select')
@@ -172,6 +176,12 @@ class DeepPhosphoUIFrame(wx.Frame):
         work_folder_text = wx.TextCtrl(self._main_panel, -1, size=(900, 30), style=wx.TE_HT_ON_TEXT, name='WorkFolder')
         work_folder_text.SetFont(self._font_search_content)
         grid_sizer.Add(work_folder_text, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+
+        default_wf = os.path.join(os.path.abspath('.'), 'demo_work_folder')
+        if not os.path.exists(default_wf):
+            os.makedirs(default_wf)
+        work_folder_text.SetValue(default_wf)
 
         task_name_desc_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
         task_name_desc_text = wx.StaticText(self._main_panel, -1, 'Task name (the identifier of this task)')
@@ -192,7 +202,7 @@ class DeepPhosphoUIFrame(wx.Frame):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
-        run_button = wx.Button(self._main_panel, -1, 'Run')
+        run_button = wx.Button(self._main_panel, -1, 'Run', name='run_bottum')
         run_button.SetFont(self._font_static_text)
         run_button.Bind(wx.EVT_BUTTON, self._event_run)  # TODO
         grid_sizer.Add(run_button, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
@@ -202,7 +212,31 @@ class DeepPhosphoUIFrame(wx.Frame):
         stop_button.Bind(wx.EVT_BUTTON, self._event_stop)  # TODO
         grid_sizer.Add(stop_button, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+
+        def set_checkbox(e, param, key):
+            param[key] = e.GetEventObject().GetValue()
+
+        run_mode_checkbox_train = wx.CheckBox(self, -1, 'Train')
+        run_mode_checkbox_train.SetValue(PipelineParams['train'])
+        run_mode_checkbox_train.Bind(wx.EVT_CHECKBOX,
+                                     lambda e: set_checkbox(e, PipelineParams, 'train'))
+        run_mode_checkbox_train.SetFont(self._font_static_text)
+
+        run_mode_checkbox_pred = wx.CheckBox(self, -1, 'Prediction')
+        run_mode_checkbox_pred.SetValue(PipelineParams['pred'])
+        run_mode_checkbox_pred.Bind(wx.EVT_CHECKBOX,
+                                    lambda e: set_checkbox(e, PipelineParams, 'pred'))
+
+        run_mode_checkbox_pred.SetFont(self._font_static_text)
+
+        grid_sizer.Add(run_mode_checkbox_train, pos=(0, 2), span=(1, 1),
+                       flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        grid_sizer.Add(run_mode_checkbox_pred, pos=(1, 2), span=(1, 1),
+                       flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        static_box_sizer.Add(grid_sizer, proportion=0,
+                             flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+
         return static_box_sizer
 
     def _init_tools_sizer(self):
@@ -240,14 +274,16 @@ class DeepPhosphoUIFrame(wx.Frame):
             pass
         else:
             pass
-        self.runner_thread = RunnerThread(runner_config, start_time)
+        self.runner_thread = RunnerThread(runner_config, start_time, ui_callback=event)
         self.runner_thread.setDaemon(True)
         self.runner_thread.start()
         event.GetEventObject().Disable()
 
     def _event_stop(self, event):
         self.runner_thread.terminate()
-        self.runner_thread.join()
+        # self.runner_thread.join()
+        widget = self.FindWindowByName('run_bottum')
+        widget.Enable()
 
     def collect_info_curr_panel(self):
         for name in ['WorkFolder', 'TaskName']:
@@ -321,10 +357,12 @@ class GeneralConfigPanel(wx.Panel):
         rt_pretrain_sub_sizer = self._init_rt_pretrain_sizer()
         grid_sizer.Add(rt_pretrain_sub_sizer, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
 
-        device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer = self._init_widgets_below_rt_pretrain()
+        (device_boxsizer, rt_scale_boxsizer,
+         max_pep_len_boxsizer,mode_select_boxsizer) = self._init_widgets_below_rt_pretrain()
         grid_sizer.Add(device_boxsizer, pos=(4, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         grid_sizer.Add(rt_scale_boxsizer, pos=(5, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         grid_sizer.Add(max_pep_len_boxsizer, pos=(6, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        grid_sizer.Add(mode_select_boxsizer, pos=(7, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
         return static_box_sizer, rt_pretrain_sub_sizer
@@ -370,7 +408,15 @@ class GeneralConfigPanel(wx.Panel):
         max_pep_len_text.SetFont(self._font_static_text)
         max_pep_len_boxsizer.Add(max_pep_len_text, 0, wx.ALL, 10)
 
-        return device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer
+        mode_select_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        max_pep_len_desc_text = wx.StaticText(self, -1, 'Training mode')
+        train_mode_listbox = wx.ListBox(self, -1, choices=['rt', 'ion'], style=wx.LB_SINGLE, name='TrainMode')
+        train_mode_listbox.SetFont(self._font_static_text)
+        train_mode_listbox.SetSelection(0)
+        mode_select_boxsizer.Add(max_pep_len_desc_text, 0, wx.ALL, 10)
+        mode_select_boxsizer.Add(train_mode_listbox, 0, wx.ALL, 10)
+
+        return device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer,mode_select_boxsizer
 
     def _event_check_rt_ensemble(self, e):
         PipelineParams['RTEnsemble'] = e.GetEventObject().GetValue()
@@ -539,11 +585,14 @@ class TrainStepPanel(wx.Panel):
         self.FindWindowByName(f'TrainData').SetValue(os.path.join(dirname, filename))
 
     def collect_info_curr_panel(self):
-        for name in ['TrainData', 'TrainDataFormat', 'Epoch-Ion', 'Epoch-RT', 'BatchSize-Ion', 'BatchSize-RT', 'InitLR']:
+        for name in ['TrainData', 'TrainDataFormat', 'TrainMode', 'Epoch-Ion', 'Epoch-RT', 'BatchSize-Ion', 'BatchSize-RT', 'InitLR']:
             widget = self.FindWindowByName(name)
             if widget is not None:
                 if name == 'TrainDataFormat':
                     PipelineParams[name] = TrainFormatList[widget.GetSelection()]
+                elif name == 'TrainMode':
+
+                    PipelineParams[name] = ['rt', 'ion'][widget.GetSelection()]
                 else:
                     PipelineParams[name] = widget.GetValue()
 
