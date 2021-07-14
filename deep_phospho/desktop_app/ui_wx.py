@@ -1,30 +1,36 @@
-# import webbrowser
 import datetime
 import os
+import webbrowser
 
-import ipdb
 import torch.cuda
 import wx
-import wx.richtext
 
 from .runner_for_ui import parse_args_from_ui_to_runner, RunnerThread, BuildLibThread, MergeLibThread
 from .ui_configs import *
 
-# Defined params
+# Define params in UI
 PipelineParams = {
+
+    # Main frame
     'WorkFolder': os.path.join(os.path.abspath('.'), 'DeepPhosphoDesktop'),
     'TaskName': datetime.datetime.now().strftime("%Y%m%d_%H%M%S"),
+    'Task-Train': True,
+    'Task-Predict': True,
+
+    # General config
     'Pretrain-Ion': '',
+    'RTEnsemble': True,
     'Pretrain-RT-4': '',
     'Pretrain-RT-5': '',
     'Pretrain-RT-6': '',
     'Pretrain-RT-7': '',
     'Pretrain-RT-8': '',
-    'RTEnsemble': True,
     'Device': '0',
     'RTScale-lower': '-100',
     'RTScale-upper': '200',
     'MaxPepLen': '54',
+
+    # Training step
     'TrainData': '',
     'TrainDataFormat': '',
     'Epoch-Ion': '30',
@@ -32,10 +38,11 @@ PipelineParams = {
     'BatchSize-Ion': '64',
     'BatchSize-RT': '128',
     'InitLR': '0.0001',
+
+    # Prediction step
     'PredInput': [],
     'PredInputFormat': [],
-    'Train': True,
-    'Prediction': True,
+
 }
 
 
@@ -139,7 +146,11 @@ class DeepPhosphoUIFrame(wx.Frame):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
-        desc_text = wx.StaticText(self._main_panel, -1, MainDesc)
+        # desc_text = wx.StaticText(self._main_panel, -1, MainDesc, style=wx.TE_AUTO_URL)
+        # desc_text.SetFont(self._font_static_text)
+        # grid_sizer.Add(desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
+
+        desc_text = wx.TextCtrl(self._main_panel, -1, MainDesc, size=(self.GetSize()[0] * 0.925, 150), style=wx.TE_AUTO_URL | wx.TE_MULTILINE | wx.TE_READONLY)
         desc_text.SetFont(self._font_static_text)
         grid_sizer.Add(desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL | wx.TE_AUTO_URL)
 
@@ -165,7 +176,7 @@ class DeepPhosphoUIFrame(wx.Frame):
 
         work_folder_horizon_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
         work_folder_desc_text = wx.StaticText(self._main_panel, -1,
-                                              'Work folder (define where to perform DeepPhospho pipeline)',)
+                                              'Work folder (define where to perform DeepPhospho pipeline)', )
         work_folder_desc_text.SetFont(self._font_static_text)
         work_folder_horizon_boxsizer.Add(work_folder_desc_text, 0, wx.ALL, 10)
         select_button = wx.Button(self._main_panel, -1, 'Select')
@@ -197,13 +208,13 @@ class DeepPhosphoUIFrame(wx.Frame):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
-        train_checkbox = wx.CheckBox(self._main_panel, -1, 'Train', name='CheckBox-Train')
-        train_checkbox.SetValue(PipelineParams['Train'])
+        train_checkbox = wx.CheckBox(self._main_panel, -1, 'Train', name='Task-Train')
+        train_checkbox.SetValue(PipelineParams['Task-Train'])
         train_checkbox.SetFont(self._font_static_text)
         grid_sizer.Add(train_checkbox, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        pred_checkbox = wx.CheckBox(self._main_panel, -1, 'Prediction')
-        pred_checkbox.SetValue(PipelineParams['Prediction'])
+        pred_checkbox = wx.CheckBox(self._main_panel, -1, 'Predict', name='Task-Predict')
+        pred_checkbox.SetValue(PipelineParams['Task-Predict'])
         pred_checkbox.SetFont(self._font_static_text)
         grid_sizer.Add(pred_checkbox, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
@@ -291,7 +302,7 @@ class DeepPhosphoUIFrame(wx.Frame):
         merge_lib_frame.Show()
 
     def collect_info_curr_panel(self):
-        for name in ['WorkFolder', 'TaskName']:
+        for name in ['WorkFolder', 'TaskName', 'Task-Train', 'Task-Predict']:
             widget = self.FindWindowByName(name)
             if widget is not None:
                 PipelineParams[name] = widget.GetValue()
@@ -341,9 +352,16 @@ class GeneralConfigPanel(wx.Panel):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
-        param_download_desc_text = wx.StaticText(self, -1, 'To use pre-trained model parameters, please download them here')
+        param_download_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        param_download_desc_text = wx.StaticText(self, -1, 'To use pre-trained model parameters, please have a look at our\n'
+                                                           'GitHub repository to download your prefered ones')
         param_download_desc_text.SetFont(self._font_static_text)
-        grid_sizer.Add(param_download_desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        param_download_boxsizer.Add(param_download_desc_text, 0, wx.ALL, 3)
+        param_download_desc_button = wx.Button(self, -1, 'Open in browser')
+        param_download_desc_button.SetFont(self._font_static_text)
+        param_download_desc_button.Bind(wx.EVT_BUTTON, self._event_open_repo_page)
+        param_download_boxsizer.Add(param_download_desc_button, 0, wx.ALL, 3)
+        grid_sizer.Add(param_download_boxsizer, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         ion_pretrain_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
         ion_pretrain_desc_text = wx.StaticText(self, -1, IonPretrainDesc)
@@ -360,14 +378,14 @@ class GeneralConfigPanel(wx.Panel):
         grid_sizer.Add(ion_pretrain_text, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         rt_pretrain_sub_sizer = self._init_rt_pretrain_sizer()
-        grid_sizer.Add(rt_pretrain_sub_sizer, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
+        grid_sizer.Add(rt_pretrain_sub_sizer, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        (device_boxsizer, rt_scale_boxsizer,
-         max_pep_len_boxsizer, mode_select_boxsizer) = self._init_widgets_below_rt_pretrain()
+        device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer = self._init_widgets_below_rt_pretrain()
+        # device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer, mode_select_boxsizer = self._init_widgets_below_rt_pretrain()
         grid_sizer.Add(device_boxsizer, pos=(4, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         grid_sizer.Add(rt_scale_boxsizer, pos=(5, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         grid_sizer.Add(max_pep_len_boxsizer, pos=(6, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
-        grid_sizer.Add(mode_select_boxsizer, pos=(7, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        # grid_sizer.Add(mode_select_boxsizer, pos=(7, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
         return static_box_sizer, rt_pretrain_sub_sizer
@@ -384,7 +402,7 @@ class GeneralConfigPanel(wx.Panel):
 
         check_gpu_button = wx.Button(self, -1, 'Check GPUs')
         check_gpu_button.SetFont(self._font_static_text)
-        check_gpu_button.Bind(wx.EVT_BUTTON, self._event_check_gpus)  # TODO
+        check_gpu_button.Bind(wx.EVT_BUTTON, self._event_check_gpus)
         device_boxsizer.Add(check_gpu_button, 0, wx.ALL, 10)
 
         rt_scale_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -413,15 +431,18 @@ class GeneralConfigPanel(wx.Panel):
         max_pep_len_text.SetFont(self._font_static_text)
         max_pep_len_boxsizer.Add(max_pep_len_text, 0, wx.ALL, 10)
 
-        mode_select_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        max_pep_len_desc_text = wx.StaticText(self, -1, 'Training mode')
-        train_mode_listbox = wx.ListBox(self, -1, choices=['rt', 'ion'], style=wx.LB_SINGLE, name='TrainMode')
-        train_mode_listbox.SetFont(self._font_static_text)
-        train_mode_listbox.SetSelection(0)
-        mode_select_boxsizer.Add(max_pep_len_desc_text, 0, wx.ALL, 10)
-        mode_select_boxsizer.Add(train_mode_listbox, 0, wx.ALL, 10)
+        # mode_select_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        # max_pep_len_desc_text = wx.StaticText(self, -1, 'Training mode')
+        # train_mode_listbox = wx.ListBox(self, -1, choices=['rt', 'ion'], style=wx.LB_SINGLE, name='TrainMode')
+        # train_mode_listbox.SetFont(self._font_static_text)
+        # train_mode_listbox.SetSelection(0)
+        # mode_select_boxsizer.Add(max_pep_len_desc_text, 0, wx.ALL, 10)
+        # mode_select_boxsizer.Add(train_mode_listbox, 0, wx.ALL, 10)
 
-        return device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer, mode_select_boxsizer
+        return device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer  # , mode_select_boxsizer
+
+    def _event_open_repo_page(self, event):
+        webbrowser.open(REPO)
 
     def _event_check_gpus(self, event):
         if torch.cuda.is_available():

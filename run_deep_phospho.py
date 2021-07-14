@@ -2,7 +2,6 @@ import argparse
 import copy
 import datetime
 import os
-import time
 from os.path import join as join_path
 
 from deep_phospho.proteomics_utils import rapid_kit as rk
@@ -129,13 +128,6 @@ If the input files have different formats, the same number of -pt is needed''')
     return parser
 
 
-def create_folder(d):
-    try:
-        os.makedirs(d)
-    except FileExistsError:
-        pass
-
-
 def exit_in_preprocess_step(preprocess_msgs):
     for msg in preprocess_msgs:
         print(msg)
@@ -153,7 +145,7 @@ def parse_args(parser, time):
         arg_msgs.append(f'-w or -work_dir is not passed, use {work_dir} as work directory')
     else:
         arg_msgs.append(f'Set work directory to {work_dir}')
-    create_folder(work_dir)
+    os.makedirs(work_dir, exist_ok=True)
 
     no_time = inputs['no_time']
 

@@ -1,15 +1,17 @@
-
-import  queue
 import logging
 import os
+import queue
 import threading
 import traceback
 
 import wx
+
 from deep_phospho import proteomics_utils as prot_utils
-
-
 from deep_phospho.train_pred_utils.runner import DeepPhosphoRunner
+
+
+def check_ui_args(ui_args: dict):
+    pass
 
 
 def parse_args_from_ui_to_runner(config_from_ui: dict) -> dict:
@@ -31,7 +33,7 @@ def parse_args_from_ui_to_runner(config_from_ui: dict) -> dict:
         'MaxPepLen': int(config_from_ui['MaxPepLen']),
         'RTScale': (int(config_from_ui['RTScale-lower']), int(config_from_ui['RTScale-upper'])),
         'EnsembleRT': config_from_ui['RTEnsemble'],
-        'TrainMode': config_from_ui['TrainMode'],
+        # 'TrainMode': config_from_ui['TrainMode'],
         'Pretrain-Ion': config_from_ui['Pretrain-Ion'],
         'Pretrain-RT-4': config_from_ui['Pretrain-RT-4'],
         'Pretrain-RT-5': config_from_ui['Pretrain-RT-5'],
@@ -40,9 +42,8 @@ def parse_args_from_ui_to_runner(config_from_ui: dict) -> dict:
         'Pretrain-RT-8': config_from_ui['Pretrain-RT-8'],
         'NoTime': False,
         'Merge': True,
-        'train': config_from_ui['train'],
-        'pred': config_from_ui['pred']
-
+        'Task-Train': config_from_ui['Task-Train'],
+        'Task-Predict': config_from_ui['Task-Predict'],
     }
     return runner_config
 
