@@ -118,7 +118,11 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version=
         axis=1
     )]
 
-    df = df[pd.notna(df['Intensities'])].copy()
+    try:
+        df = df[pd.notna(df['Intensities'])].copy()
+    except KeyError:
+        df = df[pd.notna(df['Intensity'])].copy()
+
     max_score_df = df.groupby('IntPrec').apply(lambda x: x.loc[x['Score'].idxmax()]).copy()
     intens = max_score_df.apply(MQ.inten_from_mq, axis=1).to_dict()
     ion_train_prec = random.sample(list(intens.keys()), int(len(intens) * split_ratio[0]))

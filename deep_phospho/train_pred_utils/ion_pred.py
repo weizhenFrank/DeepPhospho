@@ -30,7 +30,7 @@ torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
 
 
-def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
+def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None, termin_flag=None):
     # Get data path here for ease of use
     pred_input_file = configs['Intensity_DATA_CFG']['PredInputPATH']
     if not os.path.exists(pred_input_file):
@@ -93,7 +93,9 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
 
     # Init dictionary
     dictionary = Dictionary()
-    _ = dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
+    if 'X' in dictionary.word2idx:
+        dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
+
     idx2aa = dictionary.idx2word
 
     Iontest = IonData(configs, pred_input_file, dictionary=dictionary)
@@ -101,7 +103,7 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
     test_dataloader = DataLoader(dataset=test_dataset,
                                  shuffle=False,
                                  batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
-                                 num_workers=0,
+                                 num_workers=2,
                                  collate_fn=partial(collate_fn, configs=configs))
 
     def idxtoaa(arr):
@@ -168,7 +170,10 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
                     model.set_transformer()
         logger.info("set transformer on")
         for idx, (inputs, y) in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
-
+            if termin_flag is not None:
+                if termin_flag.qsize() > 0:
+                    # set fales stop loop
+                    return -1
             # ipdb.set_trace()
             if len(inputs) == 3:
                 seq_x = inputs[0]

@@ -11,6 +11,7 @@ demo/**/*.pkl
 
 # Test data
 test/TestPipeline*
+DeepPhosphoDesktop
 
 # Pre-trained params
 PretrainParams/*
@@ -50,6 +51,7 @@ var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
+demo_work_folder
 *.egg-info/
 .installed.cfg
 *.egg

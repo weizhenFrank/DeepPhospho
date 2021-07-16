@@ -31,7 +31,7 @@ torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
 
 
-def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=None):
+def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=None, termin_flag=None):
     # Get data path here for ease of use
     train_file = configs['Intensity_DATA_CFG']['TrainPATH']
     test_file = configs['Intensity_DATA_CFG']['TestPATH']
@@ -105,7 +105,8 @@ def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=N
 
     print("Preparing dataset")
     dictionary = Dictionary()
-    _ = dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
+    if 'X' in dictionary.word2idx:
+        dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
 
     ion_train_data = IonData(configs, path=train_file, dictionary=dictionary)
     ion_test_data = IonData(configs, path=test_file, dictionary=dictionary)
@@ -260,10 +261,14 @@ def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=N
                     #                    model_size=configs['UsedModelCFG']['lstm_hidden_dim'],
                     #                    warmup_steps=configs.TRAINING_HYPER_PARAM['warmup_steps'],
                     #                    factor=configs.TRAINING_HYPER_PARAM['factor'])
-
         for idx, (inputs, y) in enumerate(train_dataloader):
             # ipdb.set_trace()
             iteration = epoch * len(train_dataloader) + idx
+
+            if termin_flag is not None:
+                if termin_flag.qsize() > 0:
+                    # set fales stop loop
+                    return -1
             if len(inputs) == 3:
                 # print("3 inputs")
                 seq_x = inputs[0]
@@ -440,7 +445,8 @@ def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=N
                 model = model.to(device)
                 if use_cuda:
                     torch.cuda.empty_cache()
-
+    if best_model is None:
+        best_model = copy.deepcopy(model)
     save_checkpoint(model, optimizer, scheduler, output_dir, "last_epoch")
     save_checkpoint(best_model, optimizer, scheduler, output_dir, "best_model")
     tf_writer_test.write_data(iteration_best, best_test_res, 'eval_metric/Best_PCC_median')
