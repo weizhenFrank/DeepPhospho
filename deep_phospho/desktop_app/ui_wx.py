@@ -5,7 +5,13 @@ import webbrowser
 import torch.cuda
 import wx
 
-from .runner_for_ui import parse_args_from_ui_to_runner, RunnerThread, BuildLibThread, MergeLibThread
+from .runner_for_ui import (
+    search_pretrain_params,
+    parse_args_from_ui_to_runner,
+    RunnerThread,
+    BuildLibThread,
+    MergeLibThread
+)
 from .ui_configs import *
 
 # Define params in UI
@@ -19,7 +25,7 @@ PipelineParams = {
 
     # General config
     'Pretrain-Ion': '',
-    'RTEnsemble': True,
+    'EnsembleRT': True,
     'Pretrain-RT-4': '',
     'Pretrain-RT-5': '',
     'Pretrain-RT-6': '',
@@ -44,6 +50,7 @@ PipelineParams = {
     'PredInputFormat': [],
 
 }
+PipelineParams = search_pretrain_params(PipelineParams)
 
 
 class DeepPhosphoUIFrame(wx.Frame):
@@ -268,15 +275,15 @@ class DeepPhosphoUIFrame(wx.Frame):
             self.runner_thread.setDaemon(True)
             self.runner_thread.start()
             event.GetEventObject().Disable()
-            event.GetEventObject().SetLabel('Running ...')
+            event.GetEventObject().SetLabel('Running')
         else:
             pass
 
     def _event_stop(self, event):
         self.runner_thread.terminate()
-        # self.runner_thread.join()
         widget = self.FindWindowByName('RunButton')
         widget.Enable()
+        widget.SetLabel('Run')
 
     def running_error(self, work_dir):
         self.FindWindowByName('RunButton').Enable()
@@ -288,6 +295,11 @@ class DeepPhosphoUIFrame(wx.Frame):
         self.FindWindowByName('RunButton').Enable()
         self.FindWindowByName('RunButton').SetLabel('Run')
         wx.MessageBox(f'Task {PipelineParams["TaskName"]} done. Check result files in {work_dir}')
+
+    def running_cancel(self):
+        self.FindWindowByName('RunButton').Enable()
+        self.FindWindowByName('RunButton').SetLabel('Run')
+        wx.MessageBox(f'Task {PipelineParams["TaskName"]} is cancelled')
 
     def _event_open_tool_build_lib(self, event):
         _ = event
@@ -465,7 +477,7 @@ class GeneralConfigPanel(wx.Panel):
             self.FindWindowByName('Device').SetValue('cpu')
 
     def _event_check_rt_ensemble(self, e):
-        PipelineParams['RTEnsemble'] = e.GetEventObject().GetValue()
+        PipelineParams['EnsembleRT'] = e.GetEventObject().GetValue()
         self.collect_info_curr_panel()
 
         self.boxsizer_main.Clear(True)
@@ -477,13 +489,13 @@ class GeneralConfigPanel(wx.Panel):
         grid_sizer = wx.GridBagSizer(hgap=5, vgap=5)
 
         rt_pretrain_desc_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        text = 'Pre-trained RT model (ensemble on)' if PipelineParams['RTEnsemble'] is True else 'Pre-trained RT model (ensemble off)'
+        text = 'Pre-trained RT model (ensemble on)' if PipelineParams['EnsembleRT'] is True else 'Pre-trained RT model (ensemble off)'
         rt_pretrain_desc_text = wx.StaticText(self, -1, text)
         rt_pretrain_desc_text.SetFont(self._font_static_text)
         rt_pretrain_desc_boxsizer.Add(rt_pretrain_desc_text, 0, wx.ALL, 4)
 
         rt_ensemble_checkbox = wx.CheckBox(self, -1, 'Use RT model ensemble')
-        rt_ensemble_checkbox.SetValue(PipelineParams['RTEnsemble'])
+        rt_ensemble_checkbox.SetValue(PipelineParams['EnsembleRT'])
         rt_ensemble_checkbox.SetFont(self._font_static_text)
         rt_ensemble_checkbox.Bind(wx.EVT_CHECKBOX, self._event_check_rt_ensemble)
         rt_pretrain_desc_boxsizer.Add(wx.StaticText(self, -1, ' ' * 10), 0, wx.ALL, 4)
@@ -491,7 +503,7 @@ class GeneralConfigPanel(wx.Panel):
 
         grid_sizer.Add(rt_pretrain_desc_boxsizer, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        if PipelineParams['RTEnsemble'] is True:
+        if PipelineParams['EnsembleRT'] is True:
             for pos, layer in enumerate([4, 5, 6, 7, 8], 1):
                 rt_pretrain_one_row_boxsizer = self._init_rt_pretrain_one_row(layer=layer)
                 grid_sizer.Add(rt_pretrain_one_row_boxsizer, pos=(pos, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
@@ -887,7 +899,7 @@ class BuildLibraryFrame(wx.Frame):
             self.runner_thread.setDaemon(True)
             self.runner_thread.start()
             event.GetEventObject().Disable()
-            event.GetEventObject().SetLabel('Building ...')
+            event.GetEventObject().SetLabel('Building')
         else:
             pass
 
@@ -1056,7 +1068,7 @@ class MergeLibraryFrame(wx.Frame):
             self.merge_lib_thread.setDaemon(True)
             self.merge_lib_thread.start()
             event.GetEventObject().Disable()
-            event.GetEventObject().SetLabel('Merging ...')
+            event.GetEventObject().SetLabel('Merging')
         else:
             pass
 

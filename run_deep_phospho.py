@@ -106,16 +106,34 @@ If the input files have different formats, the same number of -pt is needed''')
     # rt ensemble
     parser.add_argument('-en', '--rt_ensemble', default=False, action='store_true',
                         help='Use ensemble to improve RT prediction or not')
-    # pre-trained models
-    # TODO pre-train
 
-    # pre-defined models
-    # TODO differetiate no fine-tuning with pre-train
-    parser.add_argument('-ion_model', '--exist_ion_model', metavar='path', type=str, default=None,
+    # train task
+    parser.add_argument('-train', '--train', default=1, type=int,
+                        help='''Train a new model (1) or not (0). Default 1''')
+    # pred task
+    parser.add_argument('-pred', '--predict', default=1, type=int,
+                        help='''Perform prediction (1) or not (0). Default 1''')
+
+    # pre-trained models
+    _pretrain_ion = os.path.join('.', 'PretrainParams', 'IonModel', 'best_model.pth')
+    _pretrain_ion = _pretrain_ion if os.path.exists(_pretrain_ion) else ''
+    parser.add_argument('-pretrain_ion', '--pretrain_ion_model', metavar='path', type=str, default=_pretrain_ion,
                         help='Use existing ion model parameters instead of training a new one. '
                              'When this argument is passed, ion model fine-tuning step will be skipped')
     for l in [4, 5, 6, 7, 8]:
-        parser.add_argument(f'-rt_model_{l}', f'--exist_rt_model_{l}', metavar='path', type=str, default=None,
+        _pretrain_rt = os.path.join('.', 'PretrainParams', 'RTModel', f'{l}.pth')
+        _pretrain_rt = _pretrain_rt if os.path.exists(_pretrain_rt) else ''
+        parser.add_argument(f'-pretrain_rt_{l}', f'--pretrain_rt_model_{l}', metavar='path', type=str, default=_pretrain_rt,
+                            help=f'Use existing RT model parameters (with {l} encoder layer) instead of training a new one. '
+                                 f'When this argument is passed, RT model fine-tuning step for {l} encoder layer will be skipped. '
+                                 f'If -en (-rt_ensemble) is not used, only -rt_model_8 is required in the case to skip RT model fine-tuning')
+
+    # pre-defined models
+    parser.add_argument('-exist_ion', '--exist_ion_model', metavar='path', type=str, default=None,
+                        help='Use existing ion model parameters instead of training a new one. '
+                             'When this argument is passed, ion model fine-tuning step will be skipped')
+    for l in [4, 5, 6, 7, 8]:
+        parser.add_argument(f'-exist_rt_{l}', f'--exist_rt_model_{l}', metavar='path', type=str, default=None,
                             help=f'Use existing RT model parameters (with {l} encoder layer) instead of training a new one. '
                                  f'When this argument is passed, RT model fine-tuning step for {l} encoder layer will be skipped. '
                                  f'If -en (-rt_ensemble) is not used, only -rt_model_8 is required in the case to skip RT model fine-tuning')
@@ -134,7 +152,7 @@ def exit_in_preprocess_step(preprocess_msgs):
     exit(-1)
 
 
-def parse_args(parser, time):
+def parse_args_from_cmd_to_runner(parser, time):
     inputs = copy.deepcopy(parser.parse_args().__dict__)
     arg_msgs = []
 
@@ -165,6 +183,27 @@ def parse_args(parser, time):
     rt_ensemble = inputs['rt_ensemble']
     if rt_ensemble:
         arg_msgs.append(f'Use ensemble RT model')
+
+    # Task for train and pred
+    perform_train = True if inputs['train'] == 1 else False
+    perform_pred = True if inputs['predict'] == 1 else False
+
+    # Check pre-train model params
+    ion_pretrain = inputs['pretrain_ion_model']
+    if ion_pretrain is None:
+        ion_pretrain = ''
+    if ion_pretrain != '' and not os.path.exists(ion_pretrain):
+        arg_msgs.append(f'ERROR: Pre-trained ion model is defined but file not found: {ion_pretrain}')
+        exit_in_preprocess_step(arg_msgs)
+
+    rt_pretrain = {l: inputs[f'pretrain_rt_model_{l}'] for l in [4, 5, 6, 7, 8]}
+    for l in list(rt_pretrain.keys()):
+        p = rt_pretrain[l]
+        if p is None:
+            rt_pretrain[l] = ''
+        if p != '' and not os.path.exists(p):
+            arg_msgs.append(f'ERROR: Pre-trained RT model {l} is defined but file not found: {p}')
+            exit_in_preprocess_step(arg_msgs)
 
     # Get train file, train file type and existed ion and RT models
     train_file = inputs['train_file']
@@ -292,29 +331,36 @@ def parse_args(parser, time):
     return arg_msgs, {
         'WorkDir': work_dir,
         'TaskName': task_name,
-        'TrainData': (train_file, train_file_type),
-        'PredData': list(zip(pred_files, pred_files_type)),
-        'ExistedIonModel': existed_ion_model,
-        'ExistedRTModel': existed_rt_model,
-        'SkipIonFinetune': skip_ion_finetune,
-        'SkipRTFinetune': skip_rt_finetune,
+        'Data-Train': (train_file, train_file_type),
+        'Data-Pred': list(zip(pred_files, pred_files_type)),
+
+        'Task-Train': perform_train,
+        'Task-Predict': perform_pred,
+        'PretrainModel-Ion': ion_pretrain,
+        'PretrainModel-RT': rt_pretrain,
+        'ExistedModel-Ion': existed_ion_model,
+        'ExistedModel-RT': existed_rt_model,
+        'SkipFinetune-Ion': skip_ion_finetune,
+        'SkipFinetune-RT': skip_rt_finetune,
+
         'Device': device,
-        'IonEpoch': ion_epoch,
-        'RTEpoch': rt_epoch,
-        'IonBatchSize': ion_bs,
-        'RTBatchSize': rt_bs,
+        'Epoch-Ion': ion_epoch,
+        'Epoch-RT': rt_epoch,
+        'BatchSize-Ion': ion_bs,
+        'BatchSize-RT': rt_bs,
         'InitLR': init_lr,
         'MaxPepLen': max_pep_len,
         'RTScale': rt_scale,
         'EnsembleRT': rt_ensemble,
         'NoTime': no_time,
-        'Merge': merge
+        'Merge': merge,
+
     }
 
 
 if __name__ == '__main__':
     start_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     arg_parser = init_arg_parser()
-    msgs, args = parse_args(arg_parser, start_time)
+    msgs, args = parse_args_from_cmd_to_runner(arg_parser, start_time)
 
     DeepPhosphoRunner(args, start_time=start_time, msgs_for_arg_parsing=msgs)

@@ -105,7 +105,8 @@ def train_ion_model(configs=None, config_load_msgs=None, config_overwrite_msgs=N
 
     print("Preparing dataset")
     dictionary = Dictionary()
-    _ = dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
+    if 'X' in dictionary.word2idx:
+        dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
 
     ion_train_data = IonData(configs, path=train_file, dictionary=dictionary)
     ion_test_data = IonData(configs, path=test_file, dictionary=dictionary)

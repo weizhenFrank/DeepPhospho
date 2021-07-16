@@ -93,7 +93,7 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None, te
 
     # Init dictionary
     dictionary = Dictionary()
-    if dictionary.word2idx.get('X') is not None:
+    if 'X' in dictionary.word2idx:
         dictionary.idx2word.pop(dictionary.word2idx.pop('X'))
 
     idx2aa = dictionary.idx2word

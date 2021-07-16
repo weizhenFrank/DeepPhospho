@@ -11,6 +11,7 @@ demo/**/*.pkl
 
 # Test data
 test/TestPipeline*
+DeepPhosphoDesktop
 
 # Pre-trained params
 PretrainParams/*
