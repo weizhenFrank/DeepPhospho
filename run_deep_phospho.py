@@ -49,7 +49,7 @@ def init_arg_parser():
                         help='''To use Spectronaut library, set this to "SNLib"
 Use MaxQuant msms.txt file, set this to "MQ1.5" for MaxQuant version <= 1.5, and "MQ1.6" for version >= 1.6''')
     # pred file
-    parser.add_argument('-pf', '--pred_file', metavar='path', type=str, required=True, nargs='*', action='append',
+    parser.add_argument('-pf', '--pred_file', metavar='path', type=str, nargs='*', action='append',  # required=True,
                         help='''File contains under-predicted peptide precursors may has multi-source:
 I. spectral library from Spectronaut
 II. search result from Spectronaut
@@ -57,7 +57,7 @@ III. msms.txt or evidence.txt from MaxQuant
 IV. any tab-separated file with two columns "sequence" and "charge"
 Either -pf file_1 file_2 ... or -pf file_1 -pf file_2 ... or mix above two is fine for this argument''')
     # pred file type
-    parser.add_argument('-pt', '--pred_file_type', metavar='str', type=str, required=True, nargs='*', action='append',
+    parser.add_argument('-pt', '--pred_file_type', metavar='str', type=str, nargs='*', action='append',  # required=True,
                         help='''The source of prediction input file or peptide format
 I. "SNLib" for Spectronaut library
 II. "SNResult" for Spectronaut result
@@ -104,7 +104,7 @@ If the input files have different formats, the same number of -pt is needed''')
                              'And a `*` will be needed to pass a negative number, like *-100,200. '
                              'Default is -100 to 200.')
     # rt ensemble
-    parser.add_argument('-en', '--rt_ensemble', default=False, action='store_true',
+    parser.add_argument('-en', '--ensemble_rt', default=False, action='store_true',
                         help='Use ensemble to improve RT prediction or not')
 
     # train task
@@ -118,25 +118,31 @@ If the input files have different formats, the same number of -pt is needed''')
     _pretrain_ion = os.path.join('.', 'PretrainParams', 'IonModel', 'best_model.pth')
     _pretrain_ion = _pretrain_ion if os.path.exists(_pretrain_ion) else ''
     parser.add_argument('-pretrain_ion', '--pretrain_ion_model', metavar='path', type=str, default=_pretrain_ion,
-                        help='Use existing ion model parameters instead of training a new one. '
-                             'When this argument is passed, ion model fine-tuning step will be skipped')
+                        help='Fine-tune on pre-trained ion model parameters or directly use this model to do prediction. '
+                             'This will be automatically filled-in if pre-trained models param file is existed as "PretrainParams/IonModel/best_model.pth". ')
     for l in [4, 5, 6, 7, 8]:
         _pretrain_rt = os.path.join('.', 'PretrainParams', 'RTModel', f'{l}.pth')
         _pretrain_rt = _pretrain_rt if os.path.exists(_pretrain_rt) else ''
         parser.add_argument(f'-pretrain_rt_{l}', f'--pretrain_rt_model_{l}', metavar='path', type=str, default=_pretrain_rt,
-                            help=f'Use existing RT model parameters (with {l} encoder layer) instead of training a new one. '
-                                 f'When this argument is passed, RT model fine-tuning step for {l} encoder layer will be skipped. '
-                                 f'If -en (-rt_ensemble) is not used, only -rt_model_8 is required in the case to skip RT model fine-tuning')
+                            help=f'Fine-tune on pre-trained RT model parameters (with {l} encoder layer) or directly use pre-trained models to do prediction. '
+                                 f'This will be automatically filled-in if pre-trained models param files are existed as "PretrainParams/IonModel/(layer_number).pth". '
+                                 f'If -en (-ensemble_rt) is not used, only -rt_model_8 is required')
 
-    # pre-defined models
-    parser.add_argument('-exist_ion', '--exist_ion_model', metavar='path', type=str, default=None,
-                        help='Use existing ion model parameters instead of training a new one. '
-                             'When this argument is passed, ion model fine-tuning step will be skipped')
+    # skip fine-tuning
+    parser.add_argument('-skip_ion_finetune', '--skip_ion_finetune', default=False, action='store_true',
+                        help='Partial training option. '
+                             'When this argument is passed, ion model fine-tuning step will be skipped. '
+                             'While RT model training will still be performed if -skip_rt_finetune_{layer_number} is not passed. '
+                             'This will be useful if you already have a fine-tuned ion model but have no or only some of fine-tuned RT models, '
+                             'and still want to use DeepPhospho runner but not individual train/prediction scripts. ')
     for l in [4, 5, 6, 7, 8]:
-        parser.add_argument(f'-exist_rt_{l}', f'--exist_rt_model_{l}', metavar='path', type=str, default=None,
-                            help=f'Use existing RT model parameters (with {l} encoder layer) instead of training a new one. '
-                                 f'When this argument is passed, RT model fine-tuning step for {l} encoder layer will be skipped. '
-                                 f'If -en (-rt_ensemble) is not used, only -rt_model_8 is required in the case to skip RT model fine-tuning')
+        parser.add_argument(f'-skip_rt_finetune_{l}', f'--skip_rt_finetune_{l}', default=False, action='store_true',
+                            help='Partial training option. '
+                                 f'When this argument is passed, RT model fine-tuning step for layer {l} will be skipped. '
+                                 f'Use existing RT model parameters (with {l} encoder layer) instead of training a new one. '
+                                 'This will be useful if you already have some fine-tuned RT model but not enough for ensemble, '
+                                 'or RT model has already been trained but ion model is need to be fine-tuned. '
+                                 'In this case, you can still use DeepPhospho runner but not individual train/prediction scripts. ')
     # no time
     parser.add_argument('-no_time', '--no_time', default=False, action='store_true',
                         help='''Dont add time to model folder. To keep the folder name same in different start time''')
@@ -160,9 +166,8 @@ def parse_args_from_cmd_to_runner(parser, time):
     work_dir = inputs['work_dir']
     if work_dir is None:
         work_dir = join_path(os.path.dirname(os.path.abspath(__file__)), f'{time}-DeepPhospho-WorkFolder')
-        arg_msgs.append(f'-w or -work_dir is not passed, use {work_dir} as work directory')
-    else:
-        arg_msgs.append(f'Set work directory to {work_dir}')
+        arg_msgs.append(f'-w or -work_dir is not defined, use {work_dir} as work directory')
+    arg_msgs.append(f'Set work directory to {work_dir}')
     os.makedirs(work_dir, exist_ok=True)
 
     no_time = inputs['no_time']
@@ -177,125 +182,88 @@ def parse_args_from_cmd_to_runner(parser, time):
             task_name = f'{task_name}'
         else:
             task_name = f'{task_name}_{time}'
-        arg_msgs.append(f'Set task name to {task_name}')
+    arg_msgs.append(f'Set task name as {task_name}')
 
     # Get use RT ensembl or not
-    rt_ensemble = inputs['rt_ensemble']
-    if rt_ensemble:
+    ensemble_rt = inputs['ensemble_rt']
+    if ensemble_rt:
         arg_msgs.append(f'Use ensemble RT model')
+        rt_layers = [4, 5, 6, 7, 8]
+    else:
+        rt_layers = [8]
 
     # Task for train and pred
     perform_train = True if inputs['train'] == 1 else False
     perform_pred = True if inputs['predict'] == 1 else False
 
-    # Check pre-train model params
+    # Skip fine-tuning
+    skip_ion_finetune = inputs['skip_ion_finetune']
+    skip_rt_finetune = {l: inputs[f'skip_rt_finetune_{l}'] for l in rt_layers}
+
+    # Check pre-trained model params
     ion_pretrain = inputs['pretrain_ion_model']
     if ion_pretrain is None:
         ion_pretrain = ''
     if ion_pretrain != '' and not os.path.exists(ion_pretrain):
         arg_msgs.append(f'ERROR: Pre-trained ion model is defined but file not found: {ion_pretrain}')
         exit_in_preprocess_step(arg_msgs)
+    if skip_ion_finetune and ion_pretrain == '':
+        arg_msgs.append(f'ERROR: Skip ion fine-tuning but pre-trained ion parameter file is not defined. '
+                        f'Use no -skip_ion_finetune option or define a pre-trained ion parameter file with -pretrain_ion')
+        exit_in_preprocess_step(arg_msgs)
 
-    rt_pretrain = {l: inputs[f'pretrain_rt_model_{l}'] for l in [4, 5, 6, 7, 8]}
-    for l in list(rt_pretrain.keys()):
+    rt_pretrain = {l: inputs[f'pretrain_rt_model_{l}'] for l in rt_layers}
+    for l in rt_layers:
         p = rt_pretrain[l]
         if p is None:
             rt_pretrain[l] = ''
         if p != '' and not os.path.exists(p):
             arg_msgs.append(f'ERROR: Pre-trained RT model {l} is defined but file not found: {p}')
             exit_in_preprocess_step(arg_msgs)
+        if skip_rt_finetune[l] and p == '':
+            arg_msgs.append(f'ERROR: Skip RT fine-tuning for layer {l} but pre-trained RT parameter file is not defined. '
+                            f'Use no -skip_rt_finetune_{l} option or define a pre-trained RT parameter file with -pretrain_rt_{l}')
+            exit_in_preprocess_step(arg_msgs)
 
-    # Get train file, train file type and existed ion and RT models
+    # Get train file, train file type
     train_file = inputs['train_file']
     train_file_type = inputs['train_file_type']
-    existed_ion_model = inputs['exist_ion_model']
-    existed_rt_model = {l: inputs[f'exist_rt_model_{l}'] for l in [4, 5, 6, 7, 8]}
-    skip_ion_finetune = False
-    skip_rt_finetune = False
 
-    # Check passed ion and RT models are existed if train file is not provided
-    if train_file is None:
-        if existed_ion_model is None:
-            arg_msgs.append('ERROR: No training data is passed and no existed ion model. '
-                            'Use -tt and -tf to define training data and format or use -ion_model to define an existed ion model')
-            exit_in_preprocess_step(arg_msgs)
-        elif any([_ is None for _ in existed_rt_model.values()]) and rt_ensemble:
-            arg_msgs.append('ERROR: No training data is passed and not all 5 rt models existed for rt ensemble. '
-                            'May not use -en if only one rt model is expected')
-            exit_in_preprocess_step(arg_msgs)
-        elif existed_rt_model[8] is None and (not rt_ensemble):
-            arg_msgs.append('ERROR: No training data is passed and no existed rt model. '
-                            'Use -tt and -tf to define training data and format or use -rt_model_[45678] to define an existed ion model')
-            exit_in_preprocess_step(arg_msgs)
-        else:
-            arg_msgs.append(f'Use existed ion and rt models')
-            arg_msgs.append(f'\tUse existed ion model: {existed_ion_model}')
-            if not rt_ensemble:
-                arg_msgs.append(f'\tUse existed RT model: {existed_rt_model[8]}')
-            else:
-                for l, p in existed_rt_model.items():
-                    arg_msgs.append(f'\tUse existed RT model {l}: {p}')
-
-        skip_ion_finetune = True
-        skip_rt_finetune = True
-
-    # When train file is provided, the check of existed ion and RT models will be delayed to next check point
-    else:
+    # Check defined training data
+    if perform_train and (train_file is None or train_file == ''):
+        arg_msgs.append('ERROR: Perform training but no training data file is defined. '
+                        'Use -tt and -tf to define training data and format or use "-train 0" to skip training step')
+        exit_in_preprocess_step(arg_msgs)
+    if train_file is not None and train_file != '':
         if not os.path.exists(train_file):
-            raise FileNotFoundError(f'ERROR: Train file not found - {train_file}')
+            arg_msgs.append(f'ERROR: Training data file is defined but file not found {train_file}')
+            exit_in_preprocess_step(arg_msgs)
         if train_file_type is None or train_file_type.lower() not in ['snlib', 'mq1.5', 'mq1.6']:
-            raise ValueError(f'ERROR: Train file type should be one of ["SNLib", "MQ1.5", "MQ1.6"], now {train_file_type}')
-        arg_msgs.append(f'Train file with {train_file_type} format: {train_file}')
+            raise ValueError(f'ERROR: File type of training data should be one of ["SNLib", "MQ1.5", "MQ1.6"], now {train_file_type}')
+        arg_msgs.append(f'Training data with {train_file_type} format: {train_file}')
 
-    # Check if existed ion model file is existed
-    if existed_ion_model is not None:
-        if os.path.exists(existed_ion_model):
-            arg_msgs.append(f'Use existed ion model: {existed_ion_model}')
-            skip_ion_finetune = True
-        else:
-            arg_msgs.append(f'ERROR: Existed ion model is passed but file not found: {existed_ion_model}')
-            exit_in_preprocess_step(arg_msgs)
-
-    # Check if existed rt model file is existed for case of no rt ensemble
-    if existed_rt_model[8] is not None and (not rt_ensemble):
-        if os.path.exists(existed_rt_model[8]):
-            arg_msgs.append(f'Use existed rt model with no rt ensemble: {existed_rt_model[8]}')
-            skip_rt_finetune = True
-        else:
-            arg_msgs.append(f'ERROR: Existed rt model is passed but file not found: {existed_rt_model[8]}')
-            exit_in_preprocess_step(arg_msgs)
-
-    # Check if any existed rt model file is existed for case of rt ensemble
-    if any([_ is not None for _ in existed_rt_model.values()]) and rt_ensemble:
-        skip_rt_finetune = []
-        for l, p in existed_rt_model.items():
-            if p is None:
-                continue
-            if os.path.exists(p):
-                arg_msgs.append(f'Use existed rt model ({l}): {p}')
-                skip_rt_finetune.append(l)
-            else:
-                arg_msgs.append(f'ERROR: Existed rt model is passed but file not found: {p}')
-                exit_in_preprocess_step(arg_msgs)
-
+    # Check defined prediction data (raise error if any prediction file is not correctly defined)
     pred_files = rk.sum_list(inputs['pred_file'])
-    for file_idx, file in enumerate(pred_files, 1):
-        if not os.path.exists(file):
-            raise FileNotFoundError(f'ERROR: Prediction file {file_idx} not found - {file}')
-
     pred_files_type = rk.sum_list(inputs['pred_file_type'])
-    pred_file_type_num = len(pred_files_type)
-    pred_file_num = len(pred_files)
-    if pred_file_type_num != 1 and pred_file_type_num != pred_file_num:
-        raise ValueError(f'ERROR: Get {pred_file_num} prediction files but {pred_file_type_num} file type\n')
-    elif pred_file_num != 1 and pred_file_type_num == 1:
-        pred_files_type = pred_files_type * pred_file_num
-        msg = (f'Get {pred_file_num} prediction files and 1 file type. '
-               f'{pred_files_type[0]} will be assigned to all files\n')
-    else:
-        msg = f'Get {pred_file_num} prediction files and {pred_file_type_num} file type\n'
-    files_str = '\n'.join(f'\t{t}: {file}' for t, file in zip(pred_files_type, pred_files))
-    arg_msgs.append(f'{msg}{files_str}')
+    if perform_pred:
+        pred_file_num = len(pred_files)
+        for file_idx, file in enumerate(pred_files, 1):
+            if not os.path.exists(file):
+                raise FileNotFoundError(f'ERROR: Prediction file {file_idx}/{pred_file_num} not found - {file}')
+
+        pred_file_type_num = len(pred_files_type)
+        if pred_file_type_num != 1 and pred_file_type_num != pred_file_num:
+            arg_msgs.append(f'ERROR: Get {pred_file_num} prediction files but {pred_file_type_num} file types\n'
+                            f'There should be either 1 prediction file type, which will be assigned to all prediction files, or same number as prediction files')
+            exit_in_preprocess_step(arg_msgs)
+        elif pred_file_num != 1 and pred_file_type_num == 1:
+            pred_files_type = pred_files_type * pred_file_num
+            arg_msgs.append(f'Get {pred_file_num} prediction files and 1 file type. '
+                            f'{pred_files_type[0]} will be assigned to all files\n')
+        else:
+            arg_msgs.append(f'Get {pred_file_num} prediction files and {pred_file_type_num} file types\n')
+        files_str = '\n'.join(f'\t{t}: {file}' for t, file in zip(pred_files_type, pred_files))
+        arg_msgs.append(f'{files_str}')
 
     device = inputs['device']
     arg_msgs.append(f'Set device to {device}')
@@ -331,15 +299,15 @@ def parse_args_from_cmd_to_runner(parser, time):
     return arg_msgs, {
         'WorkDir': work_dir,
         'TaskName': task_name,
-        'Data-Train': (train_file, train_file_type),
-        'Data-Pred': list(zip(pred_files, pred_files_type)),
+        'Data-Train': train_file,
+        'DataFormat-Train': train_file_type,
+        'Data-Pred': pred_files,
+        'DataFormat-Pred': pred_files_type,
 
         'Task-Train': perform_train,
         'Task-Predict': perform_pred,
         'PretrainModel-Ion': ion_pretrain,
         'PretrainModel-RT': rt_pretrain,
-        'ExistedModel-Ion': existed_ion_model,
-        'ExistedModel-RT': existed_rt_model,
         'SkipFinetune-Ion': skip_ion_finetune,
         'SkipFinetune-RT': skip_rt_finetune,
 
@@ -351,7 +319,7 @@ def parse_args_from_cmd_to_runner(parser, time):
         'InitLR': init_lr,
         'MaxPepLen': max_pep_len,
         'RTScale': rt_scale,
-        'EnsembleRT': rt_ensemble,
+        'EnsembleRT': ensemble_rt,
         'NoTime': no_time,
         'Merge': merge,
 

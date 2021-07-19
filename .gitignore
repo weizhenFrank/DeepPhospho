@@ -22,6 +22,7 @@ DeepPhospho-Data
 DeepPhospho_Raw
 result/
 Data/**/*.pkl
+release/
 
 # IDE
 .idea

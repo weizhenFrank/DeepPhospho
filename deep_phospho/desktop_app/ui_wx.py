@@ -7,8 +7,9 @@ import wx
 
 from .runner_for_ui import (
     search_pretrain_params,
-    parse_args_from_ui_to_runner,
-    RunnerThread,
+    check_ui_config,
+    fillin_runner_cmd_from_ui_config,
+    CMDRunnerThread,
     BuildLibThread,
     MergeLibThread
 )
@@ -251,7 +252,7 @@ class DeepPhosphoUIFrame(wx.Frame):
 
         merge_lib_button = wx.Button(self._main_panel, -1, 'Merge library')
         merge_lib_button.SetFont(self._font_static_text)
-        merge_lib_button.Bind(wx.EVT_BUTTON, self._event_open_tool_merge_lib)  # TODO
+        merge_lib_button.Bind(wx.EVT_BUTTON, self._event_open_tool_merge_lib)
         grid_sizer.Add(merge_lib_button, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
@@ -267,12 +268,18 @@ class DeepPhosphoUIFrame(wx.Frame):
     def _event_run(self, event):
         self.collect_info_all()
         start_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        runner_config = parse_args_from_ui_to_runner(PipelineParams)
-        shown_config = '\n'.join([f'  {k}: {v}' for k, v in runner_config.items()])
-        ret = wx.MessageBox(f'Please check the configs below: \n{shown_config}', 'Confirm', wx.OK | wx.CANCEL)
+        error_code, check_msg, checked_ui_config = check_ui_config(PipelineParams)
+        if error_code == -1:
+            wx.MessageBox(check_msg)
+            return -1
+        shown_args = '\n'.join([f'  {k}: {v}' for k, v in checked_ui_config.items()])
+        ret = wx.MessageBox(f'Please check the configs below: \n{shown_args}', 'Confirm', wx.OK | wx.CANCEL)
         if ret == wx.OK:
-            self.runner_thread = RunnerThread(self, runner_config, start_time)
+            runner_cmd = fillin_runner_cmd_from_ui_config(checked_ui_config)
+            print(runner_cmd)
+            self.runner_thread = CMDRunnerThread(self)
             self.runner_thread.setDaemon(True)
+            self.runner_thread.set_cmd(runner_cmd)
             self.runner_thread.start()
             event.GetEventObject().Disable()
             event.GetEventObject().SetLabel('Running')
@@ -285,16 +292,16 @@ class DeepPhosphoUIFrame(wx.Frame):
         widget.Enable()
         widget.SetLabel('Run')
 
-    def running_error(self, work_dir):
+    def running_error(self):
         self.FindWindowByName('RunButton').Enable()
         self.FindWindowByName('RunButton').SetLabel('Run')
-        wx.MessageBox(f'Error for task {PipelineParams["TaskName"]}. Please check logs in terminal or log file in {work_dir}',
+        wx.MessageBox(f'Error for task {PipelineParams["TaskName"]}. Please check logs in terminal or log file in {PipelineParams["WorkFolder"]}',
                       style=wx.ICON_ERROR)
 
-    def running_done(self, work_dir):
+    def running_done(self):
         self.FindWindowByName('RunButton').Enable()
         self.FindWindowByName('RunButton').SetLabel('Run')
-        wx.MessageBox(f'Task {PipelineParams["TaskName"]} done. Check result files in {work_dir}')
+        wx.MessageBox(f'Task {PipelineParams["TaskName"]} done. Check result files in {PipelineParams["WorkFolder"]}')
 
     def running_cancel(self):
         self.FindWindowByName('RunButton').Enable()
