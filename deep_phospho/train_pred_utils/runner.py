@@ -169,6 +169,7 @@ class DeepPhosphoRunner(object):
                 error_msg = f'ERROR: Error when running ion model training instance {ion_train_config["InstanceName"]}'
                 tb = traceback.format_exc()
                 self.logger.error(error_msg + '\n' + tb)
+                raise RuntimeError(error_msg)
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         return trained_ion_model_folder

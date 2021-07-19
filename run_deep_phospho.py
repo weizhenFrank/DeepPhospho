@@ -119,14 +119,16 @@ If the input files have different formats, the same number of -pt is needed''')
     _pretrain_ion = _pretrain_ion if os.path.exists(_pretrain_ion) else ''
     parser.add_argument('-pretrain_ion', '--pretrain_ion_model', metavar='path', type=str, default=_pretrain_ion,
                         help='Fine-tune on pre-trained ion model parameters or directly use this model to do prediction. '
-                             'This will be automatically filled-in if pre-trained models param file is existed as "PretrainParams/IonModel/best_model.pth". ')
+                             'This will be automatically filled-in if pre-trained models param file is existed as "PretrainParams/IonModel/best_model.pth". '
+                             'If you dont want to use pre-trained model param anywhere, please explicitly define this argument and set value to /')
     for l in [4, 5, 6, 7, 8]:
         _pretrain_rt = os.path.join('.', 'PretrainParams', 'RTModel', f'{l}.pth')
         _pretrain_rt = _pretrain_rt if os.path.exists(_pretrain_rt) else ''
         parser.add_argument(f'-pretrain_rt_{l}', f'--pretrain_rt_model_{l}', metavar='path', type=str, default=_pretrain_rt,
                             help=f'Fine-tune on pre-trained RT model parameters (with {l} encoder layer) or directly use pre-trained models to do prediction. '
                                  f'This will be automatically filled-in if pre-trained models param files are existed as "PretrainParams/IonModel/(layer_number).pth". '
-                                 f'If -en (-ensemble_rt) is not used, only -rt_model_8 is required')
+                                 f'If -en (-ensemble_rt) is not used, only -rt_model_8 is required'
+                                 f'If you dont want to use pre-trained model param anywhere, please explicitly define this argument and set value to /')
 
     # skip fine-tuning
     parser.add_argument('-skip_ion_finetune', '--skip_ion_finetune', default=False, action='store_true',
@@ -204,6 +206,7 @@ def parse_args_from_cmd_to_runner(parser, time):
     ion_pretrain = inputs['pretrain_ion_model']
     if ion_pretrain is None:
         ion_pretrain = ''
+    ion_pretrain = '' if ion_pretrain == '/' else ion_pretrain
     if ion_pretrain != '' and not os.path.exists(ion_pretrain):
         arg_msgs.append(f'ERROR: Pre-trained ion model is defined but file not found: {ion_pretrain}')
         exit_in_preprocess_step(arg_msgs)
@@ -217,6 +220,7 @@ def parse_args_from_cmd_to_runner(parser, time):
         p = rt_pretrain[l]
         if p is None:
             rt_pretrain[l] = ''
+        rt_pretrain[l] = '' if rt_pretrain[l] == '/' else rt_pretrain[l]
         if p != '' and not os.path.exists(p):
             arg_msgs.append(f'ERROR: Pre-trained RT model {l} is defined but file not found: {p}')
             exit_in_preprocess_step(arg_msgs)

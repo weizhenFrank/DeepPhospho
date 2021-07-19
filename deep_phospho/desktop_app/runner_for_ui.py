@@ -152,9 +152,11 @@ def fillin_runner_cmd_from_ui_config(config_from_ui: dict) -> str:
     else:
         runner_cmd_parts.append(f'-pred 0')
 
-    runner_cmd_parts.append(f'-pretrain_ion {config_from_ui["Pretrain-Ion"]}')
+    if config_from_ui['Pretrain-Ion'] != '':
+        runner_cmd_parts.append(f'-pretrain_ion {config_from_ui["Pretrain-Ion"]}')
     for l in [4, 5, 6, 7, 8]:
-        runner_cmd_parts.append(f'-pretrain_rt_{l} {config_from_ui[f"Pretrain-RT-{l}"]}')
+        if config_from_ui[f'Pretrain-RT-{l}'] != '':
+            runner_cmd_parts.append(f'-pretrain_rt_{l} {config_from_ui[f"Pretrain-RT-{l}"]}')
 
     runner_cmd_parts.append(f'-m')
 
