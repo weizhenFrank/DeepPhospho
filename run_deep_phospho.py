@@ -101,8 +101,8 @@ If the input files have different formats, the same number of -pt is needed''')
     parser.add_argument('-rs', '--rt_scale', metavar='low,high', type=str, default='*-100,200',
                         help='Define the lower and upper limitations for RT model. '
                              'Separate two numbers with a comma like `0,10`. '
-                             'And a `*` will be needed to pass a negative number, like *-100,200. '
-                             'Default is -100 to 200.')
+                             'And a `*` will be needed for negative number, like `*-100,200`. '
+                             'Default is `*-100,200` (-100 to 200)')
     # rt ensemble
     parser.add_argument('-en', '--ensemble_rt', default=False, action='store_true',
                         help='Use ensemble to improve RT prediction or not')
@@ -120,7 +120,7 @@ If the input files have different formats, the same number of -pt is needed''')
     parser.add_argument('-pretrain_ion', '--pretrain_ion_model', metavar='path', type=str, default=_pretrain_ion,
                         help='Fine-tune on pre-trained ion model parameters or directly use this model to do prediction. '
                              'This will be automatically filled-in if pre-trained models param file is existed as "PretrainParams/IonModel/best_model.pth". '
-                             'If you dont want to use pre-trained model param anywhere, please explicitly define this argument and set value to /')
+                             'If you don\'t want to use pre-trained model param anywhere, please explicitly define this argument and set value to `/`')
     for l in [4, 5, 6, 7, 8]:
         _pretrain_rt = os.path.join('.', 'PretrainParams', 'RTModel', f'{l}.pth')
         _pretrain_rt = _pretrain_rt if os.path.exists(_pretrain_rt) else ''
@@ -128,7 +128,7 @@ If the input files have different formats, the same number of -pt is needed''')
                             help=f'Fine-tune on pre-trained RT model parameters (with {l} encoder layer) or directly use pre-trained models to do prediction. '
                                  f'This will be automatically filled-in if pre-trained models param files are existed as "PretrainParams/IonModel/(layer_number).pth". '
                                  f'If -en (-ensemble_rt) is not used, only -rt_model_8 is required'
-                                 f'If you dont want to use pre-trained model param anywhere, please explicitly define this argument and set value to /')
+                                 f'If you don\'t want to use pre-trained model param anywhere, please explicitly define this argument and set value to `/`')
 
     # skip fine-tuning
     parser.add_argument('-skip_ion_finetune', '--skip_ion_finetune', default=False, action='store_true',
@@ -141,7 +141,7 @@ If the input files have different formats, the same number of -pt is needed''')
         parser.add_argument(f'-skip_rt_finetune_{l}', f'--skip_rt_finetune_{l}', default=False, action='store_true',
                             help='Partial training option. '
                                  f'When this argument is passed, RT model fine-tuning step for layer {l} will be skipped. '
-                                 f'Use existing RT model parameters (with {l} encoder layer) instead of training a new one. '
+                                 f'Use existed RT model parameters (with {l} encoder layer) instead of training a new one. '
                                  'This will be useful if you already have some fine-tuned RT model but not enough for ensemble, '
                                  'or RT model has already been trained but ion model is need to be fine-tuned. '
                                  'In this case, you can still use DeepPhospho runner but not individual train/prediction scripts. ')
