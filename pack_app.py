@@ -92,6 +92,7 @@ if __name__ == '__main__':
     choose = input()
     if choose == 'y':
         recursive_copy(_this_dir, OutputDir, ignored_items=ignored_items, verbose=True, exist_ok=True)
+        print(f'Start copying env')
         recursive_copy(ENVFolder, ENVOutputDir, ignored_items=ignored_items, verbose=False, exist_ok=True)
         create_app_entry(OutputDir)
     else:

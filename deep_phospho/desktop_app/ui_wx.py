@@ -79,15 +79,15 @@ class DeepPhosphoUIFrame(wx.Frame):
         desc_text_staticboxsizer = self._init_desc_text()
         self.boxsizer_main.Add(desc_text_staticboxsizer, 0, wx.ALL, 10)
 
-        """ Pipeline """
-        pipeline_boxsizer = self._init_pipeline_boxsizer()
-
-        # Task information part
-        task_info_staticboxsizer, self.work_folder_text, self.task_name_text = self._init_task_info()
-        pipeline_boxsizer.Add(task_info_staticboxsizer, 0, wx.ALL, 10)
+        """ Config """
+        config_boxsizer = self._init_config_boxsizer()
 
         # Notebook for general config, training step, prediction step
         self.nb = wx.Notebook(self._main_panel, -1)
+
+        # Task information config
+        self.task_information_panel = TaskInfoPanel(self.nb, style=wx.TAB_TRAVERSAL | wx.CLIP_CHILDREN | wx.FULL_REPAINT_ON_RESIZE)
+        self.nb.AddPage(self.task_information_panel, 'Task information')
 
         # General config
         self.general_config_panel = GeneralConfigPanel(self.nb, style=wx.TAB_TRAVERSAL | wx.CLIP_CHILDREN | wx.FULL_REPAINT_ON_RESIZE)
@@ -102,17 +102,20 @@ class DeepPhosphoUIFrame(wx.Frame):
         self.nb.AddPage(self.pred_step_panel, 'Prediction step')
 
         # self.nb.SetSize(self.nb.GetBestSize())
-        pipeline_boxsizer.Add(self.nb, 0, wx.ALL, 10)
+        config_boxsizer.Add(self.nb, 0, wx.ALL, 10)
+        self.boxsizer_main.Add(config_boxsizer, 0, wx.ALL, 10)
 
-        # Run task part
+        # Sizer for run task and tools
+        boxsizer_run_and_tools = wx.BoxSizer(wx.HORIZONTAL)
+
+        """ Run task part """
         run_task_boxsizer = self._init_run_task_sizer()
-        pipeline_boxsizer.Add(run_task_boxsizer, 0, wx.ALL, 10)
-
-        self.boxsizer_main.Add(pipeline_boxsizer, 0, wx.ALL, 10)
+        boxsizer_run_and_tools.Add(run_task_boxsizer, 0, wx.ALL, 10)
 
         """ Tools """
         tools_boxsizer = self._init_tools_sizer()
-        self.boxsizer_main.Add(tools_boxsizer, 0, wx.ALL, 10)
+        boxsizer_run_and_tools.Add(tools_boxsizer, 0, wx.ALL, 10)
+        self.boxsizer_main.Add(boxsizer_run_and_tools, 0, wx.ALL, 10)
 
         # Register boxsizer
         self._main_panel.SetSizerAndFit(self.boxsizer_main)
@@ -139,7 +142,9 @@ class DeepPhosphoUIFrame(wx.Frame):
 
     def _about_menu(self, event):
         _ = event
-        wx.MessageBox('About msg', 'About', wx.OK | wx.ICON_INFORMATION)
+        wx.MessageBox(
+            f'DeepPhospho desktop. A graphical wrapper of command line interface tool DeepPhospho runner. For details, have a look at {REPO}',
+            'About', wx.OK | wx.ICON_INFORMATION)
 
     def _init_status_bar(self):
         # TODO status bar
@@ -154,61 +159,19 @@ class DeepPhosphoUIFrame(wx.Frame):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
-        # desc_text = wx.StaticText(self._main_panel, -1, MainDesc, style=wx.TE_AUTO_URL)
-        # desc_text.SetFont(self._font_static_text)
-        # grid_sizer.Add(desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
-
-        desc_text = wx.TextCtrl(self._main_panel, -1, MainDesc, size=(self.GetSize()[0] * 0.925, 150), style=wx.TE_AUTO_URL | wx.TE_MULTILINE | wx.TE_READONLY)
+        desc_text = wx.TextCtrl(self._main_panel, -1, MainDesc, size=(self.GetSize()[0] * 0.925, 125), style=wx.TE_AUTO_URL | wx.TE_MULTILINE | wx.TE_READONLY)
         desc_text.SetFont(self._font_static_text)
         grid_sizer.Add(desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL | wx.TE_AUTO_URL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
         return static_box_sizer
 
-    def _init_pipeline_boxsizer(self):
-        static_box = wx.StaticBox(self._main_panel, -1, label='Pipeline')
+    def _init_config_boxsizer(self):
+        static_box = wx.StaticBox(self._main_panel, -1, label='Task config')
         static_box.SetFont(self._font_boxname)
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
-
-        _temp_text_parameters = wx.StaticText(self._main_panel, -1, 'Parameters')
-        _temp_text_parameters.SetFont(self._font_static_text)
-        static_box_sizer.Add(_temp_text_parameters, 0, wx.ALL, 10)
 
         return static_box_sizer
-
-    def _init_task_info(self):
-        static_box = wx.StaticBox(self._main_panel, -1, label='Task information')
-        static_box.SetFont(self._font_boxname)
-        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
-        grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
-
-        work_folder_horizon_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        work_folder_desc_text = wx.StaticText(self._main_panel, -1,
-                                              'Work folder (define where to perform DeepPhospho pipeline)', )
-        work_folder_desc_text.SetFont(self._font_static_text)
-        work_folder_horizon_boxsizer.Add(work_folder_desc_text, 0, wx.ALL, 10)
-        select_button = wx.Button(self._main_panel, -1, 'Select')
-        select_button.SetFont(self._font_static_text)
-        select_button.Bind(wx.EVT_BUTTON, self._event_select_workfolder)
-        work_folder_horizon_boxsizer.Add(select_button, 0, wx.ALL, 4)
-        grid_sizer.Add(work_folder_horizon_boxsizer, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
-
-        work_folder_text = wx.TextCtrl(self._main_panel, -1, PipelineParams['WorkFolder'], size=(900, 30), style=wx.TE_HT_ON_TEXT, name='WorkFolder')
-        work_folder_text.SetFont(self._font_search_content)
-        grid_sizer.Add(work_folder_text, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
-
-        task_name_desc_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        task_name_desc_text = wx.StaticText(self._main_panel, -1, 'Task name (the identifier of this task)')
-        task_name_desc_text.SetFont(self._font_static_text)
-        task_name_desc_boxsizer.Add(task_name_desc_text, 0, wx.ALL, 4)
-        grid_sizer.Add(task_name_desc_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
-
-        task_name_text = wx.TextCtrl(self._main_panel, -1, PipelineParams['TaskName'], size=(900, 30), style=wx.TE_HT_ON_TEXT, name='TaskName')
-        task_name_text.SetFont(self._font_search_content)
-        grid_sizer.Add(task_name_text, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
-
-        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
-        return static_box_sizer, work_folder_text, task_name_text
 
     def _init_run_task_sizer(self):
         static_box = wx.StaticBox(self._main_panel, -1, label='Run task')
@@ -257,13 +220,6 @@ class DeepPhosphoUIFrame(wx.Frame):
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
         return static_box_sizer
-
-    def _event_select_workfolder(self, event):
-        dlg = wx.DirDialog(self, 'Choose work folder', '.', )
-        if dlg.ShowModal() == wx.ID_OK:
-            dirname = dlg.GetPath()
-            self.FindWindowByName('WorkFolder').SetValue(os.path.abspath(dirname))
-        dlg.Destroy()
 
     def _event_run(self, event):
         self.collect_info_all()
@@ -320,17 +276,80 @@ class DeepPhosphoUIFrame(wx.Frame):
         merge_lib_frame.Centre()
         merge_lib_frame.Show()
 
+    def collect_info_all(self):
+        self.task_information_panel.collect_info_curr_panel()
+        self.general_config_panel.collect_info_curr_panel()
+        self.train_step_panel.collect_info_curr_panel()
+        self.pred_step_panel.collect_info_curr_panel()
+
+
+class TaskInfoPanel(wx.Panel):
+    def __init__(self, notebook, **kwargs):
+        super(TaskInfoPanel, self).__init__(notebook, **kwargs)
+
+        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+
+        self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)
+
+        # Task information part
+        task_info_staticboxsizer, self.work_folder_text, self.task_name_text = self._init_task_info()
+        self.boxsizer_main.Add(task_info_staticboxsizer, 0, wx.ALL, 10)
+
+        # Register boxsizer
+        self.SetSizerAndFit(self.boxsizer_main)
+        self.SetClientSize(self.GetBestSize())
+        self.boxsizer_main.SetSizeHints(self)
+        self.boxsizer_main.Layout()
+
+    def _init_task_info(self):
+        static_box = wx.StaticBox(self, -1, label='Task information')
+        static_box.SetFont(self._font_boxname)
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
+
+        work_folder_horizon_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        work_folder_desc_text = wx.StaticText(self, -1,
+                                              'Work folder (define where to perform DeepPhospho pipeline)', )
+        work_folder_desc_text.SetFont(self._font_static_text)
+        work_folder_horizon_boxsizer.Add(work_folder_desc_text, 0, wx.ALL, 10)
+        select_button = wx.Button(self, -1, 'Select')
+        select_button.SetFont(self._font_static_text)
+        select_button.Bind(wx.EVT_BUTTON, self._event_select_workfolder)
+        work_folder_horizon_boxsizer.Add(select_button, 0, wx.ALL, 4)
+        grid_sizer.Add(work_folder_horizon_boxsizer, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        work_folder_text = wx.TextCtrl(self, -1, PipelineParams['WorkFolder'], size=(900, 30), style=wx.TE_HT_ON_TEXT, name='WorkFolder')
+        work_folder_text.SetFont(self._font_search_content)
+        grid_sizer.Add(work_folder_text, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        task_name_desc_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        task_name_desc_text = wx.StaticText(self, -1, 'Task name (the identifier of this task)')
+        task_name_desc_text.SetFont(self._font_static_text)
+        task_name_desc_boxsizer.Add(task_name_desc_text, 0, wx.ALL, 4)
+        grid_sizer.Add(task_name_desc_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        task_name_text = wx.TextCtrl(self, -1, PipelineParams['TaskName'], size=(900, 30), style=wx.TE_HT_ON_TEXT, name='TaskName')
+        task_name_text.SetFont(self._font_search_content)
+        grid_sizer.Add(task_name_text, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
+
+        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        return static_box_sizer, work_folder_text, task_name_text
+
+    def _event_select_workfolder(self, event):
+        dlg = wx.DirDialog(self, 'Choose work folder', '.', )
+        if dlg.ShowModal() == wx.ID_OK:
+            dirname = dlg.GetPath()
+            self.FindWindowByName('WorkFolder').SetValue(os.path.abspath(dirname))
+        dlg.Destroy()
+
     def collect_info_curr_panel(self):
         for name in ['WorkFolder', 'TaskName', 'Task-Train', 'Task-Predict']:
             widget = self.FindWindowByName(name)
             if widget is not None:
                 PipelineParams[name] = widget.GetValue()
-
-    def collect_info_all(self):
-        self.collect_info_curr_panel()
-        self.general_config_panel.collect_info_curr_panel()
-        self.train_step_panel.collect_info_curr_panel()
-        self.pred_step_panel.collect_info_curr_panel()
 
 
 def init_boxsizer_for_ctrltext_with_desc(panel, desc_text, font, ctrl_text_name=None, default_value=None):
