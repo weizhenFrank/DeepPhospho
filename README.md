@@ -68,9 +68,9 @@
 
 * We would recommand to do fine-tuning on pre-trained model weights instead of training a new one from scratch, since this will make the training easier
 
-* Here, we provided five groups of pre-trained weights, and each group contains one ion intensity model and five RT models (for ensemble). The last four groups are based (fine-tuned) on the first one. And the middle three groups are those used in our paper. All five groups are stored in [PRIDE](https://www.ebi.ac.uk/pride/archive/projects/PXD025112) (with prefix `DeepPhosphoModels-`) and the first one is additionally stored in [Google drive](https://drive.google.com/drive/folders/1ETJEG-8lobVJWaYOBMnqUL1G5dUHRI2B)
+* Here, we provided five groups of pre-trained weights, and each group contains one ion intensity model and five RT models (for ensemble). The last four groups are based (fine-tuned) on the first one. And the middle three groups are those used in our paper. All five groups are stored in [iProX](https://www.iprox.cn//page/subproject.html?id=IPX0003513001) (with prefix `DeepPhosphoModels-`) and the first one is additionally stored in [Google drive](https://drive.google.com/drive/folders/1ETJEG-8lobVJWaYOBMnqUL1G5dUHRI2B)
 
-  * PretrainParams: this one is recommanded to use if you want to do fine-tuning with your own data
+  * PretrainParams ([iProX download link](https://download.iprox.cn/IPX0003513000/IPX0003513001/DeepPhosphoModels-PretrainParams.zip)): this one is recommanded to use if you want to do fine-tuning with your own data
   * U2OS_DIA
   * RPE1_DIA
   * Dilution_DIA
