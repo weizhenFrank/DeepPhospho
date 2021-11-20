@@ -518,7 +518,7 @@
 
 # <span id="pub">Publication</span>
 
-* Have a look at our paper in [In Review](https://www.researchsquare.com/article/rs-393214/v1)
+* Have a look at our paper on Nat Comm https://www.nature.com/articles/s41467-021-26979-1 (doi [10.1038/s41467-021-26979-1](https://doi.org/10.1038/s41467-021-26979-1), and PMID [34795227](https://pubmed.ncbi.nlm.nih.gov/34795227/))
 
 
 
