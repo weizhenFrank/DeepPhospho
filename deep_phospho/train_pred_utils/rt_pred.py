@@ -230,40 +230,41 @@ def pred_rt(configs=None, config_load_msgs=None, config_overwrite_msgs=None, ter
     pred_ys = re_norm(pred_ys).reshape([len(peptides), -1])
 
     # ipdb.set_trace()
+    WithLabel = configs['RT_DATA_CFG']['InputWithLabel']
 
     if configs['UsedModelCFG']['model_name'] == "LSTMTransformerEnsemble":
-        for idx in range(len(model_arch_path)):
-            pearson_eval_unnormed = Pearson(label_y, pred_ys[:, idx])
-            delta_t95_eval_unnormed = Delta_t95(label_y, pred_ys[:, idx])
-            # ipdb.set_trace()
-            logger.info(
-                termcolor.colored(
-                    "{idx}-model:\npearson_eval_unnormed:{pearson_eval_unnormed:.5}\ndelta_t95_eval_unnormed:{delta_t95_eval_unnormed:.5}".format(
-                        idx=idx,
-                        pearson_eval_unnormed=pearson_eval_unnormed,
-                        delta_t95_eval_unnormed=delta_t95_eval_unnormed,
-                    ), "green"))
-            print()
         pred_ys = pred_ys.mean(axis=-1)
-
-    pearson_eval_unnormed = Pearson(label_y, pred_ys)
-    delta_t95_eval_unnormed = Delta_t95(label_y, pred_ys)
-
-    logger.info(
-        termcolor.colored(
-            "final result:\npearson_eval_unnormed:{pearson_eval_unnormed:.5}\ndelta_t95_eval_unnormed:{delta_t95_eval_unnormed:.5}".format(
-                pearson_eval_unnormed=pearson_eval_unnormed,
-                delta_t95_eval_unnormed=delta_t95_eval_unnormed,
-            ), "green")
-    )
+        if WithLabel and (pred_ys.shape[0] >= 3):
+            for idx in range(len(model_arch_path)):
+                pearson_eval_unnormed = Pearson(label_y, pred_ys[:, idx])
+                delta_t95_eval_unnormed = Delta_t95(label_y, pred_ys[:, idx])
+                # ipdb.set_trace()
+                logger.info(
+                    termcolor.colored(
+                        "{idx}-model:\npearson_eval_unnormed:{pearson_eval_unnormed:.5}\ndelta_t95_eval_unnormed:{delta_t95_eval_unnormed:.5}".format(
+                            idx=idx,
+                            pearson_eval_unnormed=pearson_eval_unnormed,
+                            delta_t95_eval_unnormed=delta_t95_eval_unnormed,
+                        ), "green"))
+                print()
 
     Output = pd.DataFrame({'sequence': peptides, 'pred': pred_ys, 'label': label_y})
     Output.to_csv(os.path.join(output_dir, 'Prediction.txt'), index_label=False, index=False, sep='\t')
     # Output.to_csv(os.path.join(output_dir,
     #                            f'Pred_{os.path.basename(load_model_path).split(".")[0]}.csv'), index=True, index_label=False)
 
-    WithLabel = configs['RT_DATA_CFG']['InputWithLabel']
-    if WithLabel:
+    if WithLabel and (pred_ys.shape[0] >= 3):
+        pearson_eval_unnormed = Pearson(label_y, pred_ys)
+        delta_t95_eval_unnormed = Delta_t95(label_y, pred_ys)
+
+        logger.info(
+            termcolor.colored(
+                "final result:\npearson_eval_unnormed:{pearson_eval_unnormed:.5}\ndelta_t95_eval_unnormed:{delta_t95_eval_unnormed:.5}".format(
+                    pearson_eval_unnormed=pearson_eval_unnormed,
+                    delta_t95_eval_unnormed=delta_t95_eval_unnormed,
+                ), "green")
+        )
+
         fig, ax = plt.subplots(1, 1, figsize=(5, 5), dpi=300)
         # ipdb.set_trace()
         proteomics_utils.plots.rt_reg(Output['label'].tolist(), Output['pred'].tolist(), ax=ax,

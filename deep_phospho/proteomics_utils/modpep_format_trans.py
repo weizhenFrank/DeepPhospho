@@ -69,7 +69,9 @@ def comet_to_intpep(x):
     return comet.comet_to_intseq(x)
 
 
-def deepphospho_to_intpep(x):
+def deepphospho_to_intpep(x: str):
+    if not x.startswith('*') and not x.startswith('@'):
+        x = f'@{x}'
     return x
 
 

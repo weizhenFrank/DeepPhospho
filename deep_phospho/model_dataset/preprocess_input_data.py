@@ -3,6 +3,7 @@ import operator
 import os
 import pickle
 from tqdm import tqdm
+import copy
 
 import numpy as np
 import pandas as pd
@@ -95,8 +96,8 @@ class Dictionary(object):
     def __init__(self):
         logger = logging.getLogger("IonIntensity")
 
-        self.word2idx = CharToIdx
-        self.idx2word = IdxToChar
+        self.word2idx = copy.deepcopy(CharToIdx)
+        self.idx2word = copy.deepcopy(IdxToChar)
 
         logger.info(self.__str__())
 
@@ -209,6 +210,10 @@ class IonData(object):
                         break
 
                 pep, charge = seq.split('.')
+                _ = set(pep) - set(ALPHABET)
+                if len(_) != 0:
+                    logger.info(f'[Preprocessing] Peptide {pep} was skipped with invalid AA {_}')
+                    continue
                 charge = int(charge)
                 aa_length = len(pep) - 1  # because we add "*" to represent the Acetyl modification and "@" to represent no
                 wrapped_seq = pep + ENDING_CHAR
