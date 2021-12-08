@@ -2,9 +2,10 @@
 
 REPO = 'https://github.com/weizhenFrank/DeepPhospho'
 
-MainDesc = ('DeepPhospho desktop is a desktop application with graphical user interface to make the running of DeepPhospho pipeline easily.\n'
-            'In this app, we provided the full support of DeepPhospho runner, which integrates functions of training, prediction, and library generation.\n'
-            f'For details, please have a look at the DeepPhospho GitHub page {REPO}. We introduced both usages of desktop app and command line tools.')
+MainDesc = ('DeepPhospho desktop provides the full supports for DeepPhospho runner with graphical user interface, '
+            'to make the running of DeepPhospho pipeline easily.\n'
+            'This app integrates functions of training, prediction, and library generation.\n'
+            f'Please have a look at GitHub page {REPO} for details of usages of desktop app and command line tools.')
 
 IonPretrainDesc = 'Pre-trained ion intensity model'
 

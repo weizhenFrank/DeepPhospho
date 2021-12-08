@@ -147,7 +147,7 @@
 
 * Sometimes we would want to do prediction and generate libraries with previously trained models
 
-* And do not use RT ensemble to save both training time and prediction time
+* And here we do not use RT ensemble to save prediction time, since we are using a very small example data and the most time would be used to load model weights but not prediction (not recommanded in real case)
 
 * In this example, we will use pre-trained ion model and RT model to do prediction and no RT ensemble will be performed. This case would take very short time to finish
 

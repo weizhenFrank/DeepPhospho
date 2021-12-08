@@ -40,8 +40,8 @@ PipelineParams = {
     # Training step
     'TrainData': '',
     'TrainDataFormat': '',
-    'Epoch-Ion': '30',
-    'Epoch-RT': '30',
+    'Epoch-Ion': '20',
+    'Epoch-RT': '20',
     'BatchSize-Ion': '64',
     'BatchSize-RT': '128',
     'InitLR': '0.0001',

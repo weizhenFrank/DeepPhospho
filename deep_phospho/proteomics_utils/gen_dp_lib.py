@@ -8,7 +8,32 @@ from deep_phospho import proteomics_utils as prot_utils
 from deep_phospho.proteomics_utils.post_analysis import spectronaut as SN
 
 
-def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, save_path=None, logger=None):
+def generate_spec_lib(
+        data_name,
+        output_folder,
+        pred_ion_path,
+        pred_rt_path,
+        min_frag_inten=5,
+        min_frag_num=4,
+        max_frag_num=15,
+        allowed_extra_min_frag_inten=3,
+        save_path=None,
+        logger=None
+):
+    """
+    :param data_name:
+    :param output_folder:
+    :param pred_ion_path:
+    :param pred_rt_path:
+
+    :param min_frag_inten: min fragment intensity to be kept
+    :param min_frag_num: min fragment number to keep this precursor
+    :param max_frag_num: max fragment number to be kept for one precursor
+    :param allowed_extra_min_frag_inten:
+
+    :param save_path:
+    :param logger:
+    """
     if logger is not None:
         logger.info(f'Reading predicted results for {data_name}')
     with open(pred_ion_path, 'r') as f:
@@ -37,7 +62,7 @@ def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, sav
         prec_basic_data_list = [prec_charge, modpep, strip_pep, pred_rt, modpep, prec_mz]
 
         pred_spec = prot_utils.calc.normalize_intensity(pred_spec, max_num=100)
-        pred_spec = prot_utils.calc.keep_top_n_inten(pred_spec, top_n=30)
+        pred_spec = prot_utils.calc.keep_top_n_inten(pred_spec, top_n=15)
 
         for frag, inten in pred_spec.items():
             frag_type, frag_num, frag_charge, frag_losstype = re.findall(r'([abcxyz])(\d+)\+(\d)-(.+)', frag)[0]
@@ -55,7 +80,7 @@ def generate_spec_lib(data_name, output_folder, pred_ion_path, pred_rt_path, sav
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in initial {data_name} library')
 
-    pred_lib_df = pred_lib_df.groupby('Prec').filter(lambda x: len(x) >= 3)
+    pred_lib_df = pred_lib_df.groupby('Prec').filter(lambda x: len(x) >= 4)
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in final {data_name} library')
 
