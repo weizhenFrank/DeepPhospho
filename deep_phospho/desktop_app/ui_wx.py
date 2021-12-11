@@ -480,7 +480,7 @@ class GeneralConfigPanel(wx.Panel):
         return device_boxsizer, rt_scale_boxsizer, max_pep_len_boxsizer  # , mode_select_boxsizer
 
     def _event_open_repo_page(self, event):
-        webbrowser.open(REPO)
+        webbrowser.open(REPO_PretrainParamPart)
 
     def _event_check_gpus(self, event):
         if torch.cuda.is_available():

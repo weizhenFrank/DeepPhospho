@@ -5,6 +5,7 @@ import pandas as pd
 from deep_phospho.proteomics_utils import modpep_format_trans
 from deep_phospho.proteomics_utils.post_analysis import spectronaut as SN
 from deep_phospho.proteomics_utils.post_analysis import maxquant as MQ
+from deep_phospho.proteomics_utils.modpep_format_trans import unimodpep_to_intseq
 
 
 def sn_lib_to_pred_input(lib_path, output_folder):
@@ -90,11 +91,33 @@ def mq_to_pred_input(result_path, output_folder, mq_version='1.5'):
     }
 
 
+def easypqp_tsv_to_pred_input(tsv_path, output_folder):
+    data_name = os.path.splitext(os.path.basename(tsv_path))[0]
+    ion_pred_path = os.path.join(output_folder, f'{data_name}-Ion_PredInput.txt')
+    rt_pred_path = os.path.join(output_folder, f'{data_name}-RT_PredInput.txt')
+
+    df = pd.read_csv(tsv_path, sep='\t')
+    df['IntPep'] = df['ModifiedPeptideSequence'].apply(unimodpep_to_intseq)
+    df['IntPrec'] = df['IntPep'] + '.' + df['PrecursorCharge'].astype(str)
+
+    intprecs = df['IntPrec'].drop_duplicates().tolist()
+    with open(ion_pred_path, 'w') as f:
+        f.write('sequence\n')
+        for p in intprecs:
+            f.write(p + '\n')
+
+    df['IntPep'].drop_duplicates().to_csv(rt_pred_path, index=False)
+    return {
+        'IonPred': ion_pred_path,
+        'RTPred': rt_pred_path
+    }
+
+
 def pep_list_to_pred_input(pep_file, output_folder, pep_format):
     """
     :param pep_file: this file should have two columns for peptide ("peptide") and precursor charge ("charge") in tab-separated format
     :param output_folder
-    :param pep_format: This should be set to "SN13", "MQ1.5", "MQ1.6", "Comet", or "DP"
+    :param pep_format: This should be set to "SN13", "MQ1.5", "MQ1.6", "UniMod", "Comet", or "DP"
     """
     data_name = os.path.splitext(os.path.basename(pep_file))[0]
     ion_pred_path = os.path.join(output_folder, f'{data_name}-Ion_PredInput.txt')
@@ -106,6 +129,7 @@ def pep_list_to_pred_input(pep_file, output_folder, pep_format):
         'SN13': modpep_format_trans.sn13_to_intpep,
         'MQ1.5': modpep_format_trans.mq1_5_to_intpep,
         'MQ1.6': modpep_format_trans.mq1_6_to_intpep,
+        'UniMod': modpep_format_trans.unimodpep_to_intseq,
         'Comet': modpep_format_trans.comet_to_intpep,
         'DP': lambda x: x,
     }[pep_format]
@@ -135,12 +159,16 @@ def file_to_pred_input(path, output_folder, file_type: str):
         return mq_to_pred_input(path, output_folder, '1.5')
     elif file_type.lower() == 'mq1.6':
         return mq_to_pred_input(path, output_folder, '1.6')
+    elif file_type.lower() == 'easypqp':
+        return easypqp_tsv_to_pred_input(path, output_folder)
     elif file_type.lower() == 'pepsn13':
         return pep_list_to_pred_input(path, output_folder, pep_format='SN13')
     elif file_type.lower() == 'pepmq1.5':
         return pep_list_to_pred_input(path, output_folder, pep_format='MQ1.5')
     elif file_type.lower() == 'pepmq1.6':
         return pep_list_to_pred_input(path, output_folder, pep_format='MQ1.6')
+    elif file_type.lower() == 'pepunimod':
+        return pep_list_to_pred_input(path, output_folder, pep_format='UniMod')
     elif file_type.lower() == 'pepcomet':
         return pep_list_to_pred_input(path, output_folder, pep_format='Comet')
     elif file_type.lower() == 'pepdp':

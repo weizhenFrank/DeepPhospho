@@ -1,12 +1,15 @@
 import os
 import json
 import random
+import re
 
+import numpy as np
 import pandas as pd
 
 from deep_phospho.proteomics_utils import rapid_kit as rk
 from deep_phospho.proteomics_utils.post_analysis import spectronaut as SN
 from deep_phospho.proteomics_utils.post_analysis import maxquant as MQ
+from deep_phospho.proteomics_utils.modpep_format_trans import unimodpep_to_intseq
 
 
 SEED = 666
@@ -155,6 +158,82 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.9, 0.1), mq_version=
     }
 
 
+def easypqp_to_trainset(tsv_path, output_folder, split_ratio=(0.9, 0.1)):
+    """
+    mq_version can be 1.5 or 1.6
+    """
+    data_name = os.path.splitext(os.path.basename(tsv_path))[0]
+
+    ion_train_path = os.path.join(output_folder, f'{data_name}-Ion_Train.json')
+    ion_val_path = os.path.join(output_folder, f'{data_name}-Ion_Val.json')
+    rt_train_path = os.path.join(output_folder, f'{data_name}-RT_Train.txt')
+    rt_val_path = os.path.join(output_folder, f'{data_name}-RT_Val.txt')
+
+    df = pd.read_csv(tsv_path, sep='\t')
+
+    df['IntPep'] = df['ModifiedPeptideSequence'].apply(unimodpep_to_intseq)
+    df['IntPrec'] = df['IntPep'] + '.' + df['PrecursorCharge'].astype(str)
+    df = df[
+        (~df['FragmentSeriesNumber'].isin((1, 2)))
+        & (df['FragmentType'].isin(('b', 'y')))
+        & (df['FragmentCharge'].isin((1, 2)))
+        ].copy()
+
+    allowed_loss_type = ['H3O4P1', 'H2O1', 'H3N1', '']
+    loss_type_to_dp_format = {
+        '': 'Noloss',
+        'H2O1': '1,H2O',
+        'H3N1': '1,NH3',
+        'H3O4P1': '1,H3PO4',
+    }
+
+    def frag_anno_to_name(x):
+        try:
+            f_type, f_num, f_loss, f_c = re.findall('([by])(\\d+)-?(.+?)?\^(\\d)', x)[0]
+        except ValueError and TypeError and IndexError:
+            raise ValueError(f'Fragment annotation {x} in easypqp tsv library has no standard format like y5^2 or y5-H3O4P1^2')
+        if f_loss not in allowed_loss_type:
+            return np.nan
+        return f'{f_type}{f_num}+{f_c}-{loss_type_to_dp_format[f_loss]}'
+
+    df['FragName'] = df['Annotation'].apply(frag_anno_to_name)
+    df = df[pd.notna(df['FragName'])].copy()
+
+    df = df.groupby('IntPrec').filter(lambda x: len(x) >= 6).copy()
+
+    lib_intens = dict()
+    for prec, _df in df.groupby('IntPrec'):
+        lib_intens[prec] = dict(df[['FragName', 'LibraryIntensity']].values)
+
+    ion_train_prec = random.sample(list(lib_intens.keys()), int(len(lib_intens) * split_ratio[0]))
+    ion_train_intens = {}
+    ion_val_intens = {}
+    for p, i in lib_intens.items():
+        if p in ion_train_prec:
+            ion_train_intens[p] = i
+        else:
+            ion_val_intens[p] = i
+
+    with open(ion_train_path, 'w') as f:
+        json.dump(ion_train_intens, f, indent=4)
+
+    with open(ion_val_path, 'w') as f:
+        json.dump(ion_val_intens, f, indent=4)
+
+    rt_df = df[['IntPep', 'NormalizedRetentionTime']].drop_duplicates('IntPep')
+    train_rt_df = rt_df.sample(frac=split_ratio[0], random_state=SEED)
+    val_rt_df = rt_df[~rt_df['IntPep'].isin(train_rt_df['IntPep'].tolist())]
+    train_rt_df.to_csv(rt_train_path, sep='\t', index=False)
+    val_rt_df.to_csv(rt_val_path, sep='\t', index=False)
+
+    return {
+        'IonTrain': ion_train_path,
+        'IonVal': ion_val_path,
+        'RTTrain': rt_train_path,
+        'RTVal': rt_val_path
+    }
+
+
 def file_to_trainset(path, output_folder, file_type: str, split_ratio=(0.9, 0.1)) -> dict:
     if file_type.lower() == 'snlib':
         return sn_lib_to_trainset(path, output_folder, split_ratio)
@@ -162,5 +241,8 @@ def file_to_trainset(path, output_folder, file_type: str, split_ratio=(0.9, 0.1)
         return mq_to_trainset(path, output_folder, split_ratio, '1.5')
     elif file_type.lower() == 'mq1.6':
         return mq_to_trainset(path, output_folder, split_ratio, '1.6')
+    elif file_type.lower() == 'easypqp':
+        return easypqp_to_trainset(path, output_folder, split_ratio)
+
     else:
         raise ValueError(f'Invalid train file type: {file_type}')

@@ -1,6 +1,7 @@
 
 
 REPO = 'https://github.com/weizhenFrank/DeepPhospho'
+REPO_PretrainParamPart = 'https://github.com/weizhenFrank/DeepPhospho#down_pretain'
 
 MainDesc = ('DeepPhospho desktop provides the full supports for DeepPhospho runner with graphical user interface, '
             'to make the running of DeepPhospho pipeline easily.\n'
@@ -16,10 +17,10 @@ DeviceDesc = ('Device (use which device to run pipeline.\n'
               'Choose one from cpu (use cpu only), 0 (use GPU0), 1 (use GPU1), ...')
 
 TrainDataDesc = 'Training data (use which data to train new models or fine-tune pre-trained models)'
-TrainFormatList = ['SNLib', 'MQ1.5', 'MQ1.6']
+TrainFormatList = ['SNLib', 'MQ1.5', 'MQ1.6', 'EasyPQP']
 
 PredInputDesc = 'Prediction input\n(for the description of prediction input format, please have a look at our GitHub repository)'
-PredictionFormatList = ['SNLib', 'SNResult', 'MQ1.5', 'MQ1.6', 'PepSN13', 'PepMQ1.5', 'PepMQ1.6', 'PepComet', 'PepDP']
+PredictionFormatList = ['SNLib', 'SNResult', 'MQ1.5', 'MQ1.6', 'EasyPQP', 'PepSN13', 'PepMQ1.5', 'PepMQ1.6', 'PepUniMod', 'PepComet', 'PepDP']
 
 BuildLibDesc = ('  Library building with DeepPhospho raw predictions.\n'
                 '  This tool needs two input files to build a spectral library in tab-separate flatten text format (Spectronaut and DIA-NN compatible).\n'

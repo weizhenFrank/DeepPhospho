@@ -16,6 +16,8 @@ def init_arg_parser():
                         help='Copy this conda env to DeepPhospho main folder')
     parser.add_argument('-out', '--output_dir', metavar='directory', type=str, default=None, required=False,
                         help='Generate output folder to ...')
+    parser.add_argument('-zip', '--zip_pack', metavar='bool', type=bool, default=True, required=False,
+                        help='Zip packed files (original files will also be kept)')
     return parser
 
 
@@ -54,7 +56,7 @@ if __name__ == '__main__':
 
     if args['output_dir'] is None:
         date = datetime.datetime.now().strftime("%Y%m%d")
-        OutputDir = join_path(_this_dir, 'release', f'DeepPhospho-{date}-win')
+        OutputDir = join_path(_this_dir, 'release', f'DeepPhospho-{date}-WinENV')
     else:
         OutputDir = os.path.abspath(args['output_dir'])
 
@@ -94,6 +96,10 @@ if __name__ == '__main__':
         recursive_copy(_this_dir, OutputDir, ignored_items=ignored_items, verbose=True, exist_ok=True)
         print(f'Start copying env')
         recursive_copy(ENVFolder, ENVOutputDir, ignored_items=ignored_items, verbose=False, exist_ok=True)
+        print(f'Creating app entry')
         create_app_entry(OutputDir)
+        if args['zip_pack']:
+            print(f'Zip files')
+            shutil.make_archive(join_path(os.path.dirname(OutputDir), f'{os.path.basename(OutputDir)}'), 'zip', OutputDir)
     else:
         exit(-1)

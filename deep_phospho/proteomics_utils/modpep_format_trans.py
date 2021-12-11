@@ -75,6 +75,22 @@ def deepphospho_to_intpep(x: str):
     return x
 
 
+def unimodpep_to_intseq(x):
+    x = x.replace('.', '')
+    x = x.replace('unimod', 'UniMod')
+    if '(UniMod:1)' in x:
+        x = x.replace('(UniMod:1)', '')
+        x = f'*{x}'
+    else:
+        x = f'@{x}'
+    x = x.replace('C(UniMod:4)', 'C')
+    x = x.replace('M(UniMod:35)', '1')
+    x = x.replace('S(UniMod:21)', '2')
+    x = x.replace('T(UniMod:21)', '3')
+    x = x.replace('Y(UniMod:21)', '4')
+    return x
+
+
 def intpep_to_sn13(x):
     return spectronaut.intseq_to_sn_modpep(x)
 

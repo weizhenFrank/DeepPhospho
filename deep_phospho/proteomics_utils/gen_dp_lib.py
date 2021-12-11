@@ -89,7 +89,7 @@ def generate_spec_lib(
     if save_path is not None:
         lib_path = save_path
     else:
-        lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I5_n30.xls')
+        lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I5_n{max_frag_num}.xls')
     if logger is not None:
         logger.info(f'Saving generated library to {lib_path}')
     pred_lib_df.to_csv(lib_path, sep='\t', index=False)
