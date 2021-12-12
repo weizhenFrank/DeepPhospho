@@ -49,6 +49,7 @@ class DeepPhosphoRunner(object):
         self.IonBatchSize: int = args['BatchSize-Ion']
         self.RTBatchSize: int = args['BatchSize-RT']
         self.InitLR: float = args['InitLR']
+        self.TrainSplitRatio: list = args['TrainSplitRatio']
         self.MaxPepLen: int = args['MaxPepLen']
         self.RTScale: (int, int) = args['RTScale']
         self.EnsembleRT: bool = args['EnsembleRT']
@@ -97,7 +98,8 @@ class DeepPhosphoRunner(object):
         if self.Train:
             if self.TrainData is not None and self.TrainData != '':
                 self.logger.info(f'Transforming training data')
-                train_data_path = prot_utils.dp_train_data.file_to_trainset(path=self.TrainData, output_folder=data_folder, file_type=self.TrainDataFormat)
+                train_data_path = prot_utils.dp_train_data.file_to_trainset(
+                    path=self.TrainData, output_folder=data_folder, file_type=self.TrainDataFormat, split_ratio=self.TrainSplitRatio)
                 self.logger.info(f'Training data transformation done')
             else:
                 self.logger.error('No training data is defined')
@@ -137,7 +139,8 @@ class DeepPhosphoRunner(object):
             ion_train_config['WorkFolder'] = self.WorkDir
             ion_train_config['Intensity_DATA_CFG']['TrainPATH'] = self.train_data_path['IonTrain']
             ion_train_config['Intensity_DATA_CFG']['TestPATH'] = self.train_data_path['IonVal']
-            ion_train_config['Intensity_DATA_CFG']['HoldoutPATH'] = ''
+            ion_train_config['Intensity_DATA_CFG']['HoldoutPATH'] = (self.train_data_path['IonHoldout']
+                                                                     if 'IonHoldout' in self.train_data_path else '')
             ion_train_config['Intensity_DATA_CFG']['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] = self.MaxPepLen
             ion_train_config['TRAINING_HYPER_PARAM']['BATCH_SIZE'] = self.IonBatchSize
             ion_train_config['TRAINING_HYPER_PARAM']['TRAINING_HYPER_PARAM'] = self.InitLR
@@ -188,7 +191,8 @@ class DeepPhosphoRunner(object):
             rt_train_config['WorkFolder'] = self.WorkDir
             rt_train_config['RT_DATA_CFG']['TrainPATH'] = self.train_data_path['RTTrain']
             rt_train_config['RT_DATA_CFG']['TestPATH'] = self.train_data_path['RTVal']
-            rt_train_config['RT_DATA_CFG']['HoldoutPATH'] = ''
+            rt_train_config['RT_DATA_CFG']['HoldoutPATH'] = (self.train_data_path['RTHoldout']
+                                                             if 'RTHoldout' in self.train_data_path else '')
             rt_train_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MAX_SEQ_LEN'] = self.MaxPepLen
             rt_train_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MIN_RT'] = self.RTScale[0]
             rt_train_config['RT_DATA_CFG']['DATA_PROCESS_CFG']['MAX_RT'] = self.RTScale[1]

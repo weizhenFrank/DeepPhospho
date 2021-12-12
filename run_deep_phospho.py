@@ -51,6 +51,15 @@ def init_arg_parser():
                         help='''To use Spectronaut library, set this to "SNLib"
 Use MaxQuant msms.txt file, set this to "MQ1.5" for MaxQuant version <= 1.5, and "MQ1.6" for version >= 1.6
 Use tsv file from EasyPQP, set this to "EasyPQP"''')
+
+    # train file split
+    parser.add_argument('-tr', '--train_split_ratio', metavar='str', default="8,2",
+                        help='''The ratio of split training data, for training, validation, and test.
+Set to "number,number" to split file into two parts for training and validation.
+Set to "number,number,number" to split file into three parts for training, validation, and test.
+The numbers can be any positive value at any scale, and will be normalized when processing.
+Default is 8,2''')
+
     # pred file
     parser.add_argument('-pf', '--pred_file', metavar='path', type=str, nargs='*', action='append',  # required=True,
                         help='''File contains under-predicted peptide precursors may has multi-source:
@@ -208,6 +217,20 @@ def parse_args_from_cmd_to_runner(parser, time):
     skip_ion_finetune = inputs['skip_ion_finetune']
     skip_rt_finetune = {l: inputs[f'skip_rt_finetune_{l}'] for l in rt_layers}
 
+    # Train data split ratio
+    train_split_ratio = inputs['train_split_ratio']
+    try:
+        train_split_ratio = [float(_) for _ in train_split_ratio.split(',')]
+        if len(train_split_ratio) not in (2, 3):
+            arg_msgs.append(f'ERROR: Training data can only be split into 2 or 3 parts, now {len(train_split_ratio)} parts passed')
+            exit_in_preprocess_step(arg_msgs)
+        _sum = sum(train_split_ratio)
+        train_split_ratio = [_ / _sum for _ in train_split_ratio]
+    except ValueError:
+        arg_msgs.append(f'ERROR: Cannot convert training data split ratio to digit values, now {train_split_ratio}')
+        exit_in_preprocess_step(arg_msgs)
+    arg_msgs.append(f'Training data will be split with ratio {":".join([format(_, ".3f") for _ in train_split_ratio])}')
+
     # Check pre-trained model params
     ion_pretrain = inputs['pretrain_ion_model']
     if ion_pretrain is None:
@@ -327,6 +350,7 @@ def parse_args_from_cmd_to_runner(parser, time):
         'BatchSize-Ion': ion_bs,
         'BatchSize-RT': rt_bs,
         'InitLR': init_lr,
+        'TrainSplitRatio': train_split_ratio,
         'MaxPepLen': max_pep_len,
         'RTScale': rt_scale,
         'EnsembleRT': ensemble_rt,

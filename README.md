@@ -182,6 +182,7 @@
   * SNLib - Spectronaut library
   * MQ1.5 - MaxQuant msms.txt (with MQ version <= 1.5, the phospho-modification is annotated as "(ph)")
   * MQ1.6 - MaxQuant msms.txt (with MQ version >= 1.6, the phospho-modification is annotated as "(Phospho (STY))")
+    * These columns are needed for msms.txt file `'Proteins', 'Modified sequence', 'Charge', 'Phospho (STY) Probabilities', 'Score', 'Retention time', 'Matches', 'Intensities', 'Reverse'`
 
 ## <span id="runner_pred_formats">Runner supported prediction data formats</span>
 
@@ -232,6 +233,9 @@
   * "prediction file type"
   * When multi files are passed to `-pf`, `-pt` should be defined only once and the file format will be assigned to all files, or the same number of `-pt` should be defined, and this also support the mix ways as `-pf`
   * See the following section for details [Runner supported prediction data formats](#runner_pred_formats)
+* `-tr` or `--train_split_ratio`
+  * "train file split ratio"
+  * Split training data file into parts with defined ratios. Can be number,number of training and validation, or number,number,number for training, validation, and test. Default is 8:2, and the numbers can be any positive values without sum equals to a certain value
 
 ### Pre-trained model weights
 
