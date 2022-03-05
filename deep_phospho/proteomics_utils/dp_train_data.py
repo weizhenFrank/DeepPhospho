@@ -20,14 +20,48 @@ random.seed(SEED)
 
 def split_nparts(
         data: typing.Union[list, tuple, np.ndarray],
-        ratios: typing.Union[list, tuple, np.ndarray],
+        ratios: typing.Union[str, list, tuple, np.ndarray],
+        ratio_sep=',',
+        assign_remainder='first_n',
+        seed=SEED,
 ) -> list:
-    remained_data = copy.deepcopy(data)
-    split_data = []
-    for idx in range(len(ratios)):
-        curr_ratio = ratios[idx] / sum(ratios[idx:])
-        split_data.append(random.sample(remained_data, int(curr_ratio * len(remained_data))))
-        remained_data = [_ for _ in remained_data if _ not in split_data[-1]]
+    if isinstance(ratios, str):
+        ratios = [float(_) for _ in ratios.split(ratio_sep)]
+    if len(ratios) == 1:
+        return data
+
+    n_data = len(data)
+    if n_data < len(ratios):
+        print()
+        # or warning or raise
+    ratios = np.asarray(ratios)
+    split_n_data = (ratios / np.sum(ratios) * n_data).astype(int)
+    if assign_remainder == 'first':
+        split_n_data[0] += (n_data - np.sum(split_n_data))
+    elif assign_remainder == 'last':
+        split_n_data[-1] += (n_data - np.sum(split_n_data))
+    elif assign_remainder == 'first_n':
+        split_n_data[:(n_data - np.sum(split_n_data))] += 1
+    elif assign_remainder == 'last_n':
+        split_n_data[-(n_data - np.sum(split_n_data)):] += 1
+    elif assign_remainder == 'no':
+        pass
+    else:
+        raise ValueError('')
+
+    cum_split_n_data = np.cumsum(split_n_data)
+
+    if isinstance(seed, random.Random):
+        r = seed
+    else:
+        r = random.Random(seed)
+
+    shuffled_data = copy.deepcopy(data)
+    r.shuffle(shuffled_data)
+
+    split_data = [shuffled_data[:cum_split_n_data[0]]]
+    for idx, n in enumerate(cum_split_n_data[1:], 1):
+        split_data.append(shuffled_data[cum_split_n_data[idx - 1]: n])
     return split_data
 
 
@@ -154,7 +188,6 @@ def mq_to_trainset(msms_path, output_folder, split_ratio=(0.8, 0.2), mq_version=
 
 def easypqp_to_trainset(tsv_path, output_folder, split_ratio=(0.8, 0.2)):
     """
-    mq_version can be 1.5 or 1.6
     """
     df = pd.read_csv(tsv_path, sep='\t')
 

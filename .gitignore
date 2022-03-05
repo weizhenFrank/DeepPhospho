@@ -23,6 +23,7 @@ DeepPhospho_Raw
 result/
 Data/**/*.pkl
 release/
+ion_mobility_demo/IMWorkSpace/
 
 # IDE
 .idea

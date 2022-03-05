@@ -120,14 +120,14 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
                                   collate_fn=partial(collate_fn, configs=configs), drop_last=True)
 
     train_val_dataloader = DataLoader(dataset=train_dataset,
-                                      batch_size=1024,
+                                      batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
                                       shuffle=False,
                                       num_workers=2,
                                       collate_fn=partial(collate_fn, configs=configs))
 
     test_dataloader = DataLoader(dataset=test_dataset,
                                  shuffle=False,
-                                 batch_size=1024,
+                                 batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
                                  num_workers=2,
                                  collate_fn=partial(collate_fn, configs=configs))
 
@@ -136,7 +136,7 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
         holdout_dataset = IonDataset(rt_holdout_data, configs)
         holdout_dataloader = DataLoader(
             dataset=holdout_dataset,
-            batch_size=256,
+            batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
             shuffle=False,
             num_workers=2,
             collate_fn=partial(collate_fn, configs=configs)
@@ -198,7 +198,6 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
     iteration_best = -1
     best_test_res = 9999999999
     best_model = None
-
 
     for epoch in range(EPOCH):
         if configs['UsedModelCFG']['model_name'] == "LSTMTransformer":

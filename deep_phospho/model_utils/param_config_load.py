@@ -64,7 +64,7 @@ def save_checkpoint(model, optimizer=None, scheduler=None, output_dir=None, epoc
     torch.save(data, save_file, pickle_module=dill)
 
 
-def load_weight_partially_from_file(model, f: str, module_namelist, logger_name='IonInten'):
+def load_weight_partially_from_file(model, f: str, module_namelist, logger_name='IonInten', verbose_only_miss_matched=False):
     logger = logging.getLogger(logger_name)
     state_dict = torch.load(f, map_location=torch.device("cpu"), pickle_module=dill)['model']
     own_state = model.state_dict()
@@ -80,7 +80,8 @@ def load_weight_partially_from_file(model, f: str, module_namelist, logger_name=
                     # backwards compatibility for serialized parameters
                 own_state[to_load_name].copy_(param)
                 # print("[Copied]: {}".format(to_load_name))
-                logger.info("[Copied]: {}".format(to_load_name))
+                if not verbose_only_miss_matched:
+                    logger.info("[Copied]: {}".format(to_load_name))
 
             except RuntimeError:
                 logger.info('[Missed] Size Mismatch... : {}'.format(to_load_name))
@@ -99,10 +100,12 @@ def load_weight_partially_from_file(model, f: str, module_namelist, logger_name=
                     param = param.data
                 own_state[name].copy_(param)
                 # print("[Copied]: {}".format(name))
-                logger.info("[Copied]: {}".format(name))
+                if not verbose_only_miss_matched:
+                    logger.info("[Copied]: {}".format(name))
             except RuntimeError:
                 logger.info('[Missed] Size Mismatch... : {}'.format(name))
-        logger.info("load the pretrain model")
+        if not verbose_only_miss_matched:
+            logger.info("load the pretrain model")
 
     return model
 
