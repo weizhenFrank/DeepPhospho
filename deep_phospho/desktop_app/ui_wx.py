@@ -53,6 +53,9 @@ PipelineParams = {
 }
 PipelineParams = search_pretrain_params(PipelineParams)
 
+FontSize = 14
+FrameSize = (1200, 800)
+
 
 class DeepPhosphoUIFrame(wx.Frame):
     def __init__(self, *args, **kwargs):
@@ -67,10 +70,10 @@ class DeepPhosphoUIFrame(wx.Frame):
         self._status_bar = self._init_status_bar()
 
         # Font
-        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
-        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
 
         # Total sizer
         self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)  # Contain common and external tool
@@ -126,6 +129,7 @@ class DeepPhosphoUIFrame(wx.Frame):
     def _create_menubar(self):
         file_menu = wx.Menu()
         about_item = file_menu.Append(-1, '&About...', 'About DeepPhospho desktop app')
+        set_size_item = file_menu.Append(-1, 'Set size', 'Set the fontsize and frame size of this frame')
         file_menu.AppendSeparator()
         exit_item = file_menu.Append(wx.ID_EXIT)
 
@@ -135,6 +139,7 @@ class DeepPhosphoUIFrame(wx.Frame):
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self._exit_menu, exit_item)
         self.Bind(wx.EVT_MENU, self._about_menu, about_item)
+        self.Bind(wx.EVT_MENU, self._reset_frame_size_menu, set_size_item)
 
     def _exit_menu(self, event):
         _ = event
@@ -145,6 +150,15 @@ class DeepPhosphoUIFrame(wx.Frame):
         wx.MessageBox(
             f'DeepPhospho desktop. A graphical wrapper of command line interface tool DeepPhospho runner. For details, have a look at {REPO}',
             'About', wx.OK | wx.ICON_INFORMATION)
+
+    def _reset_frame_size_menu(self, event):
+        _ = event
+
+        self.collect_info_all()
+
+        _frame = _FrameSizeSetter(None, title='Size setter', size=(400, 400), main_deepphospho_frame=self)
+        _frame.Centre()
+        _frame.Show(True)
 
     def _init_status_bar(self):
         # TODO status bar
@@ -159,7 +173,7 @@ class DeepPhosphoUIFrame(wx.Frame):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
-        desc_text = wx.TextCtrl(self._main_panel, -1, MainDesc, size=(self.GetSize()[0] * 0.925, 125), style=wx.TE_AUTO_URL | wx.TE_MULTILINE | wx.TE_READONLY)
+        desc_text = wx.TextCtrl(self._main_panel, -1, MainDesc, size=(self.GetSize()[0] * 0.925, FontSize * 10), style=wx.TE_AUTO_URL | wx.TE_MULTILINE | wx.TE_READONLY)
         desc_text.SetFont(self._font_static_text)
         grid_sizer.Add(desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL | wx.TE_AUTO_URL)
 
@@ -189,12 +203,12 @@ class DeepPhosphoUIFrame(wx.Frame):
         pred_checkbox.SetFont(self._font_static_text)
         grid_sizer.Add(pred_checkbox, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        run_button = wx.Button(self._main_panel, -1, 'Run', name='RunButton')
+        run_button = wx.Button(self._main_panel, -1, 'Run', name='RunButton', size=(100, FontSize * 2.2))
         run_button.SetFont(self._font_static_text)
         run_button.Bind(wx.EVT_BUTTON, self._event_run)
         grid_sizer.Add(run_button, pos=(0, 2), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        stop_button = wx.Button(self._main_panel, -1, 'Stop', name='StopButton')
+        stop_button = wx.Button(self._main_panel, -1, 'Stop', name='StopButton', size=(100, FontSize * 2.2))
         stop_button.SetFont(self._font_static_text)
         stop_button.Bind(wx.EVT_BUTTON, self._event_stop)
         grid_sizer.Add(stop_button, pos=(0, 3), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
@@ -208,12 +222,12 @@ class DeepPhosphoUIFrame(wx.Frame):
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
 
-        build_lib_button = wx.Button(self._main_panel, -1, 'Build library from prediction output')
+        build_lib_button = wx.Button(self._main_panel, -1, 'Build library from prediction output', size=(FontSize * 28.5, FontSize * 2.2))
         build_lib_button.SetFont(self._font_static_text)
         build_lib_button.Bind(wx.EVT_BUTTON, self._event_open_tool_build_lib)
         grid_sizer.Add(build_lib_button, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        merge_lib_button = wx.Button(self._main_panel, -1, 'Merge library')
+        merge_lib_button = wx.Button(self._main_panel, -1, 'Merge library', size=(FontSize * 13.5, FontSize * 2.2))
         merge_lib_button.SetFont(self._font_static_text)
         merge_lib_button.Bind(wx.EVT_BUTTON, self._event_open_tool_merge_lib)
         grid_sizer.Add(merge_lib_button, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
@@ -283,14 +297,87 @@ class DeepPhosphoUIFrame(wx.Frame):
         self.pred_step_panel.collect_info_curr_panel()
 
 
+class _FrameSizeSetter(wx.Frame):
+    def __init__(self, *args, main_deepphospho_frame, **kwargs):
+        super(_FrameSizeSetter, self).__init__(*args, **kwargs)
+        self.main_deepphospho_frame = main_deepphospho_frame
+
+        self._main_panel = wx.Panel(self, style=wx.TAB_TRAVERSAL | wx.CLIP_CHILDREN | wx.FULL_REPAINT_ON_RESIZE)
+
+        # Font
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+
+        self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)
+        size_setter_sizer = self._init_size_setter_sizer()
+        self.boxsizer_main.Add(size_setter_sizer, 0, wx.ALL, 10)
+
+        # Register boxsizer
+        self._main_panel.SetSizerAndFit(self.boxsizer_main)
+        self.SetClientSize(self._main_panel.GetBestSize())
+        self.boxsizer_main.SetSizeHints(self._main_panel)
+        self.boxsizer_main.Layout()
+
+    def _init_size_setter_sizer(self):
+        static_box = wx.StaticBox(self._main_panel, -1, label='Reset frame size')
+        static_box.SetFont(self._font_boxname)
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        grid_sizer = wx.GridBagSizer(hgap=10, vgap=10)
+
+        frame_width_boxsizer, frame_width_ctrltext = init_boxsizer_for_ctrltext_with_desc(
+            panel=self._main_panel, desc_text='Frame width', font=self._font_static_text,
+            ctrl_text_name='FrameWidth', default_value=str(FrameSize[0]))
+        grid_sizer.Add(frame_width_boxsizer, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        frame_height_boxsizer, frame_height_ctrltext = init_boxsizer_for_ctrltext_with_desc(
+            panel=self._main_panel, desc_text='Frame height', font=self._font_static_text,
+            ctrl_text_name='FrameHeight', default_value=str(FrameSize[1]))
+        grid_sizer.Add(frame_height_boxsizer, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        fontsize_boxsizer, fontsize_ctrltext = init_boxsizer_for_ctrltext_with_desc(
+            panel=self._main_panel, desc_text='Font size', font=self._font_static_text,
+            ctrl_text_name='FontSize', default_value=str(FontSize))
+        grid_sizer.Add(fontsize_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        ok_button = wx.Button(self._main_panel, -1, 'OK', name='SizeSetterOKButton')
+        ok_button.SetFont(self._font_static_text)
+        ok_button.Bind(wx.EVT_BUTTON, self._event_ok)
+        grid_sizer.Add(ok_button, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        cancel_button = wx.Button(self._main_panel, -1, 'Cancel', name='SizeSetterCancelButton')
+        cancel_button.SetFont(self._font_static_text)
+        cancel_button.Bind(wx.EVT_BUTTON, self._event_cancel)
+        grid_sizer.Add(cancel_button, pos=(3, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        return static_box_sizer
+
+    def _event_ok(self, event):
+        _width = int(self.FindWindowByName('FrameWidth').GetValue())
+        _height = int(self.FindWindowByName('FrameHeight').GetValue())
+        global FrameSize
+        FrameSize = (_width, _height)
+        global FontSize
+        FontSize = int(self.FindWindowByName('FontSize').GetValue())
+        self.main_deepphospho_frame.Destroy()
+        # self.main_deepphospho_frame.Close(True)
+        init_frame()
+        self.Destroy()
+
+    def _event_cancel(self, event):
+        self.Destroy()
+
+
 class TaskInfoPanel(wx.Panel):
     def __init__(self, notebook, **kwargs):
         super(TaskInfoPanel, self).__init__(notebook, **kwargs)
 
-        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
-        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
 
         self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)
 
@@ -315,13 +402,13 @@ class TaskInfoPanel(wx.Panel):
                                               'Work folder (define where to perform DeepPhospho pipeline)', )
         work_folder_desc_text.SetFont(self._font_static_text)
         work_folder_horizon_boxsizer.Add(work_folder_desc_text, 0, wx.ALL, 10)
-        select_button = wx.Button(self, -1, 'Select')
+        select_button = wx.Button(self, -1, 'Select', size=(FontSize * 7.15, FontSize * 2.2))
         select_button.SetFont(self._font_static_text)
         select_button.Bind(wx.EVT_BUTTON, self._event_select_workfolder)
         work_folder_horizon_boxsizer.Add(select_button, 0, wx.ALL, 4)
         grid_sizer.Add(work_folder_horizon_boxsizer, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        work_folder_text = wx.TextCtrl(self, -1, PipelineParams['WorkFolder'], size=(900, 30), style=wx.TE_HT_ON_TEXT, name='WorkFolder')
+        work_folder_text = wx.TextCtrl(self, -1, PipelineParams['WorkFolder'], size=(FrameSize[0] * 0.75, FontSize * 2), style=wx.TE_HT_ON_TEXT, name='WorkFolder')
         work_folder_text.SetFont(self._font_search_content)
         grid_sizer.Add(work_folder_text, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
@@ -331,7 +418,7 @@ class TaskInfoPanel(wx.Panel):
         task_name_desc_boxsizer.Add(task_name_desc_text, 0, wx.ALL, 4)
         grid_sizer.Add(task_name_desc_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        task_name_text = wx.TextCtrl(self, -1, PipelineParams['TaskName'], size=(900, 30), style=wx.TE_HT_ON_TEXT, name='TaskName')
+        task_name_text = wx.TextCtrl(self, -1, PipelineParams['TaskName'], size=(FrameSize[0] * 0.75, FontSize * 2), style=wx.TE_HT_ON_TEXT, name='TaskName')
         task_name_text.SetFont(self._font_search_content)
         grid_sizer.Add(task_name_text, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
 
@@ -358,7 +445,7 @@ def init_boxsizer_for_ctrltext_with_desc(panel, desc_text, font, ctrl_text_name=
     desc_text.SetFont(font)
     boxsizer.Add(desc_text, 0, wx.ALL, 10)
 
-    ctrl_text = wx.TextCtrl(panel, -1, default_value, size=(80, 28), style=wx.TE_HT_ON_TEXT, name=ctrl_text_name)
+    ctrl_text = wx.TextCtrl(panel, -1, default_value, size=(80, FontSize * 2), style=wx.TE_HT_ON_TEXT, name=ctrl_text_name)
     ctrl_text.SetFont(font)
     boxsizer.Add(ctrl_text, 0, wx.ALL, 10)
     return boxsizer, ctrl_text
@@ -368,10 +455,10 @@ class GeneralConfigPanel(wx.Panel):
     def __init__(self, notebook, **kwargs):
         super(GeneralConfigPanel, self).__init__(notebook, **kwargs)
 
-        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
-        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
 
         self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)  # Contain common and external tool
 
@@ -395,7 +482,7 @@ class GeneralConfigPanel(wx.Panel):
                                                            'GitHub repository to download your prefered ones')
         param_download_desc_text.SetFont(self._font_static_text)
         param_download_boxsizer.Add(param_download_desc_text, 0, wx.ALL, 3)
-        param_download_desc_button = wx.Button(self, -1, 'Open in browser')
+        param_download_desc_button = wx.Button(self, -1, 'Open in browser', size=(FontSize * 13.5, FontSize * 2.2))
         param_download_desc_button.SetFont(self._font_static_text)
         param_download_desc_button.Bind(wx.EVT_BUTTON, self._event_open_repo_page)
         param_download_boxsizer.Add(param_download_desc_button, 0, wx.ALL, 3)
@@ -405,13 +492,13 @@ class GeneralConfigPanel(wx.Panel):
         ion_pretrain_desc_text = wx.StaticText(self, -1, IonPretrainDesc)
         ion_pretrain_desc_text.SetFont(self._font_static_text)
         ion_pretrain_boxsizer.Add(ion_pretrain_desc_text, 0, wx.ALL, 3)
-        ion_pretrain_select_button = wx.Button(self, -1, 'Select')
+        ion_pretrain_select_button = wx.Button(self, -1, 'Select', size=(FontSize * 7.15, FontSize * 2.2))
         ion_pretrain_select_button.SetFont(self._font_static_text)
         ion_pretrain_select_button.Bind(wx.EVT_BUTTON, self._event_select_ion_pretrain)
         ion_pretrain_boxsizer.Add(ion_pretrain_select_button, 0, wx.ALIGN_CENTRE, 3)
         grid_sizer.Add(ion_pretrain_boxsizer, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        ion_pretrain_text = wx.TextCtrl(self, -1, PipelineParams['Pretrain-Ion'], size=(900, 32), style=wx.TE_HT_ON_TEXT, name='Pretrain-Ion')
+        ion_pretrain_text = wx.TextCtrl(self, -1, PipelineParams['Pretrain-Ion'], size=(FrameSize[0] * 0.75, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='Pretrain-Ion')
         ion_pretrain_text.SetFont(self._font_search_content)
         grid_sizer.Add(ion_pretrain_text, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
@@ -434,11 +521,11 @@ class GeneralConfigPanel(wx.Panel):
         device_desc_text.SetFont(self._font_static_text)
         device_boxsizer.Add(device_desc_text, 0, wx.ALL, 10)
 
-        device_text = wx.TextCtrl(self, -1, PipelineParams['Device'], size=(80, 30), style=wx.TE_HT_ON_TEXT, name='Device')
+        device_text = wx.TextCtrl(self, -1, PipelineParams['Device'], size=(FontSize * 9, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='Device')
         device_text.SetFont(self._font_static_text)
         device_boxsizer.Add(device_text, 0, wx.ALIGN_CENTRE, 10)
 
-        check_gpu_button = wx.Button(self, -1, 'Check GPUs')
+        check_gpu_button = wx.Button(self, -1, 'Check GPUs', size=(FontSize * 9, FontSize * 2.2))
         check_gpu_button.SetFont(self._font_static_text)
         check_gpu_button.Bind(wx.EVT_BUTTON, self._event_check_gpus)
         device_boxsizer.Add(check_gpu_button, 0, wx.ALL, 10)
@@ -448,7 +535,7 @@ class GeneralConfigPanel(wx.Panel):
         rt_scale_desc_text.SetFont(self._font_static_text)
         rt_scale_boxsizer.Add(rt_scale_desc_text, 0, wx.ALL, 10)
 
-        rt_scale_lower_text = wx.TextCtrl(self, -1, PipelineParams['RTScale-lower'], size=(80, 28), style=wx.TE_HT_ON_TEXT, name='RTScale-lower')
+        rt_scale_lower_text = wx.TextCtrl(self, -1, PipelineParams['RTScale-lower'], size=(FontSize * 9, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='RTScale-lower')
         rt_scale_lower_text.SetFont(self._font_static_text)
         rt_scale_boxsizer.Add(rt_scale_lower_text, 0, wx.ALL, 10)
 
@@ -456,7 +543,7 @@ class GeneralConfigPanel(wx.Panel):
         rt_scale_desc_fillin_text.SetFont(self._font_static_text)
         rt_scale_boxsizer.Add(rt_scale_desc_fillin_text, 0, wx.ALL, 10)
 
-        rt_scale_upper_text = wx.TextCtrl(self, -1, PipelineParams['RTScale-upper'], size=(80, 28), style=wx.TE_HT_ON_TEXT, name='RTScale-upper')
+        rt_scale_upper_text = wx.TextCtrl(self, -1, PipelineParams['RTScale-upper'], size=(FontSize * 9, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='RTScale-upper')
         rt_scale_upper_text.SetFont(self._font_static_text)
         rt_scale_boxsizer.Add(rt_scale_upper_text, 0, wx.ALL, 10)
 
@@ -465,7 +552,7 @@ class GeneralConfigPanel(wx.Panel):
         max_pep_len_desc_text.SetFont(self._font_static_text)
         max_pep_len_boxsizer.Add(max_pep_len_desc_text, 0, wx.ALL, 10)
 
-        max_pep_len_text = wx.TextCtrl(self, -1, PipelineParams['MaxPepLen'], size=(80, 28), style=wx.TE_HT_ON_TEXT, name='MaxPepLen')
+        max_pep_len_text = wx.TextCtrl(self, -1, PipelineParams['MaxPepLen'], size=(FontSize * 9, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='MaxPepLen')
         max_pep_len_text.SetFont(self._font_static_text)
         max_pep_len_boxsizer.Add(max_pep_len_text, 0, wx.ALL, 10)
 
@@ -545,11 +632,11 @@ class GeneralConfigPanel(wx.Panel):
         layer_desc_text.SetFont(self._font_static_text)
         rt_pretrain_row_boxsizer.Add(layer_desc_text, 0, wx.ALIGN_CENTRE, 10)
 
-        rt_pretrain_text = wx.TextCtrl(self, -1, PipelineParams[f'Pretrain-RT-{layer}'], size=(800, 28), style=wx.TE_HT_ON_TEXT, name=f'Pretrain-RT-{layer}')
+        rt_pretrain_text = wx.TextCtrl(self, -1, PipelineParams[f'Pretrain-RT-{layer}'], size=(FrameSize[0] / 3 * 2, FontSize * 2), style=wx.TE_HT_ON_TEXT, name=f'Pretrain-RT-{layer}')
         rt_pretrain_text.SetFont(self._font_search_content)
         rt_pretrain_row_boxsizer.Add(rt_pretrain_text, 0, wx.ALIGN_CENTRE, 10)
 
-        rt_pretrain_select_button = wx.Button(self, -1, 'Select', name=f'Button-Pretrain-RT-{layer}')
+        rt_pretrain_select_button = wx.Button(self, -1, 'Select', name=f'Button-Pretrain-RT-{layer}', size=(FontSize * 7.15, FontSize * 2.2))
         rt_pretrain_select_button.SetFont(self._font_static_text)
         rt_pretrain_select_button.Bind(wx.EVT_BUTTON, self._event_select_rt_pretrain)
         rt_pretrain_row_boxsizer.Add(rt_pretrain_select_button, 0, wx.ALIGN_CENTRE, 10)
@@ -589,10 +676,10 @@ class TrainStepPanel(wx.Panel):
     def __init__(self, notebook, **kwargs):
         super(TrainStepPanel, self).__init__(notebook, **kwargs)
 
-        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
-        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
 
         self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)  # Contain common and external tool
 
@@ -615,12 +702,12 @@ class TrainStepPanel(wx.Panel):
         train_data_desc_text.SetFont(self._font_static_text)
         grid_sizer.Add(train_data_desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        train_data_select_button = wx.Button(self, -1, 'Select')
+        train_data_select_button = wx.Button(self, -1, 'Select', size=(FontSize * 7.15, FontSize * 2.2))
         train_data_select_button.SetFont(self._font_static_text)
         train_data_select_button.Bind(wx.EVT_BUTTON, self._event_select_train_file)
         grid_sizer.Add(train_data_select_button, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        train_data_text = wx.TextCtrl(self, -1, size=(850, 65), style=wx.TE_HT_ON_TEXT | wx.TE_MULTILINE, name='TrainData')
+        train_data_text = wx.TextCtrl(self, -1, size=(FrameSize[0] * 0.75, FontSize * 4.65), style=wx.TE_HT_ON_TEXT | wx.TE_MULTILINE, name='TrainData')
         train_data_text.SetFont(self._font_search_content)
         grid_sizer.Add(train_data_text, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
@@ -690,10 +777,10 @@ class PredStepPanel(wx.Panel):
         self.pred_input_widgets_num = 0
 
         # Font
-        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
-        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
 
         self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)  # Contain common and external tool
 
@@ -716,7 +803,7 @@ class PredStepPanel(wx.Panel):
         pred_input_desc_text.SetFont(self._font_static_text)
         grid_sizer.Add(pred_input_desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
-        add_row_button = wx.Button(self, -1, 'Add row')
+        add_row_button = wx.Button(self, -1, 'Add row', size=(FontSize * 8.35, FontSize * 2.2))
         add_row_button.SetFont(self._font_static_text)
         add_row_button.Bind(wx.EVT_BUTTON, self._event_add_row)
         grid_sizer.Add(add_row_button, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
@@ -742,11 +829,11 @@ class PredStepPanel(wx.Panel):
         pred_format_choice.SetSelection(0)
         boxsizer.Add(pred_format_choice, 0, wx.ALL, 10)
 
-        pred_file_text = wx.TextCtrl(self, -1, size=(700, 30), style=wx.TE_HT_ON_TEXT, name=f'CtrlText-{self.pred_input_widgets_num}')
+        pred_file_text = wx.TextCtrl(self, -1, size=(FrameSize[0] / 12 * 7, FontSize * 2), style=wx.TE_HT_ON_TEXT, name=f'CtrlText-{self.pred_input_widgets_num}')
         pred_file_text.SetFont(self._font_search_content)
         boxsizer.Add(pred_file_text, 0, wx.ALL, 10)
 
-        pred_file_select_button = wx.Button(self, -1, 'Select', name=f'Button-{self.pred_input_widgets_num}')
+        pred_file_select_button = wx.Button(self, -1, 'Select', name=f'Button-{self.pred_input_widgets_num}', size=(FontSize * 7.15, FontSize * 2.2))
         pred_file_select_button.SetFont(self._font_static_text)
         pred_file_select_button.Bind(wx.EVT_BUTTON, self._event_select_pred_file)
         boxsizer.Add(pred_file_select_button, 0, wx.ALL, 10)
@@ -785,10 +872,10 @@ class BuildLibraryFrame(wx.Frame):
         self.proper_widget_width = self.GetSize()[0] * 0.95
 
         # Font
-        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
-        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
 
         # Total sizer
         self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)  # Contain common and external tool
@@ -950,10 +1037,10 @@ class MergeLibraryFrame(wx.Frame):
         self.proper_widget_width = self.GetSize()[0] * 0.95
 
         # Font
-        self._font_boxname = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_static_text = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
-        self._font_search_content = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
-        self._font_listbox = wx.Font(14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
+        self._font_boxname = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_static_text = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False)
+        self._font_search_content = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False)
+        self._font_listbox = wx.Font(FontSize, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT, False)
 
         # Total sizer
         self.boxsizer_main = wx.BoxSizer(wx.VERTICAL)  # Contain common and external tool
@@ -1107,3 +1194,12 @@ class MergeLibraryFrame(wx.Frame):
         self.FindWindowByName('Button-MergeLib').Enable()
         self.FindWindowByName('Button-MergeLib').SetLabel('Merge')
         wx.MessageBox(err_msg, style=wx.ICON_ERROR)
+
+
+def init_frame():
+    # screen_size = wx.DisplaySize()
+    # frame_pos = (screen_size[0] / 8, screen_size[1] / 15)
+    dp_ui_main_frame = DeepPhosphoUIFrame(None, title='DeepPhospho', size=FrameSize)  # , pos=frame_pos
+    dp_ui_main_frame.Centre()
+    dp_ui_main_frame.Show(True)
+
