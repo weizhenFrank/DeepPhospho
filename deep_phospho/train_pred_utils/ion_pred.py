@@ -103,7 +103,7 @@ def pred_ion(configs=None, config_load_msgs=None, config_overwrite_msgs=None, te
     test_dataloader = DataLoader(dataset=test_dataset,
                                  shuffle=False,
                                  batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
-                                 num_workers=2,
+                                 num_workers=0,
                                  collate_fn=partial(collate_fn, configs=configs))
 
     def idxtoaa(arr):

@@ -116,19 +116,19 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
     train_dataloader = DataLoader(dataset=train_dataset,
                                   batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
                                   shuffle=False,
-                                  num_workers=4,
+                                  num_workers=0,
                                   collate_fn=partial(collate_fn, configs=configs), drop_last=True)
 
     train_val_dataloader = DataLoader(dataset=train_dataset,
                                       batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
                                       shuffle=False,
-                                      num_workers=2,
+                                      num_workers=0,
                                       collate_fn=partial(collate_fn, configs=configs))
 
     test_dataloader = DataLoader(dataset=test_dataset,
                                  shuffle=False,
                                  batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
-                                 num_workers=2,
+                                 num_workers=0,
                                  collate_fn=partial(collate_fn, configs=configs))
 
     if use_holdout:
@@ -138,7 +138,7 @@ def train_rt_model(configs=None, config_load_msgs=None, config_overwrite_msgs=No
             dataset=holdout_dataset,
             batch_size=configs['TRAINING_HYPER_PARAM']['BATCH_SIZE'],
             shuffle=False,
-            num_workers=2,
+            num_workers=0,
             collate_fn=partial(collate_fn, configs=configs)
         )
 
