@@ -67,7 +67,7 @@ I. spectral library from Spectronaut
 II. search result from Spectronaut
 III. msms.txt or evidence.txt from MaxQuant
 IV. tsv file from EasyPQP
-V. any tab-separated file with two columns "sequence" and "charge"
+V. any tab-separated file with two columns "peptide" and "charge"
 Either -pf file_1 file_2 ... or -pf file_1 -pf file_2 ... or mix above two is fine for this argument''')
     # pred file type
     parser.add_argument('-pt', '--pred_file_type', metavar='str', type=str, nargs='*', action='append',  # required=True,
@@ -139,11 +139,15 @@ If the input files have different formats, the same number of -pt is needed''')
     for l in [4, 5, 6, 7, 8]:
         _pretrain_rt = os.path.join('.', 'PretrainParams', 'RTModel', f'{l}.pth')
         _pretrain_rt = _pretrain_rt if os.path.exists(_pretrain_rt) else ''
+        if l == 4:
+            _this_help_msg = (f'Fine-tune on pre-trained RT model parameters (with {l} encoder layer) or directly use pre-trained models to do prediction. '
+                              f'This will be automatically filled-in if pre-trained models param files are existed as "PretrainParams/IonModel/(layer_number).pth". '
+                              f'If -en (-ensemble_rt) is not used, only -rt_model_8 is required'
+                              f'If you don\'t want to use pre-trained model param anywhere, please explicitly define this argument and set value to `/`')
+        else:
+            _this_help_msg = f'Similar as -pretrain_rt_4 but for {l} encoder layers'
         parser.add_argument(f'-pretrain_rt_{l}', f'--pretrain_rt_model_{l}', metavar='path', type=str, default=_pretrain_rt,
-                            help=f'Fine-tune on pre-trained RT model parameters (with {l} encoder layer) or directly use pre-trained models to do prediction. '
-                                 f'This will be automatically filled-in if pre-trained models param files are existed as "PretrainParams/IonModel/(layer_number).pth". '
-                                 f'If -en (-ensemble_rt) is not used, only -rt_model_8 is required'
-                                 f'If you don\'t want to use pre-trained model param anywhere, please explicitly define this argument and set value to `/`')
+                            help=_this_help_msg)
 
     # skip fine-tuning
     parser.add_argument('-skip_ion_finetune', '--skip_ion_finetune', default=False, action='store_true',
@@ -153,13 +157,17 @@ If the input files have different formats, the same number of -pt is needed''')
                              'This will be useful if you already have a fine-tuned ion model but have no or only some of fine-tuned RT models, '
                              'and still want to use DeepPhospho runner but not individual train/prediction scripts. ')
     for l in [4, 5, 6, 7, 8]:
+        if l == 4:
+            _this_help_msg = ('Partial training option. '
+                              f'When this argument is passed, RT model fine-tuning step for layer {l} will be skipped. '
+                              f'Use existed RT model parameters (with {l} encoder layer) instead of training a new one. '
+                              'This will be useful if you already have some fine-tuned RT model but not enough for ensemble, '
+                              'or RT model has already been trained but ion model is need to be fine-tuned. '
+                              'In this case, you can still use DeepPhospho runner but not individual train/prediction scripts. ')
+        else:
+            _this_help_msg = f'Similar as -skip_rt_finetune_4 but for {l} encoder layers'
         parser.add_argument(f'-skip_rt_finetune_{l}', f'--skip_rt_finetune_{l}', default=False, action='store_true',
-                            help='Partial training option. '
-                                 f'When this argument is passed, RT model fine-tuning step for layer {l} will be skipped. '
-                                 f'Use existed RT model parameters (with {l} encoder layer) instead of training a new one. '
-                                 'This will be useful if you already have some fine-tuned RT model but not enough for ensemble, '
-                                 'or RT model has already been trained but ion model is need to be fine-tuned. '
-                                 'In this case, you can still use DeepPhospho runner but not individual train/prediction scripts. ')
+                            help=_this_help_msg)
     # no time
     parser.add_argument('-no_time', '--no_time', default=False, action='store_true',
                         help='''Dont add time to model folder. To keep the folder name same in different start time''')
