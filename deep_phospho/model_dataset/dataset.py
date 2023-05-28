@@ -22,7 +22,7 @@ class RandomMaskingDataset(Dataset):
 
     def __getitem__(self, item):
 
-        x = np.array(self.ion_data.X1[item], dtype=np.long).squeeze()
+        x = np.array(self.ion_data.X1[item], dtype=np.int_).squeeze()
         y = copy.deepcopy(x)
         if self.de_mod:
             mod_no_mod_idx = \
@@ -106,14 +106,14 @@ class IonDataset(Dataset):
 
     def __getitem__(self, item):
 
-        x1 = np.array(self.ion_data.X1[item], dtype=np.long).squeeze()
-        y = np.array(self.ion_data.y[item], dtype=np.float)
+        x1 = np.array(self.ion_data.X1[item], dtype=np.int_).squeeze()
+        y = np.array(self.ion_data.y[item], dtype=np.float64)
         if hasattr(self.ion_data, "X2"):
-            x2 = np.array(self.ion_data.X2[item], dtype=np.float).squeeze()
+            x2 = np.array(self.ion_data.X2[item], dtype=np.float64).squeeze()
             x2 = x2.reshape(-1, 1)
 
             if self.configs['Intensity_DATA_CFG']['DataName'] == 'Prosit':
-                x3 = np.array(self.ion_data.X3[item], dtype=np.float).squeeze()
+                x3 = np.array(self.ion_data.X3[item], dtype=np.float64).squeeze()
                 x3 = x3.reshape(-1, 1)
 
                 return x1, x2, x3, y
