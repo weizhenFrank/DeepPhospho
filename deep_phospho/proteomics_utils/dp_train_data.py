@@ -194,8 +194,8 @@ def easypqp_to_trainset(tsv_path, output_folder, split_ratio=(0.8, 0.2)):
     df['IntPep'] = df['ModifiedPeptideSequence'].apply(unimodpep_to_intseq)
     df['IntPrec'] = df['IntPep'] + '.' + df['PrecursorCharge'].astype(str)
     df = df[
-        (~df['FragmentSeriesNumber'].isin((1, 2)))
-        & (df['FragmentType'].isin(('b', 'y')))
+        # (~df['FragmentSeriesNumber'].isin((1, 2)))
+        (df['FragmentType'].isin(('b', 'y')))
         & (df['FragmentCharge'].isin((1, 2)))
         ].copy()
 
@@ -222,8 +222,8 @@ def easypqp_to_trainset(tsv_path, output_folder, split_ratio=(0.8, 0.2)):
     df = df.groupby('IntPrec').filter(lambda x: len(x) >= 6).copy()
 
     lib_intens = dict()
-    for prec, _df in df.groupby('IntPrec'):
-        lib_intens[prec] = dict(df[['FragName', 'LibraryIntensity']].values)
+    for prec, g_df in df.groupby('IntPrec'):
+        lib_intens[prec] = dict(g_df[['FragName', 'LibraryIntensity']].values)
 
     rt_df = df[['IntPep', 'NormalizedRetentionTime']].drop_duplicates('IntPep')
     rt_df.columns = ['IntPep', 'RT']

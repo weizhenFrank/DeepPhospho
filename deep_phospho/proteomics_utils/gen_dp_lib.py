@@ -14,7 +14,7 @@ def generate_spec_lib(
         pred_ion_path,
         pred_rt_path,
         min_frag_inten=5,
-        min_frag_num=4,
+        min_frag_per_prec=4,
         max_frag_num=15,
         allowed_extra_min_frag_inten=3,
         save_path=None,
@@ -27,7 +27,7 @@ def generate_spec_lib(
     :param pred_rt_path:
 
     :param min_frag_inten: min fragment intensity to be kept
-    :param min_frag_num: min fragment number to keep this precursor
+    :param min_frag_per_prec: min fragment number to keep this precursor
     :param max_frag_num: max fragment number to be kept for one precursor
     :param allowed_extra_min_frag_inten:
 
@@ -68,7 +68,7 @@ def generate_spec_lib(
             frag_type, frag_num, frag_charge, frag_losstype = re.findall(r'([abcxyz])(\d+)\+(\d)-(.+)', frag)[0]
             if int(frag_num) in (1, 2):
                 continue
-            if float(inten) <= 5:
+            if float(inten) < min_frag_inten:
                 continue
             frag_mz = prot_utils.calc.calc_fragment_mz(modpep, frag_type, frag_num, frag_charge, frag_losstype)
             frag_losstype = SN.sn_constant.LossType.Readable_to_SN[frag_losstype]
@@ -80,16 +80,17 @@ def generate_spec_lib(
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in initial {data_name} library')
 
-    pred_lib_df = pred_lib_df.groupby('Prec').filter(lambda x: len(x) >= 4)
+    pred_lib_df = pred_lib_df.groupby('Prec').filter(lambda x: len(x) >= min_frag_per_prec)
+    pred_lib_df = pred_lib_df[(pred_lib_df.groupby('Prec')['RelativeIntensity'].rank(ascending=False) <= max_frag_num)]
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in final {data_name} library')
-
+    
     pred_lib_df = pred_lib_df[SN.SpectronautLibrary.LibBasicCols]
 
     if save_path is not None:
         lib_path = save_path
     else:
-        lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I5_n{max_frag_num}.xls')
+        lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I{int(min_frag_inten)}_n{max_frag_num}.xls')
     if logger is not None:
         logger.info(f'Saving generated library to {lib_path}')
     pred_lib_df.to_csv(lib_path, sep='\t', index=False)
@@ -124,7 +125,7 @@ def merge_lib(main_lib_path, add_libs_path, output_folder, task_name, save_path=
     main_lib = main_lib[SN.SpectronautLibrary.LibBasicCols]
 
     if save_path is None:
-        save_path = os.path.join(output_folder, f'HybridLibrary-{task_name}-DP_I5_n30.xls')
+        save_path = os.path.join(output_folder, f'HybridLibrary-{task_name}-DP.xls')
     if logger is not None:
         logger.info(f'Saving hybrid library {save_path}')
     main_lib.to_csv(save_path, sep='\t', index=False)
