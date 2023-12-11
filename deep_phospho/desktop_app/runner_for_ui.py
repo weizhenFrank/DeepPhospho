@@ -158,6 +158,9 @@ def fillin_runner_cmd_from_ui_config(config_from_ui: dict) -> str:
         if config_from_ui[f'Pretrain-RT-{l}'] != '':
             runner_cmd_parts.append(f'-pretrain_rt_{l} {config_from_ui[f"Pretrain-RT-{l}"]}')
 
+    runner_cmd_parts.append(f'-min_frags {config_from_ui["FragPerPrec-min"]}')
+    runner_cmd_parts.append(f'-max_frags {config_from_ui["FragPerPrec-max"]}')
+    runner_cmd_parts.append(f'-min_inten {config_from_ui["MinRelInten"]}')
     runner_cmd_parts.append(f'-m')
 
     return ' '.join(runner_cmd_parts)
@@ -218,6 +221,10 @@ class BuildLibThread(threading.Thread):
                 output_folder=None,
                 pred_ion_path=self.ion_input,
                 pred_rt_path=self.rt_input,
+                # TODO add UI config in library building frame for these three parameters
+                min_frag_inten=5,
+                min_frag_per_prec=4,
+                max_frag_per_prec=15,
                 save_path=self.output_lib,
                 logger=logging.getLogger(name='Build library')
             )

@@ -171,6 +171,15 @@ If the input files have different formats, the same number of -pt is needed''')
     # no time
     parser.add_argument('-no_time', '--no_time', default=False, action='store_true',
                         help='''Dont add time to model folder. To keep the folder name same in different start time''')
+
+    # Library spec args
+    parser.add_argument('-min_inten', '--min_rel_inten', metavar='float', type=float, required=False, default=5.0,
+                        help=r'Minimum relative intensity of fragments, and any fragment with lower intensity will be removed. Default is 5.0, i.e. >5%%')
+    parser.add_argument('-min_frags', '--min_frag_per_prec', metavar='int', type=int, required=False, default=4,
+                        help='Minimum number of fragments per precursor, and any precursor with less fragments will be removed. Default is 4')
+    parser.add_argument('-max_frags', '--max_frag_per_prec', metavar='int', type=int, required=False, default=15,
+                        help='Maximum number of fragments per precursor. Fragments will be sorted accodring to their intensity and only top N fragments will be kept. Default is 15')
+
     # merge library
     parser.add_argument('-m', '--merge', default=False, action='store_true',
                         help='''Merge all predicted data to one library or not (the individual ones will still be kept)''')
@@ -333,6 +342,13 @@ def parse_args_from_cmd_to_runner(parser, time):
     rt_scale = list(map(int, inputs['rt_scale'].replace('*', '').split(',')))
     arg_msgs.append(f'Set RT scale from {rt_scale[0]} to {rt_scale[1]}')
 
+    min_frag_per_prec = inputs['min_frag_per_prec']
+    max_frag_per_prec = inputs['max_frag_per_prec']
+    min_rel_inten = inputs['min_rel_inten']
+    arg_msgs.append(f'In library generation step, will only keep precursors with at least {min_frag_per_prec} fragments')
+    arg_msgs.append(f'In library generation step, will only keep at most {max_frag_per_prec} fragments per precursor')
+    arg_msgs.append(f'In library generation step, will only keep fragments have relative intensities > {min_rel_inten}%')
+
     merge = inputs['merge']
     if merge:
         arg_msgs.append(f'Merge all predicted spectral libraries to one after prediction done')
@@ -363,8 +379,11 @@ def parse_args_from_cmd_to_runner(parser, time):
         'RTScale': rt_scale,
         'EnsembleRT': ensemble_rt,
         'NoTime': no_time,
+        
+        'MinFragPerPrec': min_frag_per_prec,
+        'MaxFragPerPrec': max_frag_per_prec,
+        'MinRelInten': min_rel_inten,
         'Merge': merge,
-
     }
 
 

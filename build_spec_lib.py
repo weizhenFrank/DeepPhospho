@@ -35,6 +35,13 @@ if __name__ == '__main__':
     # output
     parser_build.add_argument('-o', '--output', metavar='path', type=str, required=True,
                               help='Output path of generated library')
+    # args
+    parser_build.add_argument('-min_inten', '--min_rel_inten', metavar='float', type=float, required=False, default=5.0,
+                              help=r'Minimum relative intensity of fragments, and any fragment with lower intensity will be removed. Default is 5.0, i.e. >5%%')
+    parser_build.add_argument('-min_frags', '--min_frag_per_prec', metavar='int', type=int, required=False, default=4,
+                              help='Minimum number of fragments per precursor, and any precursor with less fragments will be removed. Default is 4')
+    parser_build.add_argument('-max_frags', '--max_frag_per_prec', metavar='int', type=int, required=False, default=15,
+                              help='Maximum number of fragments per precursor. Fragments will be sorted accodring to their intensity and only top N fragments will be kept. Default is 15')
 
     parser_merge = sub_parser.add_parser('merge')
     parser_merge.set_defaults(action='merge')
@@ -54,6 +61,9 @@ if __name__ == '__main__':
             output_folder=None,
             pred_ion_path=os.path.abspath(args.ion),
             pred_rt_path=os.path.abspath(args.rt),
+            min_frag_inten=args.min_rel_inten,
+            min_frag_per_prec=args.min_frag_per_prec,
+            max_frag_per_prec=args.max_frag_per_prec,
             save_path=os.path.abspath(args.output),
             logger=logger
         )

@@ -47,6 +47,9 @@ PipelineParams = {
     'InitLR': '0.0001',
 
     # Prediction step
+    'FragPerPrec-min': '4',
+    'FragPerPrec-max': '15',
+    'MinRelInten': '5.0',
     'PredInput': [],
     'PredInputFormat': [],
 
@@ -178,6 +181,7 @@ class DeepPhosphoUIFrame(wx.Frame):
         grid_sizer.Add(desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL | wx.TE_AUTO_URL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        # static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE | wx.RIGHT, border=50)
         return static_box_sizer
 
     def _init_config_boxsizer(self):
@@ -214,6 +218,7 @@ class DeepPhosphoUIFrame(wx.Frame):
         grid_sizer.Add(stop_button, pos=(0, 3), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        # static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE | wx.RIGHT, border=50)
         return static_box_sizer
 
     def _init_tools_sizer(self):
@@ -233,6 +238,7 @@ class DeepPhosphoUIFrame(wx.Frame):
         grid_sizer.Add(merge_lib_button, pos=(0, 1), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        # static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE | wx.RIGHT, border=50)
         return static_box_sizer
 
     def _event_run(self, event):
@@ -423,6 +429,7 @@ class TaskInfoPanel(wx.Panel):
         grid_sizer.Add(task_name_text, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        # static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE | wx.RIGHT, border=50)
         return static_box_sizer, work_folder_text, task_name_text
 
     def _event_select_workfolder(self, event):
@@ -513,6 +520,7 @@ class GeneralConfigPanel(wx.Panel):
         # grid_sizer.Add(mode_select_boxsizer, pos=(7, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        # static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE | wx.RIGHT, border=50)
         return static_box_sizer, rt_pretrain_sub_sizer
 
     def _init_widgets_below_rt_pretrain(self):
@@ -745,6 +753,7 @@ class TrainStepPanel(wx.Panel):
         grid_sizer.Add(init_lr_boxsizer, pos=(7, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        # static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE | wx.RIGHT, border=50)
         return static_box_sizer
 
     def _event_select_train_file(self, event):
@@ -803,21 +812,50 @@ class PredStepPanel(wx.Panel):
         pred_input_desc_text.SetFont(self._font_static_text)
         grid_sizer.Add(pred_input_desc_text, pos=(0, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
+        frag_per_prec_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        frag_per_prec_desc_text = wx.StaticText(self, -1, 'Fragments per precursors from')
+        frag_per_prec_desc_text.SetFont(self._font_static_text)
+        frag_per_prec_boxsizer.Add(frag_per_prec_desc_text, 0, wx.ALL, 10)
+
+        frag_per_prec_lower_text = wx.TextCtrl(self, -1, PipelineParams['FragPerPrec-min'], size=(FontSize * 9, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='FragPerPrec-min')
+        frag_per_prec_lower_text.SetFont(self._font_static_text)
+        frag_per_prec_boxsizer.Add(frag_per_prec_lower_text, 0, wx.ALL, 10)
+
+        frag_per_prec_desc_fillin_text = wx.StaticText(self, -1, 'to')
+        frag_per_prec_desc_fillin_text.SetFont(self._font_static_text)
+        frag_per_prec_boxsizer.Add(frag_per_prec_desc_fillin_text, 0, wx.ALL, 10)
+
+        frag_per_prec_upper_text = wx.TextCtrl(self, -1, PipelineParams['FragPerPrec-max'], size=(FontSize * 9, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='FragPerPrec-max')
+        frag_per_prec_upper_text.SetFont(self._font_static_text)
+        frag_per_prec_boxsizer.Add(frag_per_prec_upper_text, 0, wx.ALL, 10)
+        grid_sizer.Add(frag_per_prec_boxsizer, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
+        min_rel_inten_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        min_rel_inten_desc_text = wx.StaticText(self, -1, 'Min relative intensity (%)')
+        min_rel_inten_desc_text.SetFont(self._font_static_text)
+        min_rel_inten_boxsizer.Add(min_rel_inten_desc_text, 0, wx.ALL, 10)
+
+        min_rel_inten_text = wx.TextCtrl(self, -1, PipelineParams['MinRelInten'], size=(FontSize * 9, FontSize * 2.2), style=wx.TE_HT_ON_TEXT, name='MinRelInten')
+        min_rel_inten_text.SetFont(self._font_static_text)
+        min_rel_inten_boxsizer.Add(min_rel_inten_text, 0, wx.ALL, 10)
+        grid_sizer.Add(min_rel_inten_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+
         add_row_button = wx.Button(self, -1, 'Add row', size=(FontSize * 8.35, FontSize * 2.2))
         add_row_button.SetFont(self._font_static_text)
         add_row_button.Bind(wx.EVT_BUTTON, self._event_add_row)
-        grid_sizer.Add(add_row_button, pos=(1, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        grid_sizer.Add(add_row_button, pos=(3, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         pred_row_boxsizer = self._init_one_pred_row()
         self.pred_input_widgets_num += 1
-        grid_sizer.Add(pred_row_boxsizer, pos=(2, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        grid_sizer.Add(pred_row_boxsizer, pos=(4, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
 
         static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE_VERTICAL | wx.RIGHT, border=50)
+        # static_box_sizer.Add(grid_sizer, proportion=0, flag=wx.ALIGN_CENTRE | wx.RIGHT, border=50)
         return static_box_sizer, grid_sizer
 
     def _event_add_row(self, event):
         pred_row_boxsizer = self._init_one_pred_row()
-        self.pred_step_grid_sizer.Add(pred_row_boxsizer, pos=(2 + self.pred_input_widgets_num, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
+        self.pred_step_grid_sizer.Add(pred_row_boxsizer, pos=(4 + self.pred_input_widgets_num, 0), span=(1, 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
         self.pred_input_widgets_num += 1
         self.boxsizer_main.Layout()
 
@@ -851,9 +889,13 @@ class PredStepPanel(wx.Panel):
         dlg.Destroy()
 
     def collect_info_curr_panel(self):
+        for name in ['FragPerPrec-min', 'FragPerPrec-max', 'MinRelInten']:
+            widget = self.FindWindowByName(name)
+            if widget is not None:
+                PipelineParams[name] = widget.GetValue()
+
         PipelineParams['PredInput'] = []
         PipelineParams['PredInputFormat'] = []
-
         for idx in range(self.pred_input_widgets_num):
             choice = PredictionFormatList[self.FindWindowByName(f'Choice-{idx}').GetSelection()]
             ctrl_text = self.FindWindowByName(f'CtrlText-{idx}').GetValue()

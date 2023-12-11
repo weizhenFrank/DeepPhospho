@@ -55,6 +55,10 @@ class DeepPhosphoRunner(object):
         self.EnsembleRT: bool = args['EnsembleRT']
         self.rt_layers = [4, 5, 6, 7, 8] if self.EnsembleRT else [8]
         self.NoTime: bool = args['NoTime']
+
+        self.MinFragPerPrec: int = args['MinFragPerPrec']
+        self.MaxFragPerPrec: int = args['MaxFragPerPrec']
+        self.MinRelInten: float = args['MinRelInten']
         self.Merge: bool = args['Merge']
 
         self.termin_flag = termin_flag
@@ -341,6 +345,9 @@ class DeepPhosphoRunner(object):
                 output_folder=self.WorkDir,
                 pred_ion_path=join_path(ion_result_folder, f'{os.path.basename(ion_result_folder)}-PredOutput.json'),
                 pred_rt_path=join_path(self.rt_pred_folders[data_name], 'Prediction.txt'),
+                min_frag_inten=self.MinRelInten,
+                min_frag_per_prec=self.MinFragPerPrec,
+                max_frag_per_prec=self.MaxFragPerPrec,
                 logger=self.logger
             )
             lib_paths[data_name] = lib_path

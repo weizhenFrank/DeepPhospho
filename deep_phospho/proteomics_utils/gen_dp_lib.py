@@ -15,7 +15,7 @@ def generate_spec_lib(
         pred_rt_path,
         min_frag_inten=5,
         min_frag_per_prec=4,
-        max_frag_num=15,
+        max_frag_per_prec=15,
         allowed_extra_min_frag_inten=3,
         save_path=None,
         logger=None
@@ -28,7 +28,7 @@ def generate_spec_lib(
 
     :param min_frag_inten: min fragment intensity to be kept
     :param min_frag_per_prec: min fragment number to keep this precursor
-    :param max_frag_num: max fragment number to be kept for one precursor
+    :param max_frag_per_prec: max fragment number to be kept for one precursor
     :param allowed_extra_min_frag_inten:
 
     :param save_path:
@@ -62,7 +62,7 @@ def generate_spec_lib(
         prec_basic_data_list = [prec_charge, modpep, strip_pep, pred_rt, modpep, prec_mz]
 
         pred_spec = prot_utils.calc.normalize_intensity(pred_spec, max_num=100)
-        pred_spec = prot_utils.calc.keep_top_n_inten(pred_spec, top_n=15)
+        pred_spec = prot_utils.calc.keep_top_n_inten(pred_spec, top_n=max_frag_per_prec)
 
         for frag, inten in pred_spec.items():
             frag_type, frag_num, frag_charge, frag_losstype = re.findall(r'([abcxyz])(\d+)\+(\d)-(.+)', frag)[0]
@@ -81,7 +81,7 @@ def generate_spec_lib(
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in initial {data_name} library')
 
     pred_lib_df = pred_lib_df.groupby('Prec').filter(lambda x: len(x) >= min_frag_per_prec)
-    pred_lib_df = pred_lib_df[(pred_lib_df.groupby('Prec')['RelativeIntensity'].rank(ascending=False) <= max_frag_num)]
+    pred_lib_df = pred_lib_df[(pred_lib_df.groupby('Prec')['RelativeIntensity'].rank(ascending=False) <= max_frag_per_prec)]
     if logger is not None:
         logger.info(f'Total {len(set(pred_lib_df["Prec"]))} precursors in final {data_name} library')
     
@@ -90,7 +90,7 @@ def generate_spec_lib(
     if save_path is not None:
         lib_path = save_path
     else:
-        lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I{int(min_frag_inten)}_n{max_frag_num}.xls')
+        lib_path = os.path.join(output_folder, f'Library-{data_name}-DP_I{int(min_frag_inten)}_n{min_frag_per_prec}{max_frag_per_prec}.xls')
     if logger is not None:
         logger.info(f'Saving generated library to {lib_path}')
     pred_lib_df.to_csv(lib_path, sep='\t', index=False)
